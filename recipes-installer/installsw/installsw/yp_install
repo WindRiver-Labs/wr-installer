@@ -1,0 +1,16 @@
+#!/bin/sh
+
+IMAGE_INSTALL=`cat /tmp/pkg_install`
+export IMAGE_INSTALL
+
+type="rootfs"
+if [ -d "$1/boot" ]; then
+   type="update"
+fi
+
+/opt/installer/oe-core/scripts/bb_install \
+	/opt/installer/build \
+	/opt/installer/pkgdata \
+	/opt/installer/feed \
+	$1 \
+	$type

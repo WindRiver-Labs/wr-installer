@@ -1,0 +1,17 @@
+If we call list_installed_packages from outside of the rootfs setup,
+it may not have INSTALL_ROOTFS_RPM set.  Fix this.
+
+Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
+
+--- oe-core/meta/classes/rootfs_rpm.bbclass	2013-01-12 16:55:18.964865988 -0600
++++ oe-core/meta/classes/rootfs_rpm.bbclass	2013-01-09 13:58:30.934490988 -0600
+@@ -153,6 +153,9 @@
+ RPM_QUERY_CMD = '${RPM} --root $INSTALL_ROOTFS_RPM -D "_dbpath ${rpmlibdir}"'
+ 
+ list_installed_packages() {
++	if [ -z "$INSTALL_ROOTFS_RPM" ]; then
++		INSTALL_ROOTFS_RPM="${IMAGE_ROOTFS}"
++	fi
+ 	if [ "$1" = "arch" ]; then
+ 		${RPM_QUERY_CMD} -qa --qf "[%{NAME} %{ARCH}\n]" | translate_smart_to_oe arch
+ 	elif [ "$1" = "file" ]; then

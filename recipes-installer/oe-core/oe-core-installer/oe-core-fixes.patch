@@ -1,0 +1,126 @@
+A number of oe-core changes that enable the image generation to run by
+standalone with the proper system configuration.
+
+diff -urN oe-core/meta/classes/base.bbclass oe-core/meta/classes/base.bbclass
+--- oe-core/meta/classes/base.bbclass	2013-01-04 17:40:37.000000000 -0600
++++ oe-core/meta/classes/base.bbclass	2013-01-05 16:26:19.791724421 -0600
+@@ -155,7 +155,7 @@
+     # we need to mirror these variables in the multilib case;
+     # likewise the PNBLACKLIST flags.
+     multilibs = d.getVar('MULTILIBS', True) or ""
+-    if not multilibs:
++    if not multilibs or not bb.data.inherits_class('multilib_global', d):
+         return
+ 
+     prefixes = []
+@@ -166,7 +166,7 @@
+ 
+     versions = []
+     providers = []
+-    blacklists = d.getVarFlags('PNBLACKLIST') or []
++    blacklists = d.getVarFlags('PNBLACKLIST') or {}
+     for v in d.keys():
+         if v.startswith("PREFERRED_VERSION_"):
+             versions.append(v)
+@@ -429,12 +429,13 @@
+     if license == "INVALID":
+         bb.fatal('This recipe does not have the LICENSE field set (%s)' % pn)
+ 
+-    unmatched_license_flag = check_license_flags(d)
+-    if unmatched_license_flag:
+-        bb.debug(1, "Skipping %s because it has a restricted license not"
+-            " whitelisted in LICENSE_FLAGS_WHITELIST" % pn)
+-        raise bb.parse.SkipPackage("because it has a restricted license not"
+-            " whitelisted in LICENSE_FLAGS_WHITELIST")
++    if bb.data.inherits_class('license', d):
++        unmatched_license_flag = check_license_flags(d)
++        if unmatched_license_flag:
++            bb.debug(1, "Skipping %s because it has a restricted license not"
++                " whitelisted in LICENSE_FLAGS_WHITELIST" % pn)
++            raise bb.parse.SkipPackage("because it has a restricted license not"
++                " whitelisted in LICENSE_FLAGS_WHITELIST")
+ 
+     # If we're building a target package we need to use fakeroot (pseudo)
+     # in order to capture permissions, owners, groups and special files
+diff -urN oe-core/meta/classes/image.bbclass oe-core/meta/classes/image.bbclass
+--- oe-core/meta/classes/image.bbclass	2013-01-04 17:40:37.000000000 -0600
++++ oe-core/meta/classes/image.bbclass	2013-01-05 16:14:28.789720693 -0600
+@@ -117,7 +117,8 @@
+         if len(eext) > 1 and eext[0] == 'multilib':
+             localdata = bb.data.createCopy(d)
+             vendor = localdata.getVar("TARGET_VENDOR_virtclass-multilib-" + eext[1], False)
+-            ml_vendor_list += " " + vendor
++            if vendor:
++                ml_vendor_list += " " + vendor
+     d.setVar('MULTILIB_VENDORS', ml_vendor_list)
+ }
+ 
+diff -urN oe-core/meta/classes/sanity.bbclass oe-core/meta/classes/sanity.bbclass
+--- oe-core/meta/classes/sanity.bbclass	2013-01-04 17:40:37.000000000 -0600
++++ oe-core/meta/classes/sanity.bbclass	2013-01-05 15:55:28.088739700 -0600
+@@ -56,7 +56,7 @@
+             tune_errors.append("Tuning '%s' (%s) cannot be used with any supported tuning/ABI." %
+                 (tune, tuneabi))
+     if tune_errors:
+-        return "Tuning '%s' has the following errors:\n" + '\n'.join(tune_errors)
++        return "Tuning '%s' has the following errors:\n" % (tune) + '\n'.join(tune_errors)
+ 
+ def check_toolchain(data):
+     tune_error_set = []
+@@ -136,6 +136,10 @@
+     if not sys.argv[0].endswith('/bitbake'):
+         return ""
+ 
++    allow_root = os.environ.get( 'ALLOW_ROOT' )
++    if allow_root == '1':
++        return ""
++
+     import subprocess as sub
+     # Check if bitbake wrapper is being used
+     pseudo_build = os.environ.get( 'PSEUDO_BUILD' )
+@@ -303,8 +307,9 @@
+         print "Foo %s" % minversion
+         return
+ 
+-    if 0 == os.getuid():
+-        raise_sanity_error("Do not use Bitbake as root.", sanity_data)
++    allow_root = os.environ.get( 'ALLOW_ROOT' )
++    if 0 == os.getuid() and allow_root != '1':
++        raise_sanity_error("Do not use Bitbake as root. %s" % (allow_root), sanity_data)
+ 
+     messages = ""
+ 
+diff -urN oe-core/meta/classes/sstate_disabled.bbclass oe-core/meta/classes/sstate_disabled.bbclass
+--- oe-core/meta/classes/sstate_disabled.bbclass	1969-12-31 18:00:00.000000000 -0600
++++ oe-core/meta/classes/sstate_disabled.bbclass	2013-01-05 17:24:24.670724577 -0600
+@@ -0,0 +1,3 @@
++def sstate_setscene(d):
++    raise bb.build.FuncFailed("Set Scene disabled")
++
+diff -urN oe-core/meta/conf/bitbake.conf oe-core/meta/conf/bitbake.conf
+--- oe-core/meta/conf/bitbake.conf	2013-01-04 17:40:37.000000000 -0600
++++ oe-core/meta/conf/bitbake.conf	2013-01-05 17:55:51.264722149 -0600
+@@ -356,12 +356,12 @@
+ DEPLOY_DIR ?= "${TMPDIR}/deploy"
+ DEPLOY_DIR_TAR = "${DEPLOY_DIR}/tar"
+ DEPLOY_DIR_IPK = "${DEPLOY_DIR}/ipk"
+-DEPLOY_DIR_RPM = "${DEPLOY_DIR}/rpm"
++DEPLOY_DIR_RPM ??= "${DEPLOY_DIR}/rpm"
+ DEPLOY_DIR_DEB = "${DEPLOY_DIR}/deb"
+ DEPLOY_DIR_IMAGE ?= "${DEPLOY_DIR}/images"
+ DEPLOY_DIR_TOOLS = "${DEPLOY_DIR}/tools"
+ 
+-PKGDATA_DIR = "${TMPDIR}/pkgdata/${MULTIMACH_TARGET_SYS}"
++PKGDATA_DIR ??= "${TMPDIR}/pkgdata/${MULTIMACH_TARGET_SYS}"
+ 
+ ##################################################################
+ # SDK variables, 
+@@ -383,7 +383,7 @@
+ # Specific image creation and rootfs population info.
+ ##################################################################
+ 
+-IMAGE_ROOTFS = "${WORKDIR}/rootfs"
++IMAGE_ROOTFS ??= "${WORKDIR}/rootfs"
+ IMAGE_BASENAME = "${PN}"
+ IMAGE_NAME = "${IMAGE_BASENAME}-${MACHINE}-${DATETIME}"
+ IMAGE_LINK_NAME = "${IMAGE_BASENAME}-${MACHINE}"

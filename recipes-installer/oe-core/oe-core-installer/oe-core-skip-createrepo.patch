@@ -1,0 +1,18 @@
+We need a simple way to skip refreshing the repository.  Set SKIP_UPDATE_INDEX = 1.
+
+Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
+
+--- oe-core/meta/classes/package_rpm.bbclass	2013-01-10 09:50:35.151759798 -0600
++++ oe-core/meta/classes/package_rpm.bbclass	2013-01-10 09:56:16.994760070 -0600
+@@ -47,7 +47,11 @@
+ 
+ 	for arch in $archs; do
+ 		if [ -d ${DEPLOY_DIR_RPM}/$arch ] ; then
++		   if [ -n "${SKIP_UPDATE_INDEX}" -a "${SKIP_UPDATE_INDEX}" = '1' -a -d ${DEPLOY_DIR_RPM}/$arch/repodata ]; then
++                        echo "Skip createrepo on ${DEPLOY_DIR_RPM}/$arch"
++		   else
+ 			createrepo --update -q ${DEPLOY_DIR_RPM}/$arch
++		   fi
+ 		fi
+ 	done
+ }

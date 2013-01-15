@@ -1,0 +1,13 @@
+* Usage instructions:
+  - add bitbake to your path:
+    export PATH=/opt/installer/bitbake/bin:$PATH
+  - mount disk to install (rootfs_path)
+
+  - trigger install process:
+    IMAGE_INSTALL="what to install" /opt/installer/oe-core/scripts/bb_install /opt/installer/build /opt/installer/pkgdata /opt/installer/feed <rootfs_path> rootfs
+    IMAGE_INSTALL="what to install" /opt/installer/oe-core/scripts/bb_install /opt/installer/build /opt/installer/pkgdata /opt/installer/feed <rootfs_path> update
+
+  - trigger query of what is installed:
+    /opt/installer/oe-core/scripts/bb_install /opt/installer/build /opt/installer/pkgdata /opt/installer/feed <rootfs_path> query | \
+      awk '/^---QUERY START---$/ { start = "1" ; next; } ; { if (start) printf("%s\n", $0) }'
+

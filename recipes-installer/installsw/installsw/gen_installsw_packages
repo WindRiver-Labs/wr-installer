@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+
+# Wind River Linux utility to generate an the installsw packages file
+
+import sys
+import os
+import os.path
+import fnmatch
+import codecs
+
+def usage():
+    print("syntax gen_installsw_packages <wrpylibs_path> <tmpdir> <desired> <output>")
+    sys.exit(1)
+
+def gen_installsw_packages(tmpdir, desirefn, outputfn):
+    import oepkgdata
+
+    df = file(desirefn, 'r')
+    lines = df.readlines()
+    df.close()
+
+    desired = "".split()
+    for line in lines:
+        desired += line.split()
+
+    pkgdata_dir = tmpdir + "/pkgdata/"
+
+    f = file(outputfn, 'w')
+    fnum = 0
+    for root, dirs, files in os.walk(pkgdata_dir):
+        for packaged in files:
+            if packaged.endswith('.packaged'):
+                pkgname = packaged[:-9]
+                fname = os.path.join(root, pkgname)
+                sdata = oepkgdata.read_pkgdatafile(fname)
+                fnum += 1
+
+                type = "O"
+
+                # Hidden items, -dev, -staticdev, -doc, -dbg and locales
+                if (pkgname.endswith("-dev") or pkgname.endswith("-staticdev") or
+                    pkgname.endswith("-doc") or pkgname.endswith("-dbg") or
+                    "-locale-" in pkgname    or pkgname.startswith("locale-base-")):
+                    type = "H"
+                elif (pkgname == "base-files" or pkgname == "base-passwd"):
+                    type = "R"
+                elif (pkgname in desired):
+                    type = "D"
+
+                size = 0
+                if ( 'PKGSIZE_' + pkgname in sdata ):
+                    size = sdata['PKGSIZE_' + pkgname]
+
+                section = 0
+                if ( 'SECTION_' + pkgname in sdata ):
+                    section = sdata['SECTION_' + pkgname]
+                elif ( 'SECTION' in sdata ):
+                    section = sdata['SECTION']
+
+                f.write("%d %s %s Y %s / %s %s:%s\n" %
+                        (fnum, fname[tmpdir.__len__() + 1:],
+                         size, type, pkgname, pkgname, section))
+
+    f.close()
+
+if len(sys.argv) != 5:
+    usage()
+
+wrpylibs = sys.argv[1]
+tmpdir   = sys.argv[2]
+desirefn = sys.argv[3]
+outputfn = sys.argv[4]
+
+sys.path.insert(0, wrpylibs)
+
+gen_installsw_packages(tmpdir, desirefn, outputfn)

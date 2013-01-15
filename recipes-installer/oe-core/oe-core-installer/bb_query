@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if [ $# -lt 4 ] ; then
+   echo "Usage: $0 <builddir> <pkgdatadir> <pkgfeed> <root>" >&2
+   echo >&2
+   exit 1
+fi
+
+if [ -d "$4/boot" ]; then
+   bb_install $1 $2 $3 $4 query | awk '
+	BEGIN { start = "0" }
+	/^---QUERY START---$/ { start = "1" ; next; }
+	/^---QUERY STOP---$/ { start = "0" ; next ; }
+	 { if ( start == "1" ) printf("%s\n", $0) }'
+fi

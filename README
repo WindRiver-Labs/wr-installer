@@ -1,0 +1,71 @@
+wr-installer
+============
+
+This layer provides a target-based installer for Wind River Linux.  It
+requires most of the layers that Wind River Linux provides.
+
+
+Dependencies
+------------
+This layer depends on the Wind River Linux version of bitbake, oe-core,
+wrlinux layer, wr-base layer and wrlcompat layer.
+
+
+Maintenance
+-----------
+This layer is maintained by Wind River Systems, Inc.
+Contact <support@windriver.com> or your support representative for more
+information on submitting changes.
+
+
+Building the target installer
+-----------------------------
+The target installer is enabled by passing "--enable-target-installer=yes"
+to configure.  A second option "--with-installer-target-build=<path>" is
+used to specify the absolute path to the build directory that will supply
+rpms and kernel to be installed on the target.  If the absolute path is an
+.ext3 image file, then the installer will copy this image to the target
+after the disk has been partitioned and formatted.  If a target-build is 
+not specified, the installer project will be used as the target-build.
+
+For example:
+configure --enable-board=common_pc \
+          --enable-kernel=standard \
+          --enable-rootfs=glibc_small \
+          --enable-bootimage=iso \
+          --enable-target-installer=yes \
+          --with-installer-target-build=/home/user/my_project
+
+make fs
+
+The resulting installer will contain the packages from "my_project", and
+the default system configuration will match the settings in "my_project".
+
+Note: the board configuration should be the same in both project.
+
+
+Known Issues
+------------
+
+*) The 'desired' package list only includes the items that the image
+   recipe selected.  Any dependencies to those packages are not lists.
+
+*) When choosing extra image features to install, this adds significant time
+   to the install process.
+
+*) Upgrade of an existing image may take a significant amount of time to complete,
+   even if no image changes have been selected.
+
+
+License
+-------
+Copyright (C) 2013 Wind River Systems, Inc.
+
+The right to copy, distribute or otherwise make use of this software may
+be licensed only pursuant to the terms of an applicable Wind River license
+agreement.  No license to Wind River intellectual properly rights is granted
+herein.  All rights not licensed by Wind River are reserved by Wind River.
+
+Source code included in tree for individual recipes is under the LICENSE
+stated in each recipe (.bb file) unless other stated.
+

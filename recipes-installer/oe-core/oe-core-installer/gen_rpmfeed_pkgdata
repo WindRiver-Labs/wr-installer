@@ -1,0 +1,95 @@
+#!/bin/sh
+
+if [ $# -lt 3 ] ; then
+   echo "Usage: $0 <builddir> <pkgdatadir> <pkgfeed>" >&2
+   exit 1
+fi
+
+BUILDDIR="$1"
+
+# PKGDATA_DIR = "${TMPDIR}/pkgdata/${MULTIMACH_TARGET_SYS}"
+BASE_PKGDATADIR="$2"
+
+DEPLOY_DIR_RPM="$3"
+
+for each_dir in $DEPLOY_DIR_RPM/* ; do
+   if [ ! -d $each_dir ]; then
+       continue
+   fi
+   for each_rpm in $each_dir/*.rpm; do
+      if [ -d $each_rpm ]; then
+          continue
+      fi
+      echo "Processing $each_rpm..."
+
+      # Skipping for now:
+      # RDEPENDS_%{NAME}: [%{REQUIRES} ]\n
+      # FILES_%{NAME}: [%{FILENAMES} ]\n
+      #                     if (tag ~ /^PN:/)  { gsub(/\+/, "x", existing); }
+      #                     if (tag ~ /^PKG_/) { gsub(/\+/, "x", tag); }
+
+      rpm -qp $each_rpm --queryformat "PLATFORM: %{PLATFORM}\nSUMMARY: %{SUMMARY}\nDESCRIPTION: %{DESCRIPTION}\nSECTION: %{GROUP}\nLICENSE: %{LICENSE}\nPN: %{SOURCERPM}\nPKG_%{NAME}: %{NAME}\nPKGV: %{VERSION}\nPKGR: %{RELEASE}\nPKGSIZE_%{NAME}: %{FSSIZES}\n" \
+          2> /dev/null \
+          | awk '/^.*: / { 
+                           if (tag) { printf("%s%s\n", tag, existing); }; 
+                           tag = $1; $1 = ""; existing = $0; 
+                           if (tag ~ /^PKGSIZE/) { existing = sprintf(" %d", (existing + 1023) / 1024 ) ; } 
+                           if (tag ~ /^PN:/)  { 
+				pn = existing ; pv = existing ; pr = existing ; 
+				sub(/-[^-]*-[^-]*\.src\.rpm/, "", pn) ;
+				sub(/-[^-]*\.src\.rpm/, "", pv) ; gsub(/[^-]*-/, "", pv)
+				sub(/\.src\.rpm/, "", pr) ; gsub(/[^-]*-/, "", pr)
+				existing = pn "\nPV: " pv "\nPR: " pr
+			      }
+                           next ;
+                         }
+		  { existing = existing " " $0 }
+		 END { printf("%s%s\n", tag, existing) }' \
+	  > $BUILDDIR/feed_gen.$$
+
+      name=`cat $BUILDDIR/feed_gen.$$ | awk '/^PKG_.*:/ { existing = $1 ; gsub(/^PKG_/, "", existing) ; sub(/:/, "", existing) ; printf("%s", existing); }'`
+      name_rev=`cat $BUILDDIR/feed_gen.$$ | awk '/^PKG_.*: .*/ { printf("%s", $2); }'`
+      platform=`cat $BUILDDIR/feed_gen.$$ | awk '/^PLATFORM: .*/ { printf("%s", $2); }'`
+      src=`cat $BUILDDIR/feed_gen.$$ | awk '/^PN: .*/ { printf("%s", $2); }'`
+
+      mlib=`expr $platform : '.*ml\(.*\)-linux.*$'`
+
+      if [ -n "$mlib" ]; then
+          platform=`expr $platform : '^'$mlib'_\(.*\)'`
+          name="$mlib-$name"
+          name_rev="$mlib-$name_rev"
+          src="$mlib-$src"
+      fi
+
+      echo "$platform/$src - $name - ($name_rev)"
+
+      if [ -z "$name" -o -z "$platform" -o -z "$src" ]; then
+         echo "Name: $name" "Platform: $platform" "Src: $src" -- failure
+         cat $BUILDDIR/feed_gen.$$
+         exit 1
+      fi
+
+      # build pkgdata_dir
+      mkdir -p $BASE_PKGDATADIR/$platform
+      mkdir -p $BASE_PKGDATADIR/$platform/runtime
+      mkdir -p $BASE_PKGDATADIR/$platform/runtime-reverse
+
+      # Check if this item is already in the pkgdata...
+      if [ -e $BASE_PKGDATADIR/$platform/runtime-reverse/$name ]; then
+         continue
+      fi
+
+      cat $BUILDDIR/feed_gen.$$ > $BASE_PKGDATADIR/$platform/runtime/$name
+      touch $BASE_PKGDATADIR/$platform/runtime/$name.packaged
+
+      ln -s ../runtime/$name $BASE_PKGDATADIR/$platform/runtime-reverse/$name_rev
+
+      if [ ! -e $BASE_PKGDATADIR/$platform/$src ]; then
+         echo "PACKAGES: " > $BASE_PKGDATADIR/$platform/$src
+      fi
+      awk '/^PACKAGES:/ { printf("%s '$name'\n", $0); }' $BASE_PKGDATADIR/$platform/$src > $BASE_PKGDATADIR/$platform/$src.new
+      mv $BASE_PKGDATADIR/$platform/$src.new $BASE_PKGDATADIR/$platform/$src
+   done
+done
+
+rm $BUILDDIR/feed_gen.$$

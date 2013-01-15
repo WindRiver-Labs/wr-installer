@@ -1,0 +1,81 @@
+#!/bin/sh
+
+if [ $# -lt 5 ] ; then
+   echo "Usage: IMAGE_INSTALL="..." $0 <builddir> <pkgdatadir> <pkgfeed> <root> <command>" >&2
+   echo >&2
+   echo "Commands:" >&2
+   echo "  rootfs - Install new rootfs, IMAGE_INSTALL required"
+   echo "  update - Update an existing rootfs, NOTE: IMAGE_INSTALL must be complete!"
+   echo "  query  - Query what was installed on a specific image"
+   exit 1
+fi
+
+BUILDDIR=`cd $1 2>/dev/null && pwd`
+if [ -z "$BUILDDIR" ] ; then
+   echo "builddir: $1 does not exist or is not a directory" >&2
+   exit 1
+fi
+
+# PKGDATA_DIR = "${TMPDIR}/pkgdata/${MULTIMACH_TARGET_SYS}"
+BASE_PKGDATADIR=`cd $2 2>/dev/null && pwd`
+if [ -z "$BASE_PKGDATADIR" ] ; then
+   echo "pkgdatadir: $2 does not exist or is not a directory" >&2
+   exit 1
+fi
+
+DEPLOY_DIR_RPM=`cd $3 2>/dev/null && pwd`
+if [ -z "$DEPLOY_DIR_RPM" ] ; then
+   echo "pkgfeed: $3 does not exist or is not a directory" >&2
+   exit 1
+fi
+
+IMAGE_ROOTFS=`cd $4 2>/dev/null && pwd`
+if [ -z "$IMAGE_ROOTFS" ] ; then
+   echo "rootfs: $4 does not exist or is not a directory" >&2
+   exit 1
+fi
+
+CMD="$5"
+
+bitbake=`which bitbake 2>/dev/null`
+if [ -z "$bitbake" ]; then
+   echo "'bitbake' is not in your path." >&2
+   exit 1
+fi
+
+cd $BUILDDIR
+
+export BBFETCH2=True
+export ALLOW_ROOT=1
+export TMPDIR="/tmp/build"
+export BB_ENV_EXTRAWHITE="TMPDIR QUERY_LOG IMAGE_INSTALL INC_RPM_IMAGE_GEN IMAGE_FEATURES IMAGE_LINGUAS BASE_PKGDATADIR DEPLOY_DIR_RPM IMAGE_ROOTFS PSEUDO_BUILD ALLOW_ROOT PSEUDO_DISABLED $BB_ENV_EXTRAWHITE"
+export BASE_PKGDATADIR DEPLOY_DIR_RPM IMAGE_ROOTFS
+if [ "$CMD" = "debug" ]; then
+  bitbake -D image-rootfs -e
+else
+  if [ "$CMD" = "update" ]; then
+    CMD="rootfs"
+    INC_RPM_IMAGE_GEN=1
+    export INC_RPM_IMAGE_GEN
+  fi
+
+  if [ "$CMD" = "rootfs" -a -z "$IMAGE_INSTALL" ]; then
+    echo "Nothing to install!" >&2
+    exit 1
+  fi
+
+  QUERY_LOG="/tmp/query.$$"
+  export QUERY_LOG
+
+  # Make sure the tmpdir is setup properly
+  mkdir -p $TMPDIR
+  ln -sf $BASE_PKGDATADIR $TMPDIR/pkgdata
+
+  bitbake image-rootfs -c $CMD
+
+  ret=$?
+
+  [ -e "${QUERY_LOG}" ] && cat ${QUERY_LOG}
+fi
+
+exit $ret
