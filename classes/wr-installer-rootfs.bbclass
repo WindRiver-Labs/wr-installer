@@ -154,10 +154,9 @@ wrl_installer() {
 	       ${IMAGE_ROOTFS}/opt/installer/installsw/PACKAGES_unsorted
     fi
 
-    ## Set the default run level to single user mode (run level 1)
     if grep initdefault "${IMAGE_ROOTFS}/etc/inittab" >/dev/null; then
-        echo "Setting the default run level to single user mode"
-        sed -i 's/^id:[0-6]:initdefault:/id:S:initdefault:/' "${IMAGE_ROOTFS}/etc/inittab"
+        echo "Enable root auto login"
+        sed -i 's/mingetty/mingetty --noclear --autologin root /' "${IMAGE_ROOTFS}/etc/inittab"
     fi
 
     # Need a link to make grub 0.97 grub-install work properly
