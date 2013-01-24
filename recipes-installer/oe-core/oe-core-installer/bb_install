@@ -16,6 +16,11 @@ if [ -z "$BUILDDIR" ] ; then
    exit 1
 fi
 
+if [ ! -d "$BUILDDIR" ] ; then
+   echo "builddir: $1/conf does not exist or is not a directory" >&2
+   exit 1
+fi
+
 # PKGDATA_DIR = "${TMPDIR}/pkgdata/${MULTIMACH_TARGET_SYS}"
 BASE_PKGDATADIR=`cd $2 2>/dev/null && pwd`
 if [ -z "$BASE_PKGDATADIR" ] ; then
@@ -50,6 +55,9 @@ export ALLOW_ROOT=1
 export TMPDIR="/tmp/build"
 export BB_ENV_EXTRAWHITE="TMPDIR QUERY_LOG IMAGE_INSTALL INC_RPM_IMAGE_GEN IMAGE_FEATURES IMAGE_LINGUAS BASE_PKGDATADIR DEPLOY_DIR_RPM IMAGE_ROOTFS PSEUDO_BUILD ALLOW_ROOT PSEUDO_DISABLED $BB_ENV_EXTRAWHITE"
 export BASE_PKGDATADIR DEPLOY_DIR_RPM IMAGE_ROOTFS
+
+export PYTHONDONTWRITEBYTECODE=1
+
 if [ "$CMD" = "debug" ]; then
   bitbake -D image-rootfs -e
 else
@@ -69,7 +77,7 @@ else
 
   # Make sure the tmpdir is setup properly
   mkdir -p $TMPDIR
-  ln -sf $BASE_PKGDATADIR $TMPDIR/pkgdata
+  ln -sf $BASE_PKGDATADIR $TMPDIR/.
 
   bitbake image-rootfs -c $CMD
 

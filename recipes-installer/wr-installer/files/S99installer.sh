@@ -276,13 +276,13 @@ else
     ## Run the software installer program
     ##
     echo "Ready to run WR Linux software installer."
+    echo -n "Install extra image features? (dev-pkgs staticdev-pkgs doc-pkgs dbg-pkgs) "
+    IMAGE_FEATURES=$(get_answer ExtraImageFeatures "none")
+    echo -n "Install languages? "
+    IMAGE_LINGUAS=$(get_answer LinguasInstall "")
     echo -n "Would you like to view or modify what will be installed? "
     case $(get_answer ViewInstalled "no") in
         [yY]*)  HOW=
-		echo -n "Install extra image features? (dev-pkgs staticdev-pkgs doc-pkgs dbg-pkgs) "
-		IMAGE_FEATURES=$(get_answer ExtraImageFeatures "none")
-		echo -n "Install languages? "
-		IMAGE_LINGUAS=$(get_answer LinguasInstall "")
 		;;
         *) HOW=-sd ;;
     esac
@@ -291,6 +291,11 @@ else
     export PATH IMAGE_FEATURES IMAGE_LINGUAS
     ${INSTALLSW} ${HOW} -a $TMP_PACKAGES -c /opt/installer/ -d ${MNT_ROOT} -L -E ||
     exit_install "installsw failed"
+
+    # We need a way to login, by default there are no passwords selected.
+    echo "Clearing the root password, be sure to configure the root password!"
+    sed 's%^root:[^:]*:%root::%' < ${MNT_ROOT}/etc/passwd > ${MNT_ROOT}/etc/passwd.new
+    mv ${MNT_ROOT}/etc/passwd.new ${MNT_ROOT}/etc/passwd
 fi
 
 if [ -f ${TARGET_KERNEL} ]; then

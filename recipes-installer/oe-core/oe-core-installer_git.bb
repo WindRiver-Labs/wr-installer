@@ -12,6 +12,10 @@ SRC_URI += " \
 	file://oe-core-fixes.patch \
 	file://oe-core-skip-createrepo.patch \
 	file://oe-core-query.patch \
+	file://oe-core-rpmlock.patch \
+	file://oe-core-manifest.patch \
+	file://oe-core-wrap.patch \
+	file://oe-core-no-rm.patch \
 	file://bb_install \
 	file://bb_query \
 	file://gen_rpmfeed_pkgdata \

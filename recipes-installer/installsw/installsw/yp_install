@@ -4,12 +4,16 @@ IMAGE_INSTALL=`cat /tmp/pkg_install`
 export IMAGE_INSTALL
 
 type="rootfs"
-if [ -d "$1/boot" ]; then
+if [ -d "$1/var/lib/rpm" ]; then
    type="update"
 fi
 
+if [ ! -d /tmp/build/conf ] ; then
+   cp -a /opt/installer/build /tmp/.
+fi
+
 /opt/installer/oe-core/scripts/bb_install \
-	/opt/installer/build \
+	/tmp/build \
 	/opt/installer/pkgdata \
 	/opt/installer/feed \
 	$1 \

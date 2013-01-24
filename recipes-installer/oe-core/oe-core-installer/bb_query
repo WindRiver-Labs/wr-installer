@@ -6,7 +6,7 @@ if [ $# -lt 4 ] ; then
    exit 1
 fi
 
-if [ -d "$4/boot" ]; then
+if [ -d "$4/var/lib/rpm" ]; then
    bb_install $1 $2 $3 $4 query | awk '
 	BEGIN { start = "0" }
 	/^---QUERY START---$/ { start = "1" ; next; }
