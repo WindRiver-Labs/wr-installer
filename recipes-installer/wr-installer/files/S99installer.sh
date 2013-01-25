@@ -16,6 +16,7 @@ PARTED=/usr/sbin/parted
 GRUB_INSTALL=/usr/sbin/grub-install
 MKFS=/sbin/mkfs.ext3
 MKSWAP=/sbin/mkswap
+SWAPOFF=/sbin/swapoff
 INSTALLSW=/opt/installer/installsw/installsw
 
 TMP_PACKAGES=/tmp/PACKAGES
@@ -163,6 +164,31 @@ if [ ${SKIP_FORMAT} = NO ]; then
     fi
     if [ ! -b ${DEVICE} ]; then
         exit_install "${DEVICE} is not a block device"
+    fi
+
+    ## check if there are existing partitions on the disk
+    if grep -q "${DEV_NAME}[1-9]" /proc/partitions
+    then
+        echo "The selected disk ${DEVICE} is already partitioned."
+        echo -n "Delete existing partitions and ALL data? (yes/no) "
+        delete_partitions=$(get_answer DeleteExistingPartitions "no")
+        if [ "x$delete_partitions" != "xyes" ]; then
+            echo -n "Unable to reuse existing partitions. Aborting install."
+            exit_install
+        fi
+
+        ## By default there is no swap in installer image.
+        ## But if there is a swap partition on the target drive
+        ## it may have been mounted automatically
+        ${SWAPOFF} --all
+    fi
+
+    #Make sure target disk is not mounted
+    if grep -q "^/dev/${DEV_NAME}[0-9]+" /proc/mounts
+    then
+        echo "/dev/${DEV_NAME} is mounted in /proc/mounts."
+        echo -n "Please unmount all the partitions of ${DEV_NAME}. Aborting install."
+        exit_install
     fi
 
     ##
