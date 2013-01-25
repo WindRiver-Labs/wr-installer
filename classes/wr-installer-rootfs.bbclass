@@ -59,6 +59,8 @@ ${@dump_multilib_config(d)}
 EOF
 }
 
+WRL_INSTALLER_CONF ?= "${TOPDIR}/conf/installer.conf"
+
 wrl_installer() {
     echo "Installer Target Build: ${INSTALLER_TARGET_BUILD}"
     if [ ! -e "${INSTALLER_TARGET_BUILD}" ]; then
@@ -172,6 +174,11 @@ wrl_installer() {
 
     ## Make a directory to mount the target
     mkdir -p "${IMAGE_ROOTFS}/mnt/target"
+
+    ## If it exists, copy the installer.conf file
+    if [ -n "${WRL_INSTALLER_CONF}" -a -e "${WRL_INSTALLER_CONF}" ]; then
+        install -m 0644 ${WRL_INSTALLER_CONF} ${IMAGE_ROOTFS}${sysconfdir}/
+    fi
 }
 
 python __anonymous() {

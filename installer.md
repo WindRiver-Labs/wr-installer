@@ -87,3 +87,17 @@ local.conf. There are several other restrictions for grub 0.97:
 - Only builds on 32bit bsp
 - If installer image is 32bit and target image is 64bit, qemu in
   installer build cannot boot target.
+
+## Adding custom installer.conf to installer image
+
+The intaller script can read answers from /etc/installer.conf to help
+speed up the installation process.  To add one to the installer image
+requires the user to either copy the file to their project directory and/or
+configure their local.conf file.
+
+    cp <path>/installer.conf <installer_build_dir>/bitbake_build/conf/.
+
+    or
+
+    edit <installer_build_dir>/bitbake_build/conf/local.conf
+    WRL_INSTALLER_CONF = "/my/installer.conf"

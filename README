@@ -44,6 +44,19 @@ the default system configuration will match the settings in "my_project".
 Note: the board configuration should be the same in both project.
 
 
+The intaller script can read answers from /etc/installer.conf to help
+speed up the installation process.  To add one to the installer image
+requires the user to either copy the file to their project directory and/or
+configure their local.conf file.
+
+    cp <path>/installer.conf <installer_build_dir>/bitbake_build/conf/.
+
+    or
+
+    edit <installer_build_dir>/bitbake_build/conf/local.conf
+    WRL_INSTALLER_CONF = "/my/installer.conf"
+
+
 Known Issues
 ------------
 
