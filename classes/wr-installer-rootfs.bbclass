@@ -179,6 +179,9 @@ wrl_installer() {
     if [ -n "${WRL_INSTALLER_CONF}" -a -e "${WRL_INSTALLER_CONF}" ]; then
         install -m 0644 ${WRL_INSTALLER_CONF} ${IMAGE_ROOTFS}${sysconfdir}/
     fi
+
+    ## Stop udev from automounting disks during install process
+    rm -f ${IMAGE_ROOTFS}/etc/udev/scripts/mount.sh
 }
 
 python __anonymous() {
