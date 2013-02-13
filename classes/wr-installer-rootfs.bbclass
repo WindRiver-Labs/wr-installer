@@ -4,7 +4,8 @@
 # Image generation functions to setup the installer components
 #
 
-ROOTFS_POSTPROCESS_COMMAND += "wrl_config_oe ; wrl_installer; "
+# Only run these functions when creating rootfs, not the initramfs
+ROOTFS_POSTPROCESS_COMMAND += "${@['wrl_config_oe ; wrl_installer; ', '']['init' in '${BPN}']}"
 
 def dump_multilib_config(d):
     localdata = bb.data.createCopy(d)
