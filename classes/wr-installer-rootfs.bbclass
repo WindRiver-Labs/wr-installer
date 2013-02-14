@@ -105,6 +105,12 @@ wrl_installer() {
 		--image $DEFAULT_TARGET_IMAGE --noexpansion \
 		> ${IMAGE_ROOTFS}/opt/installer/installsw/desired-$DEFAULT_TARGET_IMAGE
 
+	#Remove installer related packages from desired list
+	for package in installsw wr-installer oe-core-installer; do
+		sed -i "s/$package//g" \
+			${IMAGE_ROOTFS}/opt/installer/installsw/desired-$DEFAULT_TARGET_IMAGE
+	done
+
 	# Determine kernel dir...
         kernel_dir="${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/images"
     else
