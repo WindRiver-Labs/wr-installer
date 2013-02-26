@@ -5,12 +5,26 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe"
 
 SECTION = "installer"
 
-SRC_URI = " \
-	git://git.wrs.com/git/bitbake \
-	file://no-parent-deps.patch \
+# The following code finds the corebranch file in the wrlcompat layer,
+# reads it and then returns the branch value
+def get_wr_bitbake_branch(d):
+    bconfigpath = bb.which(d.getVar('BBPATH', True), "scripts/config/corebranch")
+    if not bconfigpath:
+        bb.fatal("%s: Unable to find scripts/config/corebranch in BBPATH." % d.getVar('PN', True))
+        return ""
+    bf = file(bconfigpath, 'r')
+    bconfig = bf.readline().strip()
+    bf.close()
+    return bconfig
+
+SRC_URI := "git://${WRL_TOP_BUILD_DIR}/git/bitbake;protocol=file;branch=${@get_wr_bitbake_branch(d)}"
+
+SRCREV = "${AUTOREV}"
+
+SRC_URI += " \
 	file://enable-logtail.patch \
 	"
-SRCREV = "de7d423525c6796f2bd1f1d222d04a501ccf16f6"
+
 PV = "git${SRCPV}"
 PR = "r0"
 
