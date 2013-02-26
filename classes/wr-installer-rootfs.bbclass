@@ -53,6 +53,7 @@ wrl_config_oe() {
 	echo >> ${IMAGE_ROOTFS}/opt/installer/build/conf/local.conf
 	echo '#### Multilib Configuration' >> ${IMAGE_ROOTFS}/opt/installer/build/conf/local.conf
 	echo 'MULTILIBS = "${@d.getVar('MULTILIBS', True)}"' >> ${IMAGE_ROOTFS}/opt/installer/build/conf/local.conf
+	echo 'MULTILIB_GLOBAL_VARIANTS = "${@d.getVar('MULTILIB_GLOBAL_VARIANTS', True)}"' >> ${IMAGE_ROOTFS}/opt/installer/build/conf/local.conf
 	echo "MULTILIB_VARIANTS = '${@extend_variants(d,"MULTILIBS","multilib")}'" >> ${IMAGE_ROOTFS}/opt/installer/build/conf/local.conf
 	echo >> ${IMAGE_ROOTFS}/opt/installer/build/conf/local.conf
 	cat <<EOF >> ${IMAGE_ROOTFS}/opt/installer/build/conf/local.conf
