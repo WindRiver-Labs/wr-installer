@@ -5,8 +5,21 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=3f40d7994397109285ec7b81fdeb3b58"
 
 SECTION = "installer"
 
-SRC_URI = "git://git.wrs.com/git/oe-core"
-SRCREV = "b45ec5556f23b97c5433a1aa42aa2a564db064ae"
+# The following code finds the corebranch file in the wrlcompat layer,
+# reads it and then returns the branch value
+def get_wr_oecore_branch(d):
+    bconfigpath = bb.which(d.getVar('BBPATH', True), "scripts/config/corebranch")
+    if not bconfigpath:
+        bb.fatal("%s: Unable to find scripts/config/corebranch in BBPATH." % d.getVar('PN', True))
+        return ""
+    bf = file(bconfigpath, 'r')
+    bconfig = bf.readline().strip()
+    bf.close()
+    return bconfig
+
+SRC_URI := "git://${WRL_TOP_BUILD_DIR}/git/oe-core;protocol=file;branch=${@get_wr_oecore_branch(d)}"
+
+SRCREV = "${AUTOREV}"
 
 SRC_URI += " \
 	file://oe-core-fixes.patch \
