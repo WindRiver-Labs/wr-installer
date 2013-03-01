@@ -29,14 +29,16 @@ SRC_URI += " \
 	file://oe-core-manifest.patch \
 	file://oe-core-wrap.patch \
 	file://oe-core-no-rm.patch \
+	file://oe-core-depmodwrapper.patch \
 	file://bb_install \
 	file://bb_query \
 	file://gen_rpmfeed_pkgdata \
 	file://image-rootfs.bb \
+        file://depmodwrapper \
 	"
 
 PV = "git${SRCPV}"
-PR = "r0"
+PR = "r1"
 
 S = "${WORKDIR}/git"
 
@@ -71,6 +73,7 @@ do_install() {
   install -m 0755 ${WORKDIR}/bb_install ${D}/opt/installer/oe-core/scripts/.
   install -m 0755 ${WORKDIR}/bb_query ${D}/opt/installer/oe-core/scripts/.
   install -m 0755 ${WORKDIR}/gen_rpmfeed_pkgdata ${D}/opt/installer/oe-core/scripts/.
+  install -m 0755 ${WORKDIR}/depmodwrapper ${D}/opt/installer/oe-core/scripts/.
 
   # Add image-rootfs recipe...
   mkdir -p ${D}/opt/installer/oe-core/meta/recipes-installer/rootfs
