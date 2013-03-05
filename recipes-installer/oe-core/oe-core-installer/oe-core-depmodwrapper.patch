@@ -6,7 +6,7 @@ Index: git/meta/classes/image.bbclass
  
  LICENSE = "MIT"
  PACKAGES = ""
--DEPENDS += "depmodwrapper-cross"
+-DEPENDS += "${MLPREFIX}depmodwrapper-cross"
  RDEPENDS += "${IMAGE_INSTALL} ${LINGUAS_INSTALL} ${NORMAL_FEATURE_INSTALL} ${ROOTFS_BOOTSTRAP_INSTALL}"
  RRECOMMENDS += "${NORMAL_FEATURE_INSTALL_OPTIONAL}"
  

@@ -38,7 +38,7 @@ SRC_URI += " \
 	"
 
 PV = "git${SRCPV}"
-PR = "r1"
+PR = "r2"
 
 S = "${WORKDIR}/git"
 
