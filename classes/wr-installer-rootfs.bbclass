@@ -125,7 +125,7 @@ wrl_installer() {
 	mkdir -p "${target_kernel_dir}"
 	#Choose newest kernel image in directory
 	kernel=$(readlink -f $(find ${kernel_dir} -type l -maxdepth 1 -name *bzImage* | head -n 1))
-	systemmap=$(readlink -f $(find ${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/sysroots/*/usr/src/kernel -type f -maxdepth 1 -name System.map* | head -n 1))
+	systemmap=$(readlink -f $(find ${kernel_dir} -type l -maxdepth 1 -name *System.map* | head -n 1))
 
 	cp ${kernel} ${target_kernel_dir}/bzImage
 	cp ${systemmap} ${target_kernel_dir}/.
