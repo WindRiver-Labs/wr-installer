@@ -43,8 +43,16 @@ the default system configuration will match the settings in "my_project".
 
 Note: the board configuration should be the same in both project.
 
+Note: the target installer image can use any rootfs, but there is no
+benefit to using a rootfs such as glibc-std or glibc-cgl. The
+installer image will be larger than necessary and may not support
+being booted on a read-only medium such as iso. For example an
+installer image with the glibc-cgl rootfs will contain both the cgl
+binaries and the rpms for the installer. When booted on a read-only
+iso many read-only filesystem errors will be reported, but the
+installer script will run and complete successfully.
 
-The intaller script can read answers from /etc/installer.conf to help
+The installer script can read answers from /etc/installer.conf to help
 speed up the installation process.  To add one to the installer image
 requires the user to either copy the file to their project directory and/or
 configure their local.conf file.
@@ -69,6 +77,7 @@ Known Issues
 *) Upgrade of an existing image may take a significant amount of time to complete,
    even if no image changes have been selected.
 
+*) The target installer script requires Gnu Parted 3.1 which is GPLv3 licensed.
 
 License
 -------
