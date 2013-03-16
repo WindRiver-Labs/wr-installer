@@ -347,9 +347,12 @@ if [ -d /etc/grub.d ]; then
 set default=0
 set timeout=10
 
+insmod serial
 insmod gzio
 insmod part_msdos
 insmod ext2
+serial --unit=0 --speed=115200
+terminal_input console serial ; terminal_output console serial
 
 menuentry "Wind River Linux 5.0.1, Kernel 3.4.0" {
     set root='$HD,msdos1'
