@@ -196,6 +196,10 @@ wrl_installer() {
 }
 
 python __anonymous() {
+    if "selinux" in d.getVar("DISTRO_FEATURES", True).split():
+        bb.fatal("Unable to build the installer when selinux is enabled.")
+        return False
+
     if bb.data.inherits_class('image', d) and not d.getVar('INSTALLER_TARGET_BUILD', True):
         d.setVar('INSTALLER_TARGET_BUILD', '${WRL_TOP_BUILD_DIR}')
 }
