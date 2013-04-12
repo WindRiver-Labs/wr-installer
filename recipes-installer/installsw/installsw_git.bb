@@ -13,6 +13,7 @@ SECTION = "installer"
 SRC_URI = "\
 	git://git.wrs.com/git/users/mhatle/installsw \
 	file://gen_installsw_packages \
+	file://remove_header.patch \
 	file://yp_install \
 	"
 SRCREV = "b81b4610da02fa990c393cc495475a8f27fcd939"
