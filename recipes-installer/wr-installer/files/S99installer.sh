@@ -322,7 +322,8 @@ else
     mv ${MNT_ROOT}/etc/passwd.new ${MNT_ROOT}/etc/passwd
 fi
 
-if [ -f ${TARGET_KERNEL} ]; then
+#if a kernel is not already present in boot partition
+if [ -f ${TARGET_KERNEL} ] && [ ! -f $(readlink -f ${MNT_BOOT}/${KERNEL}) ]; then
     rm -f ${MNT_BOOT}/${KERNEL}
     cp -f ${TARGET_KERNEL} ${MNT_BOOT}/${KERNEL} ||
     exit_install "copy of kernel failed"
