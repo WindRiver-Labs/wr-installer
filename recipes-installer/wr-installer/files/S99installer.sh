@@ -279,9 +279,11 @@ fi
 
 #check for image based install
 if [ -d "/image" ]; then
+    echo "Starting Image Install"
     image=$(readlink -f /image/*.ext3)
     mount -o loop "$image" ${MNT_IMAGE}
-    cp -a ${MNT_IMAGE}/* ${MNT_ROOT}
+    cp -av ${MNT_IMAGE}/* ${MNT_ROOT}
+    echo "Finished Image Install"
 else
 
     ##
