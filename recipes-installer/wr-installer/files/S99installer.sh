@@ -277,10 +277,6 @@ if [ ${SKIP_FORMAT} = NO ]; then
     exit_install "Failed to mount /boot partition"
 fi
 
-#installer needs writable /tmp and /var/tmp
-mount -t tmpfs -o size=50m tmpfs /tmp
-mount -t tmpfs -o size=50m tmpfs /var/tmp
-
 #check for image based install
 if [ -d "/image" ]; then
     image=$(readlink -f /image/*.ext3)
