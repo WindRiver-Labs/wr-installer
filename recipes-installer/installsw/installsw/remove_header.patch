@@ -1,0 +1,68 @@
+From 72be3a049a0567be3d614613e529fce68df1fafa Mon Sep 17 00:00:00 2001
+From: Konrad Scherer <Konrad.Scherer@windriver.com>
+Date: Fri, 12 Apr 2013 11:30:50 -0700
+Subject: [PATCH] Remove misleading rpm installation progress header
+
+Signed-off-by: Konrad Scherer <Konrad.Scherer@windriver.com>
+---
+ cur_inter.c |   20 +-------------------
+ 1 files changed, 1 insertions(+), 19 deletions(-)
+
+diff --git a/cur_inter.c b/cur_inter.c
+index 5738f0d..f1b1033 100644
+--- a/cur_inter.c
++++ b/cur_inter.c
+@@ -708,12 +708,9 @@ cur_install(pkghp, grphp)
+ 
+ #define	PCT	60
+ #define	PCT_END	pc_scr_off + 15
+-	(void)mvaddstr(I_PCNT, pc_scr_off, "   % complete: ");
+ #ifdef	notdef
+ 	standout();
+ #endif
+-	for (i = 0; i < PCT; ++i)
+-		(void)addch(ACS_BOARD);
+ #ifdef	notdef
+ 	standend();
+ #endif
+@@ -773,7 +770,6 @@ cur_install(pkghp, grphp)
+ 
+ 	if (rval == 0) {
+ 		/* Our accounting isn't exact.  Cheat. */
+-		cur_graph(1);
+ 	} else {
+ 		/*
+ 		 * If an error occurred, leave everything as it is so users
+@@ -824,16 +820,7 @@ cur_exec(pkghp, grphp, pkg)
+ 	int need_scroll;
+ 
+ 	/* Display the installation header. */
+-	standout();
+-	(void)mvprintw(I_TITLE, pc_scr_off, "Installing %s...",
+-	    pkg ? pkg->desc : "all RPMs");
+-	standend();
+-	if (pkg)
+-		++current_count;
+-	(void)printw(" (package %d of %d)", current_count, package_count);
+-	clrtoeol();
+-	if (pc_scr_off)
+-		(void)mvaddch(I_TITLE, PC_SIDE_RIGHT, ACS_VLINE);
++	(void)mvprintw(I_TITLE, pc_scr_off, "Wind River Linux Installer");
+ 
+ 	/*
+ 	 * RPMS: Just add the package to the file that contains
+@@ -946,11 +933,6 @@ cur_exec(pkghp, grphp, pkg)
+ 				t = path;
+ 				if (pkg)
+ 					cur_adjsize(pkg, path);
+-				/*
+-				 * Update the current report;
+-				 * lower bound is one entry.
+-				 */
+-				cur_graph(0);
+ 			} else {
+ 				addch(*p);
+ 				if (++len == MAXLEN)
+-- 
+1.7.1
+
