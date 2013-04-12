@@ -11,7 +11,7 @@ SRC_URI = "file://S99installer.sh \
            file://installer.conf.example \
 "
 
-RDEPENDS_${PN} = "grub parted python-smartpm e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-fsck e2fsprogs-tune2fs e2fsprogs-badblocks module-init-tools"
+RDEPENDS_${PN} = "grub parted python-smartpm e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-fsck e2fsprogs-tune2fs e2fsprogs-badblocks module-init-tools which"
 
 #To enable grub 0.97 uncomment the following. It may need to be put into local.conf
 #PREFERRED_VERSION_grub = "0.97"
