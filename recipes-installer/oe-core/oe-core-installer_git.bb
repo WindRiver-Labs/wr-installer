@@ -34,11 +34,12 @@ SRC_URI += " \
 	file://bb_query \
 	file://gen_rpmfeed_pkgdata \
 	file://image-rootfs.bb \
-        file://depmodwrapper \
+	file://depmodwrapper \
+	file://oe-core-kernel-dir.patch \
 	"
 
 PV = "git${SRCPV}"
-PR = "r2"
+PR = "r3"
 
 S = "${WORKDIR}/git"
 

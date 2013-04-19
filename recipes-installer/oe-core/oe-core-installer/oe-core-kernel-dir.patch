@@ -1,0 +1,12 @@
+diff -urpN a/meta/conf/bitbake.conf b/meta/conf/bitbake.conf
+--- a/meta/conf/bitbake.conf	2013-04-19 16:53:24.537180866 +0800
++++ b/meta/conf/bitbake.conf	2013-04-19 16:52:57.627805513 +0800
+@@ -378,7 +378,7 @@ SDKPATHNATIVE = "${SDKPATH}/sysroots/${S
+ ##################################################################
+ 
+ OLDEST_KERNEL = "2.6.16"
+-STAGING_KERNEL_DIR = "${STAGING_DIR_HOST}/usr/src/kernel"
++STAGING_KERNEL_DIR ?= "${STAGING_DIR_HOST}/usr/src/kernel"
+ 
+ ##################################################################
+ # Specific image creation and rootfs population info.

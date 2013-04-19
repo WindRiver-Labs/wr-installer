@@ -71,6 +71,7 @@ wrl_installer() {
 	fi
 
 	kernel_dir=""
+	kernel_version=""
 
 	if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
 		filename=$(basename "${INSTALLER_TARGET_BUILD}")
@@ -114,6 +115,11 @@ wrl_installer() {
 
 		# Determine kernel dir...
 		kernel_dir="${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/images"
+
+		# Determine kernel version...
+		if [ -e ${STAGING_KERNEL_DIR}/kernel-abiversion ]; then
+			kernel_version=`cat ${STAGING_KERNEL_DIR}/kernel-abiversion`
+		fi
 	else
 		echo "Invalid configuration of INSTALLER_TARGET_BUILD - ${INSTALLER_TARGET_BUILD}."
 		echo "It must either point to a .ext3 image or to the root of another build directory"
@@ -128,7 +134,13 @@ wrl_installer() {
 	systemmap=$(readlink -f $(find ${kernel_dir} -type l -maxdepth 1 -name *System.map* | head -n 1))
 
 	cp ${kernel} ${target_kernel_dir}/bzImage
-	cp ${systemmap} ${target_kernel_dir}/.
+
+	if [ ! -z ${kernel_version} ]; then
+		echo "${kernel_version}" > ${target_kernel_dir}/kernel-abiversion
+		cp ${systemmap} ${target_kernel_dir}/System.map-${kernel_version}
+	else
+		cp ${systemmap} ${target_kernel_dir}/.
+	fi
 
 	if [ -d ${IMAGE_ROOTFS}/opt/installer/feed ]; then
 		# Clear out a common temp file...
