@@ -198,7 +198,8 @@ if [ ${SKIP_FORMAT} = NO ]; then
 
     set `grep MemTotal /proc/meminfo`
     MB_SWAP=$((($2+1023)/1024*2))
-    MB_BOOT=100
+    MB_BOOT=`du -shm /boot | awk '{print $1}'`
+    MB_BOOT=`expr ${MB_BOOT} \* 2`
     MB_ROOT=-1
 
     echo -n "How many MB for the /boot partition"
