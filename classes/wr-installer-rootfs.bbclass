@@ -130,8 +130,8 @@ wrl_installer() {
 	target_kernel_dir="${IMAGE_ROOTFS}/mnt/target-kernel"
 	mkdir -p "${target_kernel_dir}"
 	#Choose newest kernel image in directory
-	kernel=$(readlink -f $(find ${kernel_dir} -type l -maxdepth 1 -name *bzImage* | head -n 1))
-	systemmap=$(readlink -f $(find ${kernel_dir} -type l -maxdepth 1 -name *System.map* | head -n 1))
+	kernel=$(readlink -f $(find ${kernel_dir}/ -maxdepth 1 -type l -name *bzImage* | head -n 1))
+	systemmap=$(readlink -f $(find ${kernel_dir}/ -maxdepth 1 -type l -name *System.map* | head -n 1))
 
 	cp ${kernel} ${target_kernel_dir}/bzImage
 
