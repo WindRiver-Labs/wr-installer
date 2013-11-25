@@ -89,6 +89,8 @@ config_packages()
 # Initialize the file that records all answers to questions
 > $INSTALLER_CONF_FILE_NEW
 
+stty sane
+
 ##
 ## See if /tmp/root/boot exists.  If it does, we can assume that
 ## it is the target disk and has been formatted, but check with
