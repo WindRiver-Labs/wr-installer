@@ -1,0 +1,39 @@
+From ea48d2cf5e703c4c72aa4c15aae72827d3da5d36 Mon Sep 17 00:00:00 2001
+From: Richard Marko <rmarko@redhat.com>
+Date: Mon, 26 Mar 2012 14:37:04 +0200
+Subject: [PATCH 1/2] Add cgroup information filename
+
+Signed-off-by: Richard Marko <rmarko@redhat.com>
+Signed-off-by: Nikola Pajkovsky <npajkovs@redhat.com>
+---
+ src/include/internal_libreport.h |    1 +
+ src/lib/problem_data.c           |    1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/include/internal_libreport.h b/src/include/internal_libreport.h
+index 95b600b..d99d84c 100644
+--- a/src/include/internal_libreport.h
++++ b/src/include/internal_libreport.h
+@@ -662,6 +662,7 @@ bool make_dir_recursive(char *dir, mode_t dir_mode);
+ #define FILENAME_BINARY       "binary"
+ #define FILENAME_CMDLINE      "cmdline"
+ #define FILENAME_COREDUMP     "coredump"
++#define FILENAME_CGROUP       "cgroup"
+ #define FILENAME_BACKTRACE    "backtrace"
+ #define FILENAME_MAPS         "maps"
+ #define FILENAME_SMAPS        "smaps"
+diff --git a/src/lib/problem_data.c b/src/lib/problem_data.c
+index 2a7835a..536f7a1 100644
+--- a/src/lib/problem_data.c
++++ b/src/lib/problem_data.c
+@@ -187,6 +187,7 @@ static const char *const editable_files[] = {
+     FILENAME_OPEN_FDS   , /* user might want to hide sensitive file names */
+     //FILENAME_LIMITS     ,
+     FILENAME_CMDLINE    ,
++    //FILENAME_CGROUP     ,
+     //FILENAME_COREDUMP   ,
+     FILENAME_BACKTRACE  ,
+     FILENAME_MAPS       ,
+-- 
+1.7.9.3
+

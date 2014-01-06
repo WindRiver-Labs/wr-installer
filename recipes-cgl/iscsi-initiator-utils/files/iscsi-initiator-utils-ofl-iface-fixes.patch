@@ -1,0 +1,471 @@
+diff -Naurp open-iscsi-2.0-872-rc4-bnx2i/include/iscsi_if.h open-iscsi-2.0-872-rc4-bnx2i.work/include/iscsi_if.h
+--- open-iscsi-2.0-872-rc4-bnx2i/include/iscsi_if.h	2011-10-10 13:57:38.000000000 -0500
++++ open-iscsi-2.0-872-rc4-bnx2i.work/include/iscsi_if.h	2011-10-11 00:40:49.000000000 -0500
+@@ -320,10 +320,11 @@ enum iscsi_net_param {
+ 	ISCSI_NET_PARAM_VLAN_ID			= 13,
+ 	ISCSI_NET_PARAM_VLAN_PRIORITY		= 14,
+ 	ISCSI_NET_PARAM_VLAN_ENABLED		= 15,
+-	ISCSI_NET_PARAM_IFACE_TYPE		= 16,
+-	ISCSI_NET_PARAM_IFACE_NAME		= 17,
+-	ISCSI_NET_PARAM_MTU			= 18,
+-	ISCSI_NET_PARAM_PORT			= 19,
++	ISCSI_NET_PARAM_VLAN_TAG		= 16,
++	ISCSI_NET_PARAM_IFACE_TYPE		= 17,
++	ISCSI_NET_PARAM_IFACE_NAME		= 18,
++	ISCSI_NET_PARAM_MTU			= 19,
++	ISCSI_NET_PARAM_PORT			= 20,
+ };
+ 
+ enum iscsi_conn_state {
+diff -Naurp open-iscsi-2.0-872-rc4-bnx2i/usr/host.c open-iscsi-2.0-872-rc4-bnx2i.work/usr/host.c
+--- open-iscsi-2.0-872-rc4-bnx2i/usr/host.c	2011-10-10 13:57:38.000000000 -0500
++++ open-iscsi-2.0-872-rc4-bnx2i.work/usr/host.c	2011-10-11 00:41:01.000000000 -0500
+@@ -132,22 +132,67 @@ static int print_host_iface(void *data, 
+ 		printf("%sIPaddress: %s\n", prefix, UNKNOWN_VALUE);
+ 	else if (strchr(iface->ipaddress, '.')) {
+ 		printf("%sIPaddress: %s\n", prefix, iface->ipaddress);
+-		printf("%sGateway: %s\n", prefix, iface->gateway);
+-		printf("%sSubnet: %s\n", prefix, iface->subnet_mask);
+-		printf("%sBootProto: %s\n", prefix, iface->bootproto);
++
++		if (!strlen(iface->gateway))
++			printf("%sGateway: %s\n", prefix, UNKNOWN_VALUE);
++		else
++			printf("%sGateway: %s\n", prefix, iface->gateway);
++		if (!strlen(iface->subnet_mask))
++			printf("%sSubnet: %s\n", prefix, UNKNOWN_VALUE);
++		else
++			printf("%sSubnet: %s\n", prefix, iface->subnet_mask);
++		if (!strlen(iface->bootproto))
++			printf("%sBootProto: %s\n", prefix, UNKNOWN_VALUE);
++		else
++			printf("%sBootProto: %s\n", prefix, iface->bootproto);
+ 	} else {
+ 		printf("%sIPaddress: [%s]\n", prefix, iface->ipaddress);
+-		printf("%sIPaddress Autocfg: %s\n", prefix, iface->ipv6_autocfg);
+-		printf("%sLink Local Address: [%s]\n", prefix,
+-		       iface->ipv6_linklocal);
+-		printf("%sLink Local Autocfg: %s\n", prefix,
+-		       iface->linklocal_autocfg);
+-		printf("%sRouter Address: [%s]\n", prefix, iface->ipv6_router);
++
++		if (!strlen(iface->ipv6_autocfg))
++			printf("%sIPaddress Autocfg: %s\n", prefix,
++			       UNKNOWN_VALUE);
++		else
++			printf("%sIPaddress Autocfg: %s\n", prefix,
++			       iface->ipv6_autocfg);
++		if (!strlen(iface->ipv6_linklocal))
++			printf("%sLink Local Address: %s\n", prefix,
++			       UNKNOWN_VALUE);
++		else
++			printf("%sLink Local Address: [%s]\n", prefix,
++			       iface->ipv6_linklocal);
++		if (!strlen(iface->linklocal_autocfg))
++			printf("%sLink Local Autocfg: %s\n", prefix,
++			       UNKNOWN_VALUE);
++		else
++			printf("%sLink Local Autocfg: %s\n", prefix,
++			       iface->linklocal_autocfg);
++		if (!strlen(iface->ipv6_router))
++			printf("%sRouter Address: %s\n", prefix,
++			      UNKNOWN_VALUE);
++		else
++			printf("%sRouter Address: [%s]\n", prefix,
++			       iface->ipv6_router);
+ 	}
+ 
+-	printf("%sMTU: %u\n", prefix, iface->mtu);
+-	printf("%svlan ID: %u\n", prefix, iface->vlan_id);
+-	printf("%svlan priority: %u\n", prefix, iface->vlan_priority);
++	if (!iface->port)
++		printf("%sPort: %s\n", prefix, UNKNOWN_VALUE);
++	else
++		printf("%sPort: %u\n", prefix, iface->port);
++
++	if (!iface->mtu)
++		printf("%sMTU: %s\n", prefix, UNKNOWN_VALUE);
++	else
++		printf("%sMTU: %u\n", prefix, iface->mtu);
++
++	if (iface->vlan_id == UINT16_MAX)
++		printf("%sVLAN ID: %s\n", prefix, UNKNOWN_VALUE);
++	else
++		printf("%sVLAN ID: %u\n", prefix, iface->vlan_id);
++
++	if (iface->vlan_priority == UINT8_MAX)
++		printf("%sVLAN priority: %s\n", prefix, UNKNOWN_VALUE);
++	else
++		printf("%sVLAN priority: %u\n", prefix, iface->vlan_priority);
+ 	return 0;
+ }
+ 
+diff -Naurp open-iscsi-2.0-872-rc4-bnx2i/usr/iface.c open-iscsi-2.0-872-rc4-bnx2i.work/usr/iface.c
+--- open-iscsi-2.0-872-rc4-bnx2i/usr/iface.c	2011-10-10 13:57:38.000000000 -0500
++++ open-iscsi-2.0-872-rc4-bnx2i.work/usr/iface.c	2011-10-11 00:40:49.000000000 -0500
+@@ -41,6 +41,7 @@
+ #include "fw_context.h"
+ #include "sysdeps.h"
+ #include "iscsi_err.h"
++#include "iscsi_netlink.h"
+ 
+ /*
+  * Default ifaces for use with transports that do not bind to hardware
+@@ -1141,14 +1142,16 @@ static int iface_fill_port(struct iovec 
+ 	int len;
+ 	struct iscsi_iface_param_info *net_param;
+ 	uint16_t port = 3260;
++	struct nlattr *attr;
+ 
+-	len = sizeof(struct iscsi_iface_param_info) + 2;
+-	iov->iov_base = calloc(len, sizeof(char));
+-	if (!(iov->iov_base))
++	len = sizeof(struct iscsi_iface_param_info) + sizeof(port);
++	iov->iov_base = iscsi_nla_alloc(ISCSI_NET_PARAM_PORT, len);
++	if (!iov->iov_base)
+ 		return 1;
++	attr = iov->iov_base;
++	iov->iov_len = NLA_ALIGN(attr->nla_len);
+ 
+-	iov->iov_len = len;
+-	net_param = (struct iscsi_iface_param_info *)(iov->iov_base);
++	net_param = (struct iscsi_iface_param_info *)ISCSI_NLA_DATA(attr);
+ 	net_param->param = ISCSI_NET_PARAM_PORT;
+ 	net_param->iface_type = iface_type;
+ 	net_param->iface_num = iface->iface_num;
+@@ -1166,14 +1169,16 @@ static int iface_fill_mtu(struct iovec *
+ 	int len;
+ 	struct iscsi_iface_param_info *net_param;
+ 	uint16_t mtu = 0;
++	struct nlattr *attr;
+ 
+ 	len = sizeof(struct iscsi_iface_param_info) + 2;
+-	iov->iov_base = calloc(len, sizeof(char));
++	iov->iov_base = iscsi_nla_alloc(ISCSI_NET_PARAM_MTU, len);
+ 	if (!(iov->iov_base))
+ 		return 1;
++	attr = iov->iov_base;
++	iov->iov_len = NLA_ALIGN(attr->nla_len);
+ 
+-	iov->iov_len = len;
+-	net_param = (struct iscsi_iface_param_info *)(iov->iov_base);
++	net_param = (struct iscsi_iface_param_info *)ISCSI_NLA_DATA(attr);
+ 	net_param->param = ISCSI_NET_PARAM_MTU;
+ 	net_param->iface_type = iface_type;
+ 	net_param->iface_num = iface->iface_num;
+@@ -1191,15 +1196,17 @@ static int iface_fill_vlan_id(struct iov
+ 	int len;
+ 	struct iscsi_iface_param_info *net_param;
+ 	uint16_t vlan = 0;
++	struct nlattr *attr;
+ 
+ 	len = sizeof(struct iscsi_iface_param_info) + 2;
+-	iov->iov_base = calloc(len, sizeof(char));
++	iov->iov_base = iscsi_nla_alloc(ISCSI_NET_PARAM_VLAN_TAG, len);
+ 	if (!(iov->iov_base))
+ 		return 1;
+ 
+-	iov->iov_len = len;
+-	net_param = (struct iscsi_iface_param_info *)(iov->iov_base);
+-	net_param->param = ISCSI_NET_PARAM_VLAN_ID;
++	attr = iov->iov_base;
++	iov->iov_len = NLA_ALIGN(attr->nla_len);
++	net_param = (struct iscsi_iface_param_info *)ISCSI_NLA_DATA(attr);
++	net_param->param = ISCSI_NET_PARAM_VLAN_TAG;
+ 	net_param->iface_type = iface_type;
+ 	net_param->iface_num = iface->iface_num;
+ 	net_param->param_type = ISCSI_NET_PARAM;
+@@ -1222,14 +1229,16 @@ static int iface_fill_vlan_state(struct 
+ {
+ 	int len;
+ 	struct iscsi_iface_param_info *net_param;
++	struct nlattr *attr;
+ 
+ 	len = sizeof(struct iscsi_iface_param_info) + 1;
+-	iov->iov_base = calloc(len, sizeof(char));
++	iov->iov_base = iscsi_nla_alloc(ISCSI_NET_PARAM_VLAN_ENABLED, len);
+ 	if (!(iov->iov_base))
+ 		return 1;
+ 
+-	iov->iov_len = len;
+-	net_param = (struct iscsi_iface_param_info *)(iov->iov_base);
++	attr = iov->iov_base;
++	iov->iov_len = NLA_ALIGN(attr->nla_len);
++	net_param = (struct iscsi_iface_param_info *)ISCSI_NLA_DATA(attr);
+ 	net_param->param = ISCSI_NET_PARAM_VLAN_ENABLED;
+ 	net_param->iface_type = iface_type;
+ 	net_param->iface_num = iface->iface_num;
+@@ -1248,14 +1257,16 @@ static int iface_fill_net_state(struct i
+ {
+ 	int len;
+ 	struct iscsi_iface_param_info *net_param;
++	struct nlattr *attr;
+ 
+ 	len = sizeof(struct iscsi_iface_param_info) + 1;
+-	iov->iov_base = calloc(len, sizeof(char));
++	iov->iov_base = iscsi_nla_alloc(ISCSI_NET_PARAM_IFACE_ENABLE, len);
+ 	if (!(iov->iov_base))
+ 		return 1;
+ 
+-	iov->iov_len = len;
+-	net_param = (struct iscsi_iface_param_info *)(iov->iov_base);
++	attr = iov->iov_base;
++	iov->iov_len = NLA_ALIGN(attr->nla_len);
++	net_param = (struct iscsi_iface_param_info *)ISCSI_NLA_DATA(attr);
+ 	net_param->param = ISCSI_NET_PARAM_IFACE_ENABLE;
+ 	net_param->iface_type = iface_type;
+ 	net_param->iface_num = iface->iface_num;
+@@ -1273,14 +1284,16 @@ static int iface_fill_net_bootproto(stru
+ {
+ 	int len;
+ 	struct iscsi_iface_param_info *net_param;
++	struct nlattr *attr;
+ 
+ 	len = sizeof(struct iscsi_iface_param_info) + 1;
+-	iov->iov_base = calloc(len, sizeof(char));
++	iov->iov_base = iscsi_nla_alloc(ISCSI_NET_PARAM_IPV4_BOOTPROTO, len);
+ 	if (!(iov->iov_base))
+ 		return 1;
+ 
+-	iov->iov_len = len;
+-	net_param = (struct iscsi_iface_param_info *)(iov->iov_base);
++	attr = iov->iov_base;
++	iov->iov_len = NLA_ALIGN(attr->nla_len);
++	net_param = (struct iscsi_iface_param_info *)ISCSI_NLA_DATA(attr);
+ 	net_param->param = ISCSI_NET_PARAM_IPV4_BOOTPROTO;
+ 	net_param->iface_type = ISCSI_IFACE_TYPE_IPV4;
+ 	net_param->iface_num = iface->iface_num;
+@@ -1298,14 +1311,16 @@ static int iface_fill_net_autocfg(struct
+ {
+ 	int len;
+ 	struct iscsi_iface_param_info *net_param;
++	struct nlattr *attr;
+ 
+ 	len = sizeof(struct iscsi_iface_param_info) + 1;
+-	iov->iov_base = calloc(len, sizeof(char));
++	iov->iov_base = iscsi_nla_alloc(ISCSI_NET_PARAM_IPV6_ADDR_AUTOCFG, len);
+ 	if (!(iov->iov_base))
+ 		return 1;
+ 
+-	iov->iov_len = len;
+-	net_param = (struct iscsi_iface_param_info *)(iov->iov_base);
++	attr = iov->iov_base;
++	iov->iov_len = NLA_ALIGN(attr->nla_len);
++	net_param = (struct iscsi_iface_param_info *)ISCSI_NLA_DATA(attr);
+ 	net_param->param = ISCSI_NET_PARAM_IPV6_ADDR_AUTOCFG;
+ 	net_param->iface_type = ISCSI_IFACE_TYPE_IPV6;
+ 	net_param->param_type = ISCSI_NET_PARAM;
+@@ -1327,14 +1342,17 @@ static int iface_fill_linklocal_autocfg(
+ {
+ 	int len;
+ 	struct iscsi_iface_param_info *net_param;
++	struct nlattr *attr;
+ 
+ 	len = sizeof(struct iscsi_iface_param_info) + 1;
+-	iov->iov_base = calloc(len, sizeof(char));
++	iov->iov_base = iscsi_nla_alloc(ISCSI_NET_PARAM_IPV6_LINKLOCAL_AUTOCFG,
++					len);
+ 	if (!(iov->iov_base))
+ 		return 1;
+ 
+-	iov->iov_len = len;
+-	net_param = (struct iscsi_iface_param_info *)(iov->iov_base);
++	attr = iov->iov_base;
++	iov->iov_len = NLA_ALIGN(attr->nla_len);
++	net_param = (struct iscsi_iface_param_info *)ISCSI_NLA_DATA(attr);
+ 	net_param->param = ISCSI_NET_PARAM_IPV6_LINKLOCAL_AUTOCFG;
+ 	net_param->iface_type = ISCSI_IFACE_TYPE_IPV6;
+ 	net_param->param_type = ISCSI_NET_PARAM;
+@@ -1353,14 +1371,17 @@ static int iface_fill_router_autocfg(str
+ {
+ 	int len;
+ 	struct iscsi_iface_param_info *net_param;
++	struct nlattr *attr;
+ 
+ 	len = sizeof(struct iscsi_iface_param_info) + 1;
+-	iov->iov_base = calloc(len, sizeof(char));
++	iov->iov_base = iscsi_nla_alloc(ISCSI_NET_PARAM_IPV6_ROUTER_AUTOCFG,
++					len);
+ 	if (!(iov->iov_base))
+ 		return 1;
+ 
+-	iov->iov_len = len;
+-	net_param = (struct iscsi_iface_param_info *)(iov->iov_base);
++	attr = iov->iov_base;
++	iov->iov_len = NLA_ALIGN(attr->nla_len);
++	net_param = (struct iscsi_iface_param_info *)ISCSI_NLA_DATA(attr);
+ 	net_param->param = ISCSI_NET_PARAM_IPV6_ROUTER_AUTOCFG;
+ 	net_param->iface_type = ISCSI_IFACE_TYPE_IPV6;
+ 	net_param->param_type = ISCSI_NET_PARAM;
+@@ -1381,14 +1402,16 @@ static int iface_fill_net_ipv4_addr(stru
+ 	int rc = 1;
+ 	int len;
+ 	struct iscsi_iface_param_info *net_param;
++	struct nlattr *attr;
+ 
+ 	len = sizeof(struct iscsi_iface_param_info) + 4;
+-	iov->iov_base = calloc(len, sizeof(char));
++	iov->iov_base = iscsi_nla_alloc(param, len);
+ 	if (!(iov->iov_base))
+ 		return 1;
+ 
+-	iov->iov_len = len;
+-	net_param = (struct iscsi_iface_param_info *)(iov->iov_base);
++	attr = iov->iov_base;
++	iov->iov_len = NLA_ALIGN(attr->nla_len);
++	net_param = (struct iscsi_iface_param_info *)ISCSI_NLA_DATA(attr);
+ 	net_param->param = param;
+ 	net_param->iface_type = ISCSI_IFACE_TYPE_IPV4;
+ 	net_param->iface_num = iface->iface_num;
+@@ -1435,14 +1458,16 @@ static int iface_fill_net_ipv6_addr(stru
+ 	int rc;
+ 	int len;
+ 	struct iscsi_iface_param_info *net_param;
++	struct nlattr *attr;
+ 
+ 	len = sizeof(struct iscsi_iface_param_info) + 16;
+-	iov->iov_base = calloc(len, sizeof(char));
++	iov->iov_base = iscsi_nla_alloc(param, len);
+ 	if (!(iov->iov_base))
+ 		return 1;
+ 
+-	iov->iov_len = len;
+-	net_param = (struct iscsi_iface_param_info *)(iov->iov_base);
++	attr = iov->iov_base;
++	iov->iov_len = NLA_ALIGN(attr->nla_len);
++	net_param = (struct iscsi_iface_param_info *)ISCSI_NLA_DATA(attr);
+ 	net_param->param = param;
+ 	net_param->iface_type = ISCSI_IFACE_TYPE_IPV6;
+ 	net_param->iface_num = iface->iface_num;
+diff -Naurp open-iscsi-2.0-872-rc4-bnx2i/usr/initiator.c open-iscsi-2.0-872-rc4-bnx2i.work/usr/initiator.c
+--- open-iscsi-2.0-872-rc4-bnx2i/usr/initiator.c	2011-10-10 13:57:38.000000000 -0500
++++ open-iscsi-2.0-872-rc4-bnx2i.work/usr/initiator.c	2011-10-11 00:39:57.000000000 -0500
+@@ -1682,9 +1682,10 @@ static void session_conn_process_login(v
+ 			    session->nrec.conn[conn->id].address,
+ 			    session->nrec.conn[conn->id].port,
+ 			    session->nrec.iface.name);
+-	} else
++	} else {
+ 		session->notify_qtask = NULL;
+-
++		mgmt_ipc_write_rsp(c->qtask, ISCSI_SUCCESS);
++	}
+ 
+ 	/*
+ 	 * reset ERL=0 reopen counter
+diff -Naurp open-iscsi-2.0-872-rc4-bnx2i/usr/iscsi_netlink.h open-iscsi-2.0-872-rc4-bnx2i.work/usr/iscsi_netlink.h
+--- open-iscsi-2.0-872-rc4-bnx2i/usr/iscsi_netlink.h	1969-12-31 18:00:00.000000000 -0600
++++ open-iscsi-2.0-872-rc4-bnx2i.work/usr/iscsi_netlink.h	2011-10-11 00:40:34.000000000 -0500
+@@ -0,0 +1,33 @@
++/*
++ * iSCSI Netlink attr helpers
++ *
++ * Copyright (C) 2011 Red Hat, Inc. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published
++ * by the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * See the file COPYING included with this distribution for more details.
++ */
++
++#ifndef ISCSI_NLA_H
++#define ISCSI_NLA_H
++
++#include <linux/netlink.h>
++
++struct iovec;
++
++#define ISCSI_NLA_HDRLEN	((int) NLA_ALIGN(sizeof(struct nlattr)))
++#define ISCSI_NLA_DATA(nla)	((void *)((char*)(nla) + ISCSI_NLA_HDRLEN))
++#define ISCSI_NLA_LEN(len) 	((len) + NLA_ALIGN(ISCSI_NLA_HDRLEN))
++#define ISCSI_NLA_TOTAL_LEN(len) (NLA_ALIGN(ISCSI_NLA_LEN(len)))
++
++extern struct nlattr *iscsi_nla_alloc(uint16_t type, uint16_t len);
++
++#endif
+diff -Naurp open-iscsi-2.0-872-rc4-bnx2i/usr/iscsi_sysfs.c open-iscsi-2.0-872-rc4-bnx2i.work/usr/iscsi_sysfs.c
+--- open-iscsi-2.0-872-rc4-bnx2i/usr/iscsi_sysfs.c	2011-10-10 13:57:38.000000000 -0500
++++ open-iscsi-2.0-872-rc4-bnx2i.work/usr/iscsi_sysfs.c	2011-10-11 00:41:01.000000000 -0500
+@@ -561,28 +561,28 @@ static int iscsi_sysfs_read_iface(struct
+ 			      "link_local_addr", iface->ipv6_linklocal,
+ 			      sizeof(iface->ipv6_linklocal));
+ 
+-		if (sysfs_get_str(iface_kern_id, ISCSI_IFACE_SUBSYS,
+-				  "linklocal_autocfg",
+-				   iface->linklocal_autocfg,
+-				   sizeof(iface->linklocal_autocfg))) {
+-			/* misspelled in some test kernels */
+-			sysfs_get_str(iface_kern_id, ISCSI_IFACE_SUBSYS,
+-				      "link_local_autocfg",
+-				      iface->linklocal_autocfg,
+-				      sizeof(iface->linklocal_autocfg));
+-		}
++		sysfs_get_str(iface_kern_id, ISCSI_IFACE_SUBSYS,
++			      "link_local_autocfg", iface->linklocal_autocfg,
++			      sizeof(iface->linklocal_autocfg));
+ 
+ 		sysfs_get_str(iface_kern_id, ISCSI_IFACE_SUBSYS, "router_addr",
+ 			      iface->ipv6_router,
+ 			      sizeof(iface->ipv6_router));
+ 	}
+ 
+-	sysfs_get_uint16(iface_kern_id, ISCSI_IFACE_SUBSYS, "mtu",
+-			 &iface->mtu);
+-	sysfs_get_uint16(iface_kern_id, ISCSI_IFACE_SUBSYS, "vlan",
+-			 &iface->vlan_id);
+-	sysfs_get_uint8(iface_kern_id, ISCSI_IFACE_SUBSYS, "vlan_priority",
+-			 &iface->vlan_priority);
++	if (sysfs_get_uint16(iface_kern_id, ISCSI_IFACE_SUBSYS, "port",
++			     &iface->port))
++		iface->port = 0;
++	if (sysfs_get_uint16(iface_kern_id, ISCSI_IFACE_SUBSYS, "mtu",
++			     &iface->mtu))
++		iface->mtu = 0;
++	if (sysfs_get_uint16(iface_kern_id, ISCSI_IFACE_SUBSYS, "vlan_id",
++			     &iface->vlan_id))
++		iface->vlan_id = UINT16_MAX;
++
++	if (sysfs_get_uint8(iface_kern_id, ISCSI_IFACE_SUBSYS, "vlan_priority",
++			    &iface->vlan_priority))
++		iface->vlan_priority = UINT8_MAX;
+ 
+ 	if (sscanf(iface_kern_id, "ipv%d-iface-%u-%u", &iface_type,
+ 		   &tmp_host_no, &iface_num) == 3)
+diff -Naurp open-iscsi-2.0-872-rc4-bnx2i/usr/netlink.c open-iscsi-2.0-872-rc4-bnx2i.work/usr/netlink.c
+--- open-iscsi-2.0-872-rc4-bnx2i/usr/netlink.c	2011-10-10 13:57:38.000000000 -0500
++++ open-iscsi-2.0-872-rc4-bnx2i.work/usr/netlink.c	2011-10-11 00:40:34.000000000 -0500
+@@ -38,6 +38,7 @@
+ #include "initiator.h"
+ #include "iscsi_sysfs.h"
+ #include "transport.h"
++#include "iscsi_netlink.h"
+ 
+ static int ctrl_fd;
+ static struct sockaddr_nl src_addr, dest_addr;
+@@ -63,6 +64,19 @@ static int ctldev_handle(void);
+ 
+ #define NLM_SETPARAM_DEFAULT_MAX (NI_MAXHOST + 1 + sizeof(struct iscsi_uevent))
+ 
++struct nlattr *iscsi_nla_alloc(uint16_t type, uint16_t len)
++{
++	struct nlattr *attr;
++
++	attr = calloc(1, ISCSI_NLA_TOTAL_LEN(len));
++	if (!attr)
++		return NULL; 
++
++	attr->nla_len = ISCSI_NLA_LEN(len);
++	attr->nla_type = type;
++	return attr;
++}
++
+ static int
+ kread(char *data, int count)
+ {

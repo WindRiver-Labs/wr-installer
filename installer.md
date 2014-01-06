@@ -48,7 +48,7 @@ Create the installer image and point to top level of build:
 
     cd dir2
     ../wrlinux-x/wrlinux/configure --enable-board=qemux86-64 \
-    --enable-kernel=standard --enable-rootfs=glibc-core \
+    --enable-kernel=standard --enable-rootfs=wr-installer \
     --enable-target-installer=yes \
     --with-installer-target-build=<dir1>
     make all
@@ -72,7 +72,7 @@ Create the qemu disk:
 Start qemu with installer image:
 
     make start-target \
-    TOPTS="-cd export/qemux86-64-glibc-core-standard-dist.iso \
+    TOPTS="-m 1024 -cd export/qemux86-64-glibc-core-standard-dist.iso \
     -no-kernel -disk hd0.vdisk -gc"
 
 ## Grub 0.97

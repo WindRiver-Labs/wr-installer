@@ -1,0 +1,32 @@
+network.py: Use correct arguments to nmicli
+
+The nmicli provided in WR Linux does not work with:
+   nmicli -m multiline dev list <NAME>
+
+Instead it expects and interface preceded by the "iface" keyword.
+This also means collecting the actual interfance name instead of the
+logical default name assigned in the network manager.
+
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+
+---
+ pyanaconda/network.py |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/pyanaconda/network.py
++++ b/pyanaconda/network.py
+@@ -803,11 +803,11 @@ class Network:
+         f = open("/etc/network/interfaces", "w")
+         f.write("auto lo\niface lo inet loopback\n\n")
+ 
+-        con = iutil.execWithCapture("/usr/bin/nmcli", ["-m", "multiline", "con", "list"])
+-        connames = [line for line in con.split('\n') if line.startswith('NAME')]
++        con = iutil.execWithCapture("/usr/bin/nmcli", ["-m", "multiline", "con", "status"])
++        connames = [line for line in con.split('\n') if line.startswith('DEVICES')]
+         names = [line.split(':')[1].strip() for line in connames]
+         for name in names:
+-            data = iutil.execWithCapture("/usr/bin/nmcli", ["-m", "multiline", "dev", "list", name])
++            data = iutil.execWithCapture("/usr/bin/nmcli", ["-m", "multiline", "dev", "list", "iface", name])
+             device = data.split()[1]
+             entry = "auto {0}\niface {0} inet dhcp\n\n".format(device)
+             ifile = "/etc/NetworkManager/system-connections/"+name

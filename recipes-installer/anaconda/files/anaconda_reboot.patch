@@ -1,0 +1,21 @@
+Index: b/anaconda
+===================================================================
+--- a/anaconda
++++ b/anaconda
+@@ -790,12 +790,12 @@ if __name__ == "__main__":
+                 drive.eject()
+ 
+         if anaconda.ksdata.reboot.action == KS_SHUTDOWN:
+-            os.system("systemctl --force --no-wall poweroff")
++            os.system("poweroff -f")
+         elif anaconda.ksdata.reboot.action == KS_WAIT:
+-            os.system("systemctl --force --no-wall halt")
++            os.system("halt -f")
+         else: # reboot action is KS_REBOOT or None
+-            os.system("systemctl --force --no-wall reboot")
++            os.system("reboot -f")
+     elif not flags.imageInstall:
+-        os.system("systemctl --force --no-wall reboot")
++        os.system("reboot -f")
+ 
+ # vim:tw=78:ts=4:et:sw=4

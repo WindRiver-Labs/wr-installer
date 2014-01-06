@@ -1,0 +1,20 @@
+--- a/pyanaconda/packages.py	2011-11-02 21:10:46.000000000 -0400
++++ b/pyanaconda/packages.py	2012-12-12 14:43:58.000000000 -0500
+@@ -246,7 +246,7 @@ def rpmKernelVersionList(rootPath = "/")
+ 
+     def get_version(header):
+         for f in header['filenames']:
+-            if f.startswith('/boot/vmlinuz-'):
++            if f.startswith('/boot/bzImage-'):
+                 return f[14:]
+             elif f.startswith('/boot/efi/EFI/redhat/vmlinuz-'):
+                 return f[29:]
+@@ -264,7 +264,7 @@ def rpmKernelVersionList(rootPath = "/")
+     iutil.resetRpmDb(rootPath)
+     ts = rpm.TransactionSet(rootPath)
+ 
+-    mi = ts.dbMatch('provides', 'kernel')
++    mi = ts.dbMatch('provides', 'kernel-image')
+     for h in mi:
+         v = get_version(h)
+         tag = get_tag(h)

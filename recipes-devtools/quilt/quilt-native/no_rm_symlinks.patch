@@ -1,0 +1,47 @@
+Merge no_rm_symlinks.patch from openembedded
+
+openembedded.git commit 190f46585ff733088ddf3bd23e60855c92cab116
+Author: Khem Raj <raj.khem@gmail.com>
+---
+ quilt.quiltrc             |    5 +++++
+ quilt/scripts/patchfns.in |    5 ++++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+Index: quilt-0.51/quilt.quiltrc
+===================================================================
+--- quilt-0.51.orig/quilt.quiltrc
++++ quilt-0.51/quilt.quiltrc
+@@ -14,7 +14,7 @@ QUILT_PATCH_OPTS="--unified"
+ # Options to pass to commands (QUILT_${COMMAND}_ARGS)
+ QUILT_PUSH_ARGS="--color=auto"
+ QUILT_DIFF_ARGS="--no-timestamps --color=auto"
+-QUILT_REFRESH_ARGS="--no-timestamps --backup"
++QUILT_REFRESH_ARGS="--no-timestamps"
+ QUILT_SERIES_ARGS="--color=auto"
+ QUILT_PATCHES_ARGS="--color=auto"
+ 
+@@ -35,3 +35,8 @@ QUILT_PATCHES_PREFIX=yes
+ # Use a specific editor for quilt (defaults to the value of $EDITOR before
+ # sourcing this configuration file, or vi if $EDITOR wasn't set).
+ #EDITOR=nedit
++
++# If patch files are actually symlinks, this option set to yes will allow
++# the symlink to be preserved (resulting in the file the link is pointing to
++# to be refreshed).
++QUILT_NO_RM_SYMLINKS=yes
+Index: quilt-0.51/quilt/scripts/patchfns.in
+===================================================================
+--- quilt-0.51.orig/quilt/scripts/patchfns.in
++++ quilt-0.51/quilt/scripts/patchfns.in
+@@ -810,7 +810,10 @@ cat_to_new_file()
+ {
+ 	local filename="$1"
+ 
+-	[ -e "$filename" ] && rm -f "$filename"
++	if [ -L "$filename" -a "$QUILT_NO_RM_SYMLINKS" != "yes" ]
++	then
++		rm -f "$filename"
++	fi
+ 
+ 	case "$filename" in
+ 	*.gz)

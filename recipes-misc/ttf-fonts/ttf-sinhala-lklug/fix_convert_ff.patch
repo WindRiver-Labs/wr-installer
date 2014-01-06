@@ -1,0 +1,10 @@
+Index: ttf-sinhala-lklug-0.5.3/convert.ff
+===================================================================
+--- ttf-sinhala-lklug-0.5.3.orig/convert.ff
++++ ttf-sinhala-lklug-0.5.3/convert.ff
+@@ -1,4 +1,4 @@
+-#!/usr/bin/fontforge
++#!/usr/bin/env fontforge
+ #
+ # Convert fonts from FontForge's native format to TrueType format
+ 

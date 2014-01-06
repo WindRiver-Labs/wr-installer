@@ -1,0 +1,13 @@
+Index: b/pyanaconda/storage/__init__.py
+===================================================================
+--- a/pyanaconda/storage/__init__.py
++++ b/pyanaconda/storage/__init__.py
+@@ -350,7 +350,7 @@ class Storage(object):
+         self.doAutoPart = False
+         self.clearPartChoice = None
+         self.encryptedAutoPart = False
+-        self.lvmAutoPart = True
++        self.lvmAutoPart = False
+         self.encryptionPassphrase = None
+         self.escrowCertificates = {}
+         self.autoPartEscrowCert = None

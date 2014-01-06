@@ -1,0 +1,91 @@
+---
+ coreconf/Linux.mk         |   15 +++++++++++----
+ coreconf/rules.mk         |    2 +-
+ nss/cmd/shlibsign/sign.sh |    6 ++++--
+ nss/lib/freebl/Makefile   |    6 ++++++
+ 4 files changed, 22 insertions(+), 7 deletions(-)
+
+Index: nss-3.13.6/mozilla/security/coreconf/Linux.mk
+===================================================================
+--- nss-3.13.6.orig/mozilla/security/coreconf/Linux.mk
++++ nss-3.13.6/mozilla/security/coreconf/Linux.mk
+@@ -46,11 +46,21 @@
+ 	IMPL_STRATEGY = _PTH
+ endif
+ 
++ifndef CC
+ CC			= gcc
++endif
++
++ifdef CXX
++CCC                    = $(CXX)
++else
+ CCC			= g++
++endif
++
++ifndef RANLIB
+ RANLIB			= ranlib
++endif
+ 
+-DEFAULT_COMPILER = gcc
++DEFAULT_COMPILER = $(CC)
+ 
+ ifeq ($(OS_TEST),ppc64)
+ 	CPU_ARCH	= ppc
+@@ -180,9 +190,6 @@
+ endif
+ endif
+ 
+-USE_SYSTEM_ZLIB = 1
+-ZLIB_LIBS = -lz
+-
+ # The -rpath '$$ORIGIN' linker option instructs this library to search for its
+ # dependencies in the same directory where it resides.
+ ifeq ($(BUILD_SUN_PKG), 1)
+Index: nss-3.13.6/mozilla/security/nss/cmd/shlibsign/sign.sh
+===================================================================
+--- nss-3.13.6.orig/mozilla/security/nss/cmd/shlibsign/sign.sh
++++ nss-3.13.6/mozilla/security/nss/cmd/shlibsign/sign.sh
+@@ -22,19 +22,11 @@
+     "${2}"/shlibsign -v -i "${5}"
+     ;;
+ *)
+-    LIBPATH=`(cd "${1}"/lib; pwd)`:`(cd "${4}"; pwd)`:$LIBPATH
+-    export LIBPATH
+-    SHLIB_PATH=${1}/lib:${4}:$SHLIB_PATH
+-    export SHLIB_PATH
+-    LD_LIBRARY_PATH=${1}/lib:${4}:$LD_LIBRARY_PATH
+-    export LD_LIBRARY_PATH
+-    DYLD_LIBRARY_PATH=${1}/lib:${4}:$DYLD_LIBRARY_PATH
+-    export DYLD_LIBRARY_PATH
+-    LIBRARY_PATH=${1}/lib:${4}:$LIBRARY_PATH
+-    export LIBRARY_PATH
+-    ADDON_PATH=${1}/lib:${4}:$ADDON_PATH
+-    export ADDON_PATH
+-    echo "${2}"/shlibsign -v -i "${5}"
+-    "${2}"/shlibsign -v -i "${5}"
++    # creating blanks for now, this should be fixed by running signlibs.sh
++    # on the target
++    DIRNAME=`dirname ${5}`
++    BASENAME=`basename ${5} .so`
++    echo touch $DIRNAME/$BASENAME.chk
++    touch $DIRNAME/$BASENAME.chk
+     ;;
+ esac
+Index: nss-3.13.6/mozilla/security/nss/lib/freebl/Makefile
+===================================================================
+--- nss-3.13.6.orig/mozilla/security/nss/lib/freebl/Makefile
++++ nss-3.13.6/mozilla/security/nss/lib/freebl/Makefile
+@@ -70,6 +70,12 @@
+ 	DEFINES += -DNSS_USE_64
+ endif
+ 
++ifeq ($(OS_TEST),mips)
++ifndef USE_64
++	DEFINES += -DNS_PTR_LE_32
++endif
++endif
++
+ ifdef USE_ABI32_FPU
+ 	DEFINES += -DNSS_USE_ABI32_FPU
+ endif

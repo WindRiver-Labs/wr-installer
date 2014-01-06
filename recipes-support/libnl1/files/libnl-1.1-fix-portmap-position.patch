@@ -1,0 +1,25 @@
+commit ef8ba32e0ca7ac7bbbaf87f6fd7b197af18aed25
+Author: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Date:   Mon Apr 27 14:46:08 2009 -0700
+
+    release_local_port: properly compute the bitmap position
+    
+    Current calculation is always off, not reflecting the right position
+    in the bitmap, which results in failures due to conflicts (detected at
+    the kernel level) when trying to open a new handle.
+    
+    Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+
+diff --git a/lib/socket.c b/lib/socket.c
+index d1874f0..8083bbb 100644
+--- a/lib/socket.c
++++ b/lib/socket.c
+@@ -79,7 +79,7 @@ static void release_local_port(uint32_t port)
+ 		return;
+ 	
+ 	nr = port >> 22;
+-	used_ports_map[nr / 32] &= ~((nr % 32) + 1);
++	used_ports_map[nr / 32] &= ~(1 << (nr % 32));
+ }
+ 
+ /**

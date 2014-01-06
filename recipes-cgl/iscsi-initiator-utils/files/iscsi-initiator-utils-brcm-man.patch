@@ -1,0 +1,19 @@
+diff -aurp open-iscsi-2.0-872-rc4-bnx2i/iscsi_uio/docs/iscsiuio.8 open-iscsi-2.0-872-rc4-bnx2i.work/iscsiuio/docs/iscsiuio.8
+--- open-iscsi-2.0-872-rc4-bnx2i/iscsiuio/docs/iscsiuio.8	2011-01-31 19:38:19.000000000 -0600
++++ open-iscsi-2.0-872-rc4-bnx2i.work/iscsiuio/docs/iscsiuio.8	2011-01-31 19:38:44.000000000 -0600
+@@ -67,6 +67,15 @@ into the background.
+ .TP
+ .BI -v
+ This is to print the version.
++.PP
++.TP
++.BI -p <pidfile>
++Use pidfile (default  /var/run/iscsiuio.pid )
++.PP
++.TP
++.BI -h
++Display this help and exit.
++
+ 
+ .\"
+ .\" AUTHOR part

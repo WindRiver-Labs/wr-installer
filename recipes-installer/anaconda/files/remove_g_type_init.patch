@@ -1,0 +1,84 @@
+Index: anaconda-16.25/loader/net.c
+===================================================================
+--- anaconda-16.25.orig/loader/net.c
++++ anaconda-16.25/loader/net.c
+@@ -1970,8 +1970,6 @@ int wait_for_iface_activation(char *ifna
+                   ifname, 0);
+     }
+ 
+-    g_type_init();
+-
+     client = nm_client_new();
+     if (!client) {
+         logMessage(ERROR, "%s (%d): could not connect to system bus",
+@@ -2045,8 +2043,6 @@ int wait_for_iface_disconnection(char *i
+ 
+     logMessage(INFO, "disconnecting device %s", ifname);
+ 
+-    g_type_init();
+-
+     client = nm_client_new();
+     if (!client) {
+         logMessage(ERROR, "%s (%d): could not connect to system bus",
+Index: anaconda-16.25/loader/nfsinstall.c
+===================================================================
+--- anaconda-16.25.orig/loader/nfsinstall.c
++++ anaconda-16.25/loader/nfsinstall.c
+@@ -334,8 +334,6 @@ int getFileFromNfs(char * url, char * de
+      * the dhcp/bootp information
+      */
+     if (!url) {
+-        g_type_init();
+-
+         client = nm_client_new();
+         if (!client) {
+             logMessage(CRITICAL, "%s (%d): failure creating NM proxy",
+Index: anaconda-16.25/pyanaconda/isys/iface.c
+===================================================================
+--- anaconda-16.25.orig/pyanaconda/isys/iface.c
++++ anaconda-16.25/pyanaconda/isys/iface.c
+@@ -178,8 +178,6 @@ char *iface_ip2str(char *ifname, int fam
+         return NULL;
+     }
+ 
+-    g_type_init();
+-
+     client = nm_client_new();
+     if (!client) {
+         return NULL;
+@@ -420,8 +418,6 @@ gboolean is_nm_connected(void) {
+     NMState state;
+     NMClient *client = NULL;
+ 
+-    g_type_init();
+-
+     client = nm_client_new();
+     if (!client)
+         return FALSE;
+@@ -440,8 +436,6 @@ gboolean is_nm_running(void) {
+     gboolean running;
+     NMClient *client = NULL;
+ 
+-    g_type_init();
+-
+     client = nm_client_new();
+     if (!client)
+         return FALSE;
+@@ -456,8 +450,6 @@ gboolean is_iface_activated(char * ifnam
+     NMClient *client = NULL;
+     const GPtrArray *devices;
+ 
+-    g_type_init();
+-
+     client = nm_client_new();
+     if (!client)
+         return FALSE;
+@@ -592,8 +584,6 @@ int is_wireless_device(char *ifname){
+     const char *iface;
+     int i;
+ 
+-    g_type_init();
+-
+     client = nm_client_new();
+     if (!client) {
+         return 0;

@@ -1,0 +1,47 @@
+diff -aurp open-iscsi-2.0-872-rc4-bnx2i/utils/open-isns/db-policy.c open-iscsi-2.0-872-rc4-bnx2i.build/utils/open-isns/db-policy.c
+--- open-iscsi-2.0-872-rc4-bnx2i/utils/open-isns/db-policy.c	2011-09-01 20:28:53.000000000 -0500
++++ open-iscsi-2.0-872-rc4-bnx2i.build/utils/open-isns/db-policy.c	2011-09-01 20:31:39.000000000 -0500
+@@ -7,8 +7,10 @@
+ #include <sys/stat.h>
+ #include <string.h>
+ #include <unistd.h>
++#ifdef WITH_SECURITY
+ #include <openssl/pem.h>
+ #include <openssl/err.h>
++#endif
+ #include "isns.h"
+ #include "security.h"
+ #include "objects.h"
+diff -aurp open-iscsi-2.0-872-rc4-bnx2i/utils/open-isns/security.h open-iscsi-2.0-872-rc4-bnx2i.build/utils/open-isns/security.h
+--- open-iscsi-2.0-872-rc4-bnx2i/utils/open-isns/security.h	2011-09-01 20:28:53.000000000 -0500
++++ open-iscsi-2.0-872-rc4-bnx2i.build/utils/open-isns/security.h	2011-09-01 20:31:39.000000000 -0500
+@@ -6,11 +6,16 @@
+ 
+ #ifndef ISNS_SECURITY_H
+ #define ISNS_SECURITY_H
+-
+-#include <openssl/evp.h>
+ #include "buffer.h"
+ #include "util.h"
+ 
++
++#ifdef WITH_SECURITY
++#include <openssl/evp.h>
++#else
++#define EVP_PKEY void
++#endif
++
+ /*
+  * Security context
+  */
+diff -aurp open-iscsi-2.0-872-rc4-bnx2i/utils/open-isns/util.h open-iscsi-2.0-872-rc4-bnx2i.build/utils/open-isns/util.h
+--- open-iscsi-2.0-872-rc4-bnx2i/utils/open-isns/util.h	2011-09-01 20:28:53.000000000 -0500
++++ open-iscsi-2.0-872-rc4-bnx2i.build/utils/open-isns/util.h	2011-09-01 20:31:39.000000000 -0500
+@@ -9,6 +9,7 @@
+ 
+ #include <sys/types.h>
+ #include <stdint.h>
++#include <stdlib.h>
+ #include <stdio.h>
+ #include <stddef.h>
+ #include <string.h>	// for strdup

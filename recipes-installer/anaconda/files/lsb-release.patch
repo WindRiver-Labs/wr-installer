@@ -1,0 +1,35 @@
+Index: b/pyanaconda/storage/__init__.py
+===================================================================
+--- a/pyanaconda/storage/__init__.py
++++ b/pyanaconda/storage/__init__.py
+@@ -1481,22 +1481,20 @@ def getReleaseString(mountpoint):
+         relArch = h['arch']
+         break
+ 
+-    filename = "%s/etc/redhat-release" % mountpoint
++    filename = "%s/etc/lsb-release" % mountpoint
+     if os.access(filename, os.R_OK):
+         with open(filename) as f:
+             try:
+-                relstr = f.readline().strip()
++                for line in f:
++                    if '=' in line:
++                        (name,value) = line.strip().split('=')
++                        if name == "DISTRIB_ID":
++                            relName = value
++                        if name == "DISTRIB_RELEASE":
++                            relVer = value
+             except (IOError, AttributeError):
+                 relstr = ""
+ 
+-        # get the release name and version
+-        # assumes that form is something
+-        # like "Red Hat Linux release 6.2 (Zoot)"
+-        (product, sep, version) = relstr.partition(" release ")
+-        if sep:
+-            relName = product
+-            relVer = version.split()[0]
+-
+     return (relArch, relName, relVer)
+ 
+ def findExistingRootDevices(anaconda, upgradeany=False):

@@ -1,0 +1,16 @@
+---
+ pyanaconda/bootloader.py |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -801,6 +801,9 @@ class BootLoader(object):
+         if flags.cmdline.get("fips") == "1":
+             self.boot_args.add("boot=%s" % self.stage2_device.fstabSpec)
+ 
++        # XXX No dracut in WR Linux means stop the argument pollution
++        return
++
+         #
+         # dracut
+         #

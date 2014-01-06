@@ -1,0 +1,14 @@
+--- mozilla/security/nss/cmd/platlibs.mk	2009-06-18 01:01:48.000000000 +0200
++++ mozilla/security/nss/cmd/platlibs.mk.oden	2009-08-31 17:16:16.000000000 +0200
+@@ -59,9 +59,9 @@
+ endif
+ else
+ ifeq ($(USE_64), 1)
+-EXTRA_SHARED_LIBS += -Wl,-rpath,'$$ORIGIN/../lib64:$$ORIGIN/../lib'
++#EXTRA_SHARED_LIBS += -Wl,-rpath,'$$ORIGIN/../lib64:$$ORIGIN/../lib'
+ else
+-EXTRA_SHARED_LIBS += -Wl,-rpath,'$$ORIGIN/../lib'
++#EXTRA_SHARED_LIBS += -Wl,-rpath,'$$ORIGIN/../lib'
+ endif
+ endif
+ endif

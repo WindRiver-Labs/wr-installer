@@ -1,0 +1,61 @@
+Index: b/Makefile
+===================================================================
+--- a/Makefile
++++ b/Makefile
+@@ -3,11 +3,12 @@ PYTHONINCLUDE = $(STAGING_INCDIR)/$(PYTH
+ 
+ VERSION=1.0.7
+ 
+-ifneq (,$(filter sparc64 ppc64 x86_64 s390x,$(shell uname -m)))
+-LIBDIR = lib64
+-else
+-LIBDIR = lib
+-endif
++prefix ?= /usr
++exec_prefix ?= $(prefix)
++bindir ?= $(prefix)/bin
++datadir ?= $(prefix)/share
++mandir ?= $(datadir)/man
++libdir ?= $(prefix)/lib
+ 
+ CFLAGS = $(RPM_OPT_FLAGS) -Wall -Werror -D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1 -D_LARGEFILE64_SOURCE=1 -fPIC -I$(PYTHONINCLUDE)
+ 
+@@ -38,24 +39,24 @@ pyisomd5sum.so: $(PYOBJS)
+ install: all install-bin install-python install-devel
+ 
+ install-bin:
+-	install -d -m 0755 $(DESTDIR)/usr/bin
+-	install -d -m 0755 $(DESTDIR)/usr/share/man/man1
+-	install -m 0755 implantisomd5 $(DESTDIR)/usr/bin
+-	install -m 0755 checkisomd5 $(DESTDIR)/usr/bin
+-	install -m 0644 implantisomd5.1 $(DESTDIR)/usr/share/man/man1
+-	install -m 0644 checkisomd5.1 $(DESTDIR)/usr/share/man/man1
++	install -d -m 0755 $(DESTDIR)$(bindir)
++	install -d -m 0755 $(DESTDIR)$(mandir)/man1
++	install -m 0755 implantisomd5 $(DESTDIR)$(bindir)
++	install -m 0755 checkisomd5 $(DESTDIR)$(bindir)
++	install -m 0644 implantisomd5.1 $(DESTDIR)$(mandir)/man1
++	install -m 0644 checkisomd5.1 $(DESTDIR)$(mandir)/man1
+ 
+ install-python:
+-	install -d -m 0755 $(DESTDIR)/usr/$(LIBDIR)/$(PYTHON)/site-packages
+-	install -m 0755 pyisomd5sum.so $(DESTDIR)/usr/$(LIBDIR)/$(PYTHON)/site-packages
++	install -d -m 0755 $(DESTDIR)$(libdir)/$(PYTHON)/site-packages
++	install -m 0755 pyisomd5sum.so $(DESTDIR)$(libdir)/$(PYTHON)/site-packages
+ 
+ install-devel:
+-	install -d -m 0755 $(DESTDIR)/usr/include
+-	install -d -m 0755 $(DESTDIR)/usr/$(LIBDIR)
+-	install -m 0644 libimplantisomd5.h $(DESTDIR)/usr/include/
+-	install -m 0644 libcheckisomd5.h $(DESTDIR)/usr/include/
+-	install -m 0644 libimplantisomd5.a $(DESTDIR)/usr/$(LIBDIR)
+-	install -m 0644 libcheckisomd5.a $(DESTDIR)/usr/$(LIBDIR)
++	install -d -m 0755 $(DESTDIR)$(includedir)
++	install -d -m 0755 $(DESTDIR)$(libdir)
++	install -m 0644 libimplantisomd5.h $(DESTDIR)$(includedir)
++	install -m 0644 libcheckisomd5.h $(DESTDIR)$(includedir)
++	install -m 0644 libimplantisomd5.a $(DESTDIR)$(libdir)
++	install -m 0644 libcheckisomd5.a $(DESTDIR)$(libdir)
+ 
+ clean:
+ 	rm -f *.o *.so *.pyc *.a .depend *~

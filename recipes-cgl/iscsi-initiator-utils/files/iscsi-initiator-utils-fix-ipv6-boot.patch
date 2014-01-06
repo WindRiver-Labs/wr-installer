@@ -1,0 +1,33 @@
+diff -aurp open-iscsi-2.0-872-rc4-bnx2i/include/fw_context.h open-iscsi-2.0-872-rc4-bnx2i.work/include/fw_context.h
+--- open-iscsi-2.0-872-rc4-bnx2i/include/fw_context.h	2011-10-10 13:57:38.000000000 -0500
++++ open-iscsi-2.0-872-rc4-bnx2i.work/include/fw_context.h	2011-10-12 01:03:30.000000000 -0500
+@@ -33,7 +34,7 @@ struct boot_context {
+ 	/* target settings */
+ 	int target_port;
+ 	char targetname[TARGET_NAME_MAXLEN + 1];
+-	char target_ipaddr[32];
++	char target_ipaddr[256];
+ 	char chap_name[AUTH_STR_MAX_LEN];
+ 	char chap_password[AUTH_STR_MAX_LEN];
+ 	char chap_name_in[AUTH_STR_MAX_LEN];
+@@ -44,14 +45,14 @@ struct boot_context {
+ 	char initiatorname[TARGET_NAME_MAXLEN + 1];
+ 
+ 	/* network settings */
+-	char dhcp[18];
++	char dhcp[256];
+ 	char iface[IF_NAMESIZE];
+ 	char mac[18];
+-	char ipaddr[18];
+-	char gateway[18];
+-	char primary_dns[18];
+-	char secondary_dns[18];
+-	char mask[18];
++	char ipaddr[256];
++	char gateway[256];
++	char primary_dns[256];
++	char secondary_dns[256];
++	char mask[256];
+ 	char lun[17];
+ 	char vlan[15];
+ 

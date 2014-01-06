@@ -1,0 +1,256 @@
+Index: fontforge-20120731-b/configure.in
+===================================================================
+--- fontforge-20120731-b.orig/configure.in
++++ fontforge-20120731-b/configure.in
+@@ -35,6 +35,7 @@ else
+  dnl AC_CHECK_HEADER("X11/extensions/XI.h", : ,AC_DEFINE(_NO_XINPUT),)
+  dnl /usr/share/doc/XFree86-doc-4.2.0/Xi/lib.PS
+ 
++ AH_TEMPLATE([_NO_XKB],[Define if libxkui is not available.])
+  AC_CHECK_LIB(Xi, XOpenDevice, X_11LIB="-lXi -lX11" ,AC_DEFINE(_NO_XINPUT), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 ) 
+  AC_CHECK_LIB(xkbui, XkbQueryExtension, X_11LIB="$X_11LIB -lxkbui" ,AC_DEFINE(_NO_XKB), $X_LIBS $X_PRE_LIBS $X_EXTRA_LIBS -lX11 -lm ) 
+ fi
+@@ -63,6 +64,13 @@ gww_extraincludes=""
+ oldLDFLAGS="$LDFLAGS"
+ LDFLAGS="$LDFLAGS -L/usr/local/lib"
+ 
++AH_TEMPLATE([_CursorsMustBe16x16],[Define if cursors must be 16 pixels by 16 pixels.])
++AH_TEMPLATE([_Keyboard],[Define to set the keyboard type.])
++AH_TEMPLATE([__Mac],[Define to indicate Mac operating system.])
++AH_TEMPLATE([_BrokenBitmapImages],[Define to indicate broken bitmap images.])
++AH_TEMPLATE([_ModKeysAutoRepeat],[Define to enable mod keys auto repeat.])
++AH_TEMPLATE([__CygWin],[Define to indicate Cygwin environment.])
++AH_TEMPLATE([_NO_XINPUT],[Define no Xinput.])
+ case "$host" in
+ *-apple-darwin*)
+  gww_ismac="yes"
+@@ -173,6 +181,7 @@ AC_ARG_ENABLE(arch-ppc,
+ 
+  ])
+ 
++AH_TEMPLATE([FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT],[Define whether to use capslock rather than alt/meta])
+ AC_ARG_WITH(capslock-for-alt,
+  AS_HELP_STRING([--with-capslock-for-alt],[Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows]),
+  [
+@@ -184,6 +193,7 @@ AC_ARG_WITH(capslock-for-alt,
+      gww_define_caps_for_alt="0"
+    fi
+  ])
++AH_TEMPLATE([FONTFORGE_CONFIG_SHOW_RAW_POINTS],[Define a raw mode to the points window of the debugger.])
+ if test "$gww_define_caps_for_alt" \!= "dontknow" ; then
+   AC_DEFINE_UNQUOTED(FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT,$gww_define_caps_for_alt)
+ fi
+@@ -306,9 +316,11 @@ AC_ARG_ENABLE(libff,
+    ;;
+   esac
+ ])
++AH_TEMPLATE([_NO_PYTHON],[Define to indicate whether Python is present.])
+ if test "$python" = "no" ; then
+   AC_DEFINE(_NO_PYTHON)
+ fi
++AH_TEMPLATE([PYTHON_LIB_NAME],[Define the Python library name.])
+ AC_DEFINE_UNQUOTED(PYTHON_LIB_NAME,"python$PyVersion")
+ 
+ AC_ARG_ENABLE(pyextension,
+@@ -336,6 +348,7 @@ else
+   O_EXTENSION=lo
+ fi
+ 
++AH_TEMPLATE([_NO_FFSCRIPT],[Define to not include a legacy fontforge scripting interpreter]),
+ ffscript="yes"
+ AC_ARG_WITH(native-script,
+  AS_HELP_STRING([--without-native-script],[Don't include a legacy fontforge scripting interpreter]),
+@@ -348,6 +361,7 @@ if test "$ffscript" = "no" ; then
+   AC_DEFINE(_NO_FFSCRIPT)
+ fi
+ 
++AH_TEMPLATE([_NO_TZSET],[Define if tzset is not present.])
+ AC_CHECK_FUNC(tzset,:,AC_DEFINE(_NO_TZSET))
+ 
+ dnl Is there a better way to add a directory to the include path?
+@@ -360,6 +374,7 @@ if sh -c "freetype-config --prefix" >/de
+  CFLAGS="$CFLAGS $ft_flags"
+ fi
+ 
++AH_TEMPLATE([_NO_FREETYPE],[Define is FreeType is not available.])
+ if test "$FreeType2_IncRoot" = "" >/dev/null 2>&1 ; then
+  AC_CHECK_FILE(/usr/include/freetype2,[CFLAGS="$CFLAGS -I/usr/include/freetype2/"
+      FreeType2_IncRoot="/usr"
+@@ -372,6 +387,7 @@ if test "$FreeType2_IncRoot" = "" >/dev/
+  ],AC_DEFINE(_NO_FREETYPE))])])
+ fi
+ 
++AH_TEMPLATE([_NO_LIBXML],[Define if libxml is not available])
+ AC_CHECK_FILE(/usr/include/libxml2/libxml,[CFLAGS="$CFLAGS -I/usr/include/libxml2/"],[
+  AC_CHECK_FILE(/usr/local/include/libxml2/libxml,[CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/libxml2/"],
+   AC_DEFINE(_NO_LIBXML))])
+@@ -380,6 +396,7 @@ dnl Some old versions of lib(un)gif don'
+ dnl Function argument in the wrong place. So check the header files.
+ dnl check for both libgif and libungif, I think they use the same args.
+ 
++AH_TEMPLATE([_NO_LIBUNGIF],[Define if libungif is not available])
+ AC_CHECK_LIB(gif, DGifOpenFileName, [
+ echo -n checking for ExtensionBlock.Function in gif_lib.h...
+ AC_TRY_COMPILE([#include <gif_lib.h>], [ ExtensionBlock foo; foo.Function=3; ], echo " " yes , [echo " " no
+@@ -397,6 +414,15 @@ dnl some people have installed libraries
+ dnl bloody useless thing to do, but check for both (don't need to check for
+ dnl zlib.h because we never use it directly, only used inside libpng)
+ 
++AH_TEMPLATE([_NO_LIBPNG],[Define if libpng is not available])
++AH_TEMPLATE([_LIBPNG12],[Define if libpng12 is available])
++AH_TEMPLATE([_LIBPNG13],[Define if libpng13 is available])
++AH_TEMPLATE([_LIBPNG14],[Define if libpng14 is available])
++AH_TEMPLATE([_LIBPNG15],[Define if libpng15 is available])
++AH_TEMPLATE([_LIBPNG16],[Define if libpng16 is available])
++AH_TEMPLATE([_NO_LIBJPEG],[Define if libjpeg is not available])
++AH_TEMPLATE([_NO_LIBTIFF],[Define if libtiff is not available])
++AH_TEMPLATE([_NO_LIBSPIRO],[Define if libspiro is not available])
+ AC_CHECK_LIB(z, deflateEnd, : ,AC_DEFINE(_NO_LIBPNG), -lm) 
+ AC_CHECK_LIB(png16, png_create_read_struct, AC_DEFINE(_LIBPNG16),[
+ AC_CHECK_LIB(png15, png_create_read_struct, AC_DEFINE(_LIBPNG15),[
+@@ -457,6 +483,7 @@ if test "$gww_checkcairo" = "yes" ; then
+   CFLAGS=$gww_CFLAGS
+   LDFLAGS=$gww_LDFLAGS
+ fi
++AH_TEMPLATE([_NO_LIBCAIRO],[Define if libcairo is available.])
+ if test "$gww_hascairo" = "yes" ; then
+   gww_hascairo="no"
+   for gww_prefix in /usr /usr/local /sw /opt/local /usr/X11R6/
+@@ -531,6 +558,7 @@ if test "$gww_haspango" = "yes" -a "$gww
+     CFLAGS="$CFLAGS `pkg-config --cflags pangocairo`"
+   fi
+ fi
++AH_TEMPLATE([_NO_LIBPANGO],[Define if libpango is available.])
+ if test "$gww_haspango" = "no" ; then
+   gww_haspangocairo="no"
+   AC_DEFINE(_NO_LIBPANGO)
+@@ -599,6 +627,7 @@ AC_CHECK_LIB(pthread, pthread_create,
+     gww_hasbytecode="no"
+   ])
+ 
++AH_TEMPLATE([FREETYPE_HAS_DEBUGGER],[Define whether Freetype has a debugger.])
+ if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
+  gww_hasbytecode="no"
+  AC_ARG_WITH(freetype-src,
+@@ -653,8 +682,10 @@ fi
+ 
+ dnl older libc's don't have snprintf
+ 
++AH_TEMPLATE([_NO_SNPRINTF],[Define if snprintf is not available.])
+ AC_CHECK_FUNC(snprintf, : , AC_DEFINE(_NO_SNPRINTF))
+ 
++AH_TEMPLATE([_HAS_LONGLONG],[Define whether long long type is available.])
+ AC_C_LONG_DOUBLE
+ echo -n checking for long long ...
+ AC_TRY_COMPILE(,[long long foo=0x400000000000;],[ AC_DEFINE(_HAS_LONGLONG)
+@@ -666,12 +697,14 @@ dnl and not all libintls have that. So c
+ dnl sometimes it lives in libc so we can't dlopen it
+ 
+ gww_has_gettext="yes"
++AH_TEMPLATE([_STATIC_LIBINTL],[Define whether a a static library for libintl is present.])
+ AC_LINK_IFELSE([AC_LANG_CALL([],[bind_textdomain_codeset])], AC_DEFINE(_STATIC_LIBINTL) , [
+   AC_CHECK_LIB(intl, bind_textdomain_codeset,LIBS="$LIBS -lintl" ,gww_has_gettext="no" )])
+ if test $gww_has_gettext = yes >/dev/null ; then
+  AC_CHECK_HEADERS([libintl.h], : , gww_has_gettext="no")
+ fi
+ 
++AH_TEMPLATE([NODYNAMIC],[Define to disable trying to dlopen libraries.])
+ gww_regular_link="no"
+ AC_ARG_WITH(regular-link,
+  AS_HELP_STRING([--with-regular-link],[Don't try to dlopen libraries]),
+@@ -690,6 +723,7 @@ AC_ARG_WITH(regular-link,
+ dnl If we can't/don't want to use dynamic libraries then we must link with
+ dnl the static libraries we've found
+ 
++AH_TEMPLATE([_NO_LIBUNINAMESLIST],[Define whether libuninameslist is present.])
+ AC_SUBST(STATIC_LIBS)
+ STATIC_LIBS=
+ if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
+@@ -743,6 +777,22 @@ if test "$gww_nodynamic" = "yes" -o "$gw
+  fi
+ fi
+ 
++AH_TEMPLATE([_STATIC_LIBUNGIF],[Define whether a static library for libungif is present.])
++AH_TEMPLATE([_STATIC_LIBPNG],[Define whether a static library for libpng is present.])
++AH_TEMPLATE([_STATIC_LIBPNG12],[Define whether a static library for libpng12 is present.])
++AH_TEMPLATE([_STATIC_LIBPNG13],[Define whether a static library for libpng13 is present.])
++AH_TEMPLATE([_STATIC_LIBPNG14],[Define whether a static library for libpng14 is present.])
++AH_TEMPLATE([_STATIC_LIBPNG15],[Define whether a static library for libpng15 is present.])
++AH_TEMPLATE([_STATIC_LIBPNG16],[Define whether a static library for libpng16 is present.])
++AH_TEMPLATE([_STATIC_LIBTIFF],[Define whether a static library for libtiff is present.])
++AH_TEMPLATE([_STATIC_LIBJPEG],[Define whether a static library for libjpeg is present.])
++AH_TEMPLATE([_STATIC_LIBSPIRO],[Define whether a static library for libspiro is present.])
++AH_TEMPLATE([_STATIC_LIBXML2],[Define whether a static library for libxml2 is present.])
++AH_TEMPLATE([_STATIC_LIBFREETYPE],[Define whether a static library for libfreetype is present.])
++AH_TEMPLATE([_STATIC_LIBUNINAMESLIST],[Define whether a static library for libuninameslist is present.])
++AH_TEMPLATE([_STATIC_LIBCAIRO],[Define whether a static library for libcairo is present.])
++AH_TEMPLATE([_STATIC_LIBPANGO],[Define whether a static library for libpango is present.])
++AH_TEMPLATE([_STATIC_LIBFONTCONFIG],[Define whether a static libfontconfig is present.])
+ if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
+  if test "$gww_needsstatic" = "yes"; then
+   STATIC_LIBS="$STATIC_LIBS -static"
+@@ -839,6 +889,7 @@ case "$host" in
+ esac
+ fi
+ 
++AH_TEMPLATE([FONTFORGE_CONFIG_TYPE3],[Define whether we build with support for type3/SVG fonts containing multilayers drawing with strokes, filles, images, etc.])
+ AC_ARG_ENABLE(type3,
+  AS_HELP_STRING([--enable-type3],[Control whether we build with support for type3/SVG fonts containing multilayered drawing with strokes, fills, images, etc.]),
+  [
+@@ -854,6 +905,7 @@ AC_ARG_ENABLE(multilayer,
+     fi
+  ], : )
+ 
++AH_TEMPLATE([FONTFORGE_CONFIG_DEVICETABLES],[Define whether we build with support for device tables which allow fine control of kerning (etc.) at small point sizes])
+ AC_ARG_ENABLE(devicetables,
+  AS_HELP_STRING([--enable-devicetables], [Control whether we build with support for device tables which allow fine control of kerning (etc.) at small point sizes]),
+  [
+@@ -862,6 +914,7 @@ AC_ARG_ENABLE(devicetables,
+     fi
+  ], AC_DEFINE(FONTFORGE_CONFIG_DEVICETABLES) )
+ 
++AH_TEMPLATE([FONTFORGE_CONFIG_USE_DOUBLE], [Define whether fontforge uses doubles internally (normally it uses floats)])
+ AC_ARG_ENABLE(double,
+  AS_HELP_STRING([--enable-double], [Control whether fontforge uses doubles internally (normally it uses floats)]),
+  [
+@@ -869,6 +922,7 @@ AC_ARG_ENABLE(double,
+ 	AC_DEFINE(FONTFORGE_CONFIG_USE_DOUBLE)
+     fi
+  ], : )
++AH_TEMPLATE([FONTFORGE_CONFIG_USE_LONGDOUBLE],[Define whether fontforge uses long doubles internally (normally it uses floats)])
+ AC_ARG_ENABLE(longdouble,
+  AS_HELP_STRING([--enable-longdouble], [Control whether fontforge uses long doubles internally (normally it uses floats)]),
+  [
+@@ -876,6 +930,7 @@ AC_ARG_ENABLE(longdouble,
+ 	AC_DEFINE(FONTFORGE_CONFIG_USE_LONGDOUBLE)
+     fi
+  ], : )
++AH_TEMPLATE([FONTFORGE_CONFIG_PASTEAFTER],[Define whether fontforge has a paste after command (Useful for making words?)])
+ AC_ARG_ENABLE(pasteafter,
+  AS_HELP_STRING([--enable-pasteafter], [Control whether fontforge has a paste after command (Useful for making words?)]),
+  [
+@@ -883,6 +938,7 @@ AC_ARG_ENABLE(pasteafter,
+ 	AC_DEFINE(FONTFORGE_CONFIG_PASTEAFTER)
+     fi
+  ], : )
++AH_TEMPLATE([FONTFORGE_CONFIG_GB12345],[Define whether fontforge understands the gb12345 encoding])
+ AC_ARG_ENABLE(gb12345,
+  AS_HELP_STRING([--enable-gb12345], [Control whether fontforge understands the gb12345 encoding]),
+  [
+@@ -890,6 +946,7 @@ AC_ARG_ENABLE(gb12345,
+ 	AC_DEFINE(FONTFORGE_CONFIG_GB12345)
+     fi
+  ], : )
++AH_TEMPLATE([FONTFORGE_CONFIG_TILEPATH],[Define whether fontforge has a tile path command (a variant of expand stroke)])
+ AC_ARG_ENABLE(tilepath,
+  AS_HELP_STRING([--enable-tilepath], [Control whether fontforge has a tile path command (a variant of expand stroke)]),
+  [
+@@ -1119,4 +1176,8 @@ elif test "$gww_haspango" = "no"; then
+  fi
+ fi
+ 
++AH_TEMPLATE([SHAREDIR],[Define to the directory used for installing data files])
++AH_TEMPLATE([LIBDIR],[Define to the directory used for installing library files])
++AH_TEMPLATE([PREFIX],[Define to the prefix used for constructing default values of the default directory variables])
++
+ dnl EOF

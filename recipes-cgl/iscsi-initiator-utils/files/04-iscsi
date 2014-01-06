@@ -1,0 +1,17 @@
+#!/bin/sh
+
+export LC_ALL=C
+
+if [ "$2" = "down" ]; then
+	if ! /sbin/ip route ls | grep -q ^default &&
+	   [ -f /var/lock/subsys/iscsi ]; then
+		/etc/rc.d/init.d/iscsi stop
+	fi
+fi
+
+if [ "$2" = "up" ]; then
+	if /sbin/ip -o route show dev "$1" | grep -q '^default' && 
+	   /sbin/chkconfig iscsi; then
+		/etc/rc.d/init.d/iscsi start
+	fi
+fi

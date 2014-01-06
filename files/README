@@ -1,3 +1,0 @@
-The files in this directory are used to configure the oe-core installer
-fragments on the target.  See the classes/wr-installer-rootfs.bbclass
-for more information.

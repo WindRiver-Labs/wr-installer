@@ -1,0 +1,89 @@
+---
+ mozilla/security/coreconf/UNIX.mk         |    8 ++++----
+ mozilla/security/coreconf/arch.mk         |    2 +-
+ mozilla/security/coreconf/cpdist.pl       |    2 +-
+ mozilla/security/coreconf/import.pl       |    2 +-
+ mozilla/security/coreconf/jniregen.pl     |    2 +-
+ mozilla/security/coreconf/outofdate.pl    |    2 +-
+ mozilla/security/coreconf/release.pl      |    2 +-
+ mozilla/security/nss/cmd/smimetools/smime |    2 +-
+ mozilla/security/nss/lib/freebl/Makefile  |    6 ++++++
+ 9 files changed, 17 insertions(+), 11 deletions(-)
+
+--- a/mozilla/security/coreconf/UNIX.mk
++++ b/mozilla/security/coreconf/UNIX.mk
+@@ -52,11 +52,11 @@
+ endif
+ 
+ ifdef BUILD_TREE
+-NSINSTALL_DIR  = $(BUILD_TREE)/nss
+-NSINSTALL      = $(BUILD_TREE)/nss/nsinstall
++NSINSTALL_DIR  ?= $(BUILD_TREE)/nss
++NSINSTALL      ?= $(BUILD_TREE)/nss/nsinstall
+ else
+-NSINSTALL_DIR  = $(CORE_DEPTH)/coreconf/nsinstall
+-NSINSTALL      = $(NSINSTALL_DIR)/$(OBJDIR_NAME)/nsinstall
++NSINSTALL_DIR  ?= $(CORE_DEPTH)/coreconf/nsinstall
++NSINSTALL      ?= $(NSINSTALL_DIR)/$(OBJDIR_NAME)/nsinstall
+ endif
+ 
+ MKDEPEND_DIR    = $(CORE_DEPTH)/coreconf/mkdepend
+--- a/mozilla/security/coreconf/arch.mk
++++ b/mozilla/security/coreconf/arch.mk
+@@ -70,7 +70,7 @@
+ ifeq ($(OS_TEST),i86pc)
+     OS_RELEASE := $(shell uname -r)_$(OS_TEST)
+ else
+-    OS_RELEASE := $(shell uname -r)
++    OS_RELEASE ?= $(shell uname -r)
+ endif
+ 
+ #
+--- a/mozilla/security/coreconf/cpdist.pl
++++ b/mozilla/security/coreconf/cpdist.pl
+@@ -1,4 +1,4 @@
+-#! /usr/local/bin/perl
++#! /usr/bin/perl
+ #
+ # ***** BEGIN LICENSE BLOCK *****
+ # Version: MPL 1.1/GPL 2.0/LGPL 2.1
+--- a/mozilla/security/coreconf/import.pl
++++ b/mozilla/security/coreconf/import.pl
+@@ -1,4 +1,4 @@
+-#! /usr/local/bin/perl
++#! /usr/bin/perl
+ #
+ # ***** BEGIN LICENSE BLOCK *****
+ # Version: MPL 1.1/GPL 2.0/LGPL 2.1
+--- a/mozilla/security/coreconf/jniregen.pl
++++ b/mozilla/security/coreconf/jniregen.pl
+@@ -1,4 +1,4 @@
+-#!/usr/local/bin/perl
++#!/usr/bin/perl
+ #
+ # ***** BEGIN LICENSE BLOCK *****
+ # Version: MPL 1.1/GPL 2.0/LGPL 2.1
+--- a/mozilla/security/coreconf/outofdate.pl
++++ b/mozilla/security/coreconf/outofdate.pl
+@@ -1,4 +1,4 @@
+-#!/usr/local/bin/perl
++#!/usr/bin/perl
+ #
+ # ***** BEGIN LICENSE BLOCK *****
+ # Version: MPL 1.1/GPL 2.0/LGPL 2.1
+--- a/mozilla/security/coreconf/release.pl
++++ b/mozilla/security/coreconf/release.pl
+@@ -1,4 +1,4 @@
+-#! /usr/local/bin/perl
++#! /usr/bin/perl
+ #
+ # ***** BEGIN LICENSE BLOCK *****
+ # Version: MPL 1.1/GPL 2.0/LGPL 2.1
+--- a/mozilla/security/nss/cmd/smimetools/smime
++++ b/mozilla/security/nss/cmd/smimetools/smime
+@@ -1,4 +1,4 @@
+-#!/usr/local/bin/perl
++#!/usr/bin/perl
+ 
+ # ***** BEGIN LICENSE BLOCK *****
+ # Version: MPL 1.1/GPL 2.0/LGPL 2.1

@@ -1,0 +1,113 @@
+From add5f6eed5cae2f0618707ed9c642f692426d8d7 Mon Sep 17 00:00:00 2001
+From: Nikola Pajkovsky <npajkovs@redhat.com>
+Date: Mon, 14 May 2012 13:53:51 +0200
+Subject: [PATCH 2/3] bugzilla: query bz version and for 4.2 use 'id' element
+ for getting bug number, for others use 'bug_id'
+
+Signed-off-by: Nikola Pajkovsky <npajkovs@redhat.com>
+---
+ src/plugins/reporter-bugzilla.c |    8 ++++++--
+ src/plugins/rhbz.c              |   28 ++++++++++++++++++++++++++--
+ src/plugins/rhbz.h              |    3 ++-
+ 3 files changed, 34 insertions(+), 5 deletions(-)
+
+diff --git a/src/plugins/reporter-bugzilla.c b/src/plugins/reporter-bugzilla.c
+index 6584f0f..3b6d168 100644
+--- a/src/plugins/reporter-bugzilla.c
++++ b/src/plugins/reporter-bugzilla.c
+@@ -168,8 +168,10 @@ int main(int argc, char **argv)
+         int all_bugs_size = rhbz_array_size(all_bugs);
+         if (all_bugs_size > 0)
+         {
+-            int bug_id = rhbz_bug_id(all_bugs);
++            char *rhbz_ver = rhbz_version(client);
++            int bug_id = rhbz_bug_id(all_bugs, rhbz_ver);
+             printf("%i", bug_id);
++            free(rhbz_ver);
+         }
+ 
+         exit(EXIT_SUCCESS);
+@@ -357,9 +359,11 @@ int main(int argc, char **argv)
+         }
+         else
+         {
+-            int bug_id = rhbz_bug_id(all_bugs);
++            char *rhbz_ver = rhbz_version(client);
++            int bug_id = rhbz_bug_id(all_bugs, rhbz_ver);
+             xmlrpc_DECREF(all_bugs);
+             bz = rhbz_bug_info(client, bug_id);
++            free(rhbz_ver);
+         }
+     }
+     else
+diff --git a/src/plugins/rhbz.c b/src/plugins/rhbz.c
+index 24bec16..df2838f 100644
+--- a/src/plugins/rhbz.c
++++ b/src/plugins/rhbz.c
+@@ -243,8 +243,26 @@ int rhbz_array_size(xmlrpc_value *xml)
+     return size;
+ }
+ 
++
++char *rhbz_version(struct abrt_xmlrpc *ax)
++{
++    func_entry();
++
++    xmlrpc_value *result;
++    result = abrt_xmlrpc_call(ax, "Bugzilla.version", "()");
++
++    char *version = NULL;
++    if (result)
++    {
++        version = rhbz_bug_read_item("version", result, RHBZ_READ_STR);
++        xmlrpc_DECREF(result);
++    }
++
++    return version;
++}
++
+ /* die or return bug id; each bug must have bug id otherwise xml is corrupted */
+-int rhbz_bug_id(xmlrpc_value* xml)
++int rhbz_bug_id(xmlrpc_value* xml, const char *ver)
+ {
+     func_entry();
+ 
+@@ -259,7 +277,13 @@ int rhbz_bug_id(xmlrpc_value* xml)
+     if (env.fault_occurred)
+         abrt_xmlrpc_die(&env);
+ 
+-    bug = rhbz_get_member("id", item);
++    char *id;
++    if (!prefixcmp(ver, "4.2"))
++        id = "id";
++    else
++        id = "bug_id";
++
++    bug = rhbz_get_member(id, item);
+     xmlrpc_DECREF(item);
+     if (!bug)
+         abrt_xmlrpc_die(&env);
+diff --git a/src/plugins/rhbz.h b/src/plugins/rhbz.h
+index c9023e9..85bcca1 100644
+--- a/src/plugins/rhbz.h
++++ b/src/plugins/rhbz.h
+@@ -97,7 +97,7 @@ xmlrpc_value *rhbz_get_member(const char *member, xmlrpc_value *xml);
+ 
+ int rhbz_array_size(xmlrpc_value *xml);
+ 
+-int rhbz_bug_id(xmlrpc_value *xml);
++int rhbz_bug_id(xmlrpc_value *xml, const char *ver);
+ 
+ int rhbz_new_bug(struct abrt_xmlrpc *ax, problem_data_t *problem_data,
+                  const char *release);
+@@ -120,6 +120,7 @@ struct bug_info *rhbz_bug_info(struct abrt_xmlrpc *ax, int bug_id);
+ 
+ struct bug_info *rhbz_find_origin_bug_closed_duplicate(struct abrt_xmlrpc *ax,
+                                                        struct bug_info *bi);
++char *rhbz_version(struct abrt_xmlrpc *ax);
+ 
+ #ifdef __cplusplus
+ }
+-- 
+1.7.10.1
+

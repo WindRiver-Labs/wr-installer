@@ -1,0 +1,10 @@
+--- a/pyanaconda/yuminstall.py
++++ b/pyanaconda/yuminstall.py
+@@ -1211,6 +1211,7 @@
+ logfile=/tmp/yum.log
+ metadata_expire=0
+ obsoletes=True
++multilib_policy=best
+ pluginpath=/usr/lib/yum-plugins,/tmp/updates/yum-plugins
+ pluginconfpath=/etc/yum/pluginconf.d,/tmp/updates/pluginconf.d
+ plugins=1

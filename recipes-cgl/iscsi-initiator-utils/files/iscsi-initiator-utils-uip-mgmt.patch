@@ -1,0 +1,594 @@
+Index: open-iscsi-2.0-873/include/iscsi_err.h
+===================================================================
+--- open-iscsi-2.0-873.orig/include/iscsi_err.h
++++ open-iscsi-2.0-873/include/iscsi_err.h
+@@ -62,6 +62,8 @@ enum {
+ 	ISCSI_ERR_OP_NOT_SUPP		= 27,
+ 	/* device or resource in use */
+ 	ISCSI_ERR_BUSY			= 28,
++	/* Operation failed, but retrying layer may succeed */
++	ISCSI_ERR_AGAIN			= 29,
+ 
+ 	/* Always last. Indicates end of error code space */
+ 	ISCSI_MAX_ERR_VAL,
+Index: open-iscsi-2.0-873/usr/initiator.c
+===================================================================
+--- open-iscsi-2.0-873.orig/usr/initiator.c
++++ open-iscsi-2.0-873/usr/initiator.c
+@@ -45,6 +45,7 @@
+ #include "iscsi_sysfs.h"
+ #include "iscsi_settings.h"
+ #include "iface.h"
++#include "host.h"
+ #include "sysdeps.h"
+ #include "iscsi_err.h"
+ #include "kern_err_table.h"
+@@ -557,6 +558,48 @@ static int iscsi_conn_connect(struct isc
+ 	return 0;
+ }
+ 
++static void iscsi_uio_poll_login_timedout(void *data)
++{
++	struct queue_task *qtask = data;
++	struct iscsi_conn *conn = qtask->conn;
++	iscsi_session_t *session = conn->session;
++
++	log_debug(3, "timeout waiting for UIO ...\n");
++	mgmt_ipc_write_rsp(qtask, ISCSI_ERR_TRANS_TIMEOUT);
++	conn_delete_timers(conn);
++	__session_destroy(session);
++}
++
++static int iscsi_sched_uio_poll(queue_task_t *qtask)
++{
++	struct iscsi_conn *conn = qtask->conn;
++	struct iscsi_session *session = conn->session;
++	struct iscsi_transport *t = session->t;
++	struct iscsi_ev_context *ev_context;
++
++	if (!t->template->set_net_config)
++		return 0;
++
++	ev_context = iscsi_ev_context_get(conn, 0);
++	if (!ev_context) {
++		/* while reopening the recv pool should be full */
++		log_error("BUG: __session_conn_reopen could "
++			  "not get conn context for recv.");
++		return ENOMEM;
++	}
++
++	ev_context->data = qtask;
++	conn->state = ISCSI_CONN_STATE_XPT_WAIT;
++
++	iscsi_sched_ev_context(ev_context, conn, 0, EV_UIO_POLL);
++
++	log_debug(3, "Setting login UIO poll timer %p timeout %d",
++		  &conn->login_timer, conn->login_timeout);
++	actor_timer(&conn->login_timer, conn->login_timeout * 1000,
++		    iscsi_uio_poll_login_timedout, qtask);
++	return EAGAIN;
++}
++
+ static void
+ __session_conn_reopen(iscsi_conn_t *conn, queue_task_t *qtask, int do_stop,
+ 		      int redirected)
+@@ -598,6 +641,11 @@ __session_conn_reopen(iscsi_conn_t *conn
+ 	if (!redirected)
+ 		session->reopen_cnt++;
+ 
++	/* uIP will needs to be re-triggered on the connection re-open */
++	if (iscsi_set_net_config(conn->session->t, conn->session,
++				 &conn->session->nrec.iface) != 0)
++		goto queue_reopen;
++
+ 	if (iscsi_conn_connect(conn, qtask)) {
+ 		delay = ISCSI_CONN_ERR_REOPEN_DELAY;
+ 		goto queue_reopen;
+@@ -1667,6 +1715,53 @@ failed_login:
+ 
+ }
+ 
++static void session_conn_uio_poll(void *data)
++{
++	struct iscsi_ev_context *ev_context = data;
++	iscsi_conn_t *conn = ev_context->conn;
++	struct iscsi_session *session = conn->session;
++	queue_task_t *qtask = ev_context->data;
++	int rc;
++
++	log_debug(4, "retrying uio poll");
++	rc = iscsi_set_net_config(session->t, session,
++				  &conn->session->nrec.iface);
++	if (rc != 0) {
++		if (rc == ISCSI_ERR_AGAIN) {
++			ev_context->data = qtask;
++			iscsi_sched_ev_context(ev_context, conn, 2,
++					       EV_UIO_POLL);
++			return;
++		} else {
++			log_error("session_conn_uio_poll() "
++				  "connection failure [0x%x]", rc);
++			actor_delete(&conn->login_timer);
++			iscsi_login_eh(conn, qtask, ISCSI_ERR_INTERNAL);
++			iscsi_ev_context_put(ev_context);
++			return;
++		}
++	}
++
++	iscsi_ev_context_put(ev_context);
++	actor_delete(&conn->login_timer);
++	log_debug(4, "UIO ready trying connect");
++
++	/*  uIP is ready try to connect */
++	if (gettimeofday(&conn->initial_connect_time, NULL))
++		log_error("Could not get initial connect time. If "
++			  "login errors iscsid may give up the initial "
++			  "login early. You should manually login.");
++
++	conn->state = ISCSI_CONN_STATE_XPT_WAIT;
++	if (iscsi_conn_connect(conn, qtask)) {
++		int delay = ISCSI_CONN_ERR_REOPEN_DELAY;
++
++		log_debug(4, "Waiting %u seconds before trying to reconnect.\n",
++			  delay);
++		queue_delayed_reopen(qtask, delay);
++	}
++}
++
+ static int iscsi_sched_ev_context(struct iscsi_ev_context *ev_context,
+ 				  struct iscsi_conn *conn, unsigned long tmo,
+ 				  int event)
+@@ -1708,6 +1803,11 @@ static int iscsi_sched_ev_context(struct
+ 			  ev_context);
+ 		actor_schedule(&ev_context->actor);
+ 		break;
++	case EV_UIO_POLL:
++		actor_new(&ev_context->actor, session_conn_uio_poll,
++			  ev_context);
++		actor_schedule(&ev_context->actor);
++		break;
+ 	case EV_CONN_LOGOUT_TIMER:
+ 		actor_timer(&ev_context->actor, tmo * 1000,
+ 			    iscsi_logout_timedout, ev_context);
+@@ -1841,7 +1941,17 @@ session_login_task(node_rec_t *rec, queu
+ 	conn = &session->conn[0];
+ 	qtask->conn = conn;
+ 
+-	if (iscsi_host_set_net_params(&rec->iface, session)) {
++	rc = iscsi_host_set_net_params(&rec->iface, session);
++	if (rc == ISCSI_ERR_AGAIN) {
++		iscsi_sched_uio_poll(qtask);
++		/*
++		 * Cannot block iscsid, so caller is going to internally
++		 * retry the operation.
++		 */
++		qtask->rsp.command = MGMT_IPC_SESSION_LOGIN;
++		qtask->rsp.err = ISCSI_SUCCESS;
++		return ISCSI_SUCCESS;
++	} else if (rc) {
+ 		__session_destroy(session);
+ 		return ISCSI_ERR_LOGIN;
+ 	}
+@@ -1998,6 +2108,7 @@ iscsi_host_send_targets(queue_task_t *qt
+ 			struct sockaddr_storage *ss)
+ {
+ 	struct iscsi_transport *t;
++	int rc;
+ 
+ 	t = iscsi_sysfs_get_transport_by_hba(host_no);
+ 	if (!t) {
+Index: open-iscsi-2.0-873/usr/initiator_common.c
+===================================================================
+--- open-iscsi-2.0-873.orig/usr/initiator_common.c
++++ open-iscsi-2.0-873/usr/initiator_common.c
+@@ -562,6 +562,36 @@ TODO handle this
+ 	return 0;
+ }
+ 
++int iscsi_set_net_config(struct iscsi_transport *t, iscsi_session_t *session,
++			 struct iface_rec *iface)
++{
++	if (t->template->set_net_config) {
++		/* uip needs the netdev name */
++		struct host_info hinfo;
++		int hostno, rc;
++
++		/* this assumes that the netdev or hw address is going to be
++		   set */
++		hostno = iscsi_sysfs_get_host_no_from_hwinfo(iface, &rc);
++		if (rc) {
++			log_debug(4, "Couldn't get host no.\n");
++			return rc;
++		}
++
++		/* uip needs the netdev name */
++		if (!strlen(iface->netdev)) {
++			memset(&hinfo, 0, sizeof(hinfo));
++			hinfo.host_no = hostno;
++			iscsi_sysfs_get_hostinfo_by_host_no(&hinfo);
++			strcpy(iface->netdev, hinfo.iface.netdev);
++		}
++
++		return t->template->set_net_config(t, iface, session);
++	}
++
++	return 0;
++}
++
+ int iscsi_host_set_net_params(struct iface_rec *iface,
+ 			      struct iscsi_session *session)
+ {
+@@ -600,6 +630,10 @@ int iscsi_host_set_net_params(struct ifa
+ 		log_warning("Could not brining up netdev %s. Try running "
+ 			    "'ifup %s' first if login fails.", netdev, netdev);
+ 
++	rc = iscsi_set_net_config(t, session, iface);
++	if (rc != 0)
++		return rc;
++
+ 	rc = host_set_param(t, session->hostno,
+ 			    ISCSI_HOST_PARAM_IPADDRESS,
+ 			    iface->ipaddress, ISCSI_STRING);
+Index: open-iscsi-2.0-873/usr/initiator.h
+===================================================================
+--- open-iscsi-2.0-873.orig/usr/initiator.h
++++ open-iscsi-2.0-873/usr/initiator.h
+@@ -83,6 +83,7 @@ typedef enum iscsi_event_e {
+ 	EV_CONN_LOGOUT_TIMER,
+ 	EV_CONN_STOP,
+ 	EV_CONN_LOGIN,
++	EV_UIO_POLL,
+ } iscsi_event_e;
+ 
+ struct queue_task;
+@@ -353,5 +354,8 @@ extern void iscsi_copy_operational_param
+ extern int iscsi_setup_authentication(struct iscsi_session *session,
+ 				      struct iscsi_auth_config *auth_cfg);
+ extern int iscsi_setup_portal(struct iscsi_conn *conn, char *address, int port);
++extern int iscsi_set_net_config(struct iscsi_transport *t,
++				iscsi_session_t *session,
++				struct iface_rec *iface);
+ 
+ #endif /* INITIATOR_H */
+Index: open-iscsi-2.0-873/usr/iscsid_req.c
+===================================================================
+--- open-iscsi-2.0-873.orig/usr/iscsid_req.c
++++ open-iscsi-2.0-873/usr/iscsid_req.c
+@@ -22,6 +22,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <errno.h>
++#include <fcntl.h>
+ #include <sys/un.h>
+ #include <sys/types.h>
+ #include <sys/socket.h>
+@@ -32,6 +33,7 @@
+ #include "iscsi_util.h"
+ #include "config.h"
+ #include "iscsi_err.h"
++#include "uip_mgmt_ipc.h"
+ 
+ static void iscsid_startup(void)
+ {
+@@ -54,7 +56,7 @@ static void iscsid_startup(void)
+ 
+ #define MAXSLEEP 128
+ 
+-static int iscsid_connect(int *fd, int start_iscsid)
++static int ipc_connect(int *fd, char *unix_sock_name, int start_iscsid)
+ {
+ 	int nsec;
+ 	struct sockaddr_un addr;
+@@ -67,8 +69,8 @@ static int iscsid_connect(int *fd, int s
+ 
+ 	memset(&addr, 0, sizeof(addr));
+ 	addr.sun_family = AF_LOCAL;
+-	memcpy((char *) &addr.sun_path + 1, ISCSIADM_NAMESPACE,
+-		strlen(ISCSIADM_NAMESPACE));
++	memcpy((char *) &addr.sun_path + 1, unix_sock_name,
++		strlen(unix_sock_name));
+ 	/*
+ 	 * Trying to connect with exponential backoff
+ 	 */
+@@ -96,6 +98,11 @@ static int iscsid_connect(int *fd, int s
+ 	return ISCSI_ERR_ISCSID_NOTCONN;
+ }
+ 
++static int iscsid_connect(int *fd, int start_iscsid)
++{
++	return ipc_connect(fd, ISCSIADM_NAMESPACE, start_iscsid);
++}
++
+ int iscsid_request(int *fd, iscsiadm_req_t *req, int start_iscsid)
+ {
+ 	int err;
+@@ -192,3 +199,81 @@ int iscsid_req_by_sid(iscsiadm_cmd_e cmd
+ 		return err;
+ 	return iscsid_req_wait(cmd, fd);
+ }
++
++static int uip_connect(int *fd)
++{
++	return ipc_connect(fd, ISCSID_UIP_NAMESPACE, 0);
++}
++
++int uip_broadcast(void *buf, size_t buf_len)
++{
++	int err;
++	int fd;
++	iscsid_uip_rsp_t rsp;
++	int flags;
++	int count;
++
++	err = uip_connect(&fd);
++	if (err) {
++		log_warning("uIP daemon is not up");
++		return err;
++	}
++
++	log_debug(3, "connected to uIP daemon");
++
++	/*  Send the data to uIP */
++	if ((err = write(fd, buf, buf_len)) != buf_len) {
++		log_error("got write error (%d/%d), daemon died?",
++			  err, errno);
++		close(fd);
++		return ISCSI_ERR_ISCSID_COMM_ERR;
++	}
++
++	log_debug(3, "send iface config to uIP daemon");
++
++	/*  Set the socket to a non-blocking read, this way if there are
++	 *  problems waiting for uIP, iscsid can bailout early */
++	flags = fcntl(fd, F_GETFL, 0);
++	if (flags == -1)
++		flags = 0;
++	err = fcntl(fd, F_SETFL, flags | O_NONBLOCK);
++	if(err != 0) {
++		log_error("could not set uip broadcast to non-blocking: %d",
++			  errno);
++		close(fd);
++		return ISCSI_ERR;
++	}
++
++#define MAX_UIP_BROADCAST_READ_TRIES 3
++	for(count = 0; count < MAX_UIP_BROADCAST_READ_TRIES; count++) {
++		/*  Wait for the response */
++		err = read(fd, &rsp, sizeof(rsp));
++		if (err == sizeof(rsp)) {
++			log_debug(3, "Broadcasted to uIP with length: %ld "
++				     "cmd: 0x%x rsp: 0x%x\n", buf_len,
++				     rsp.command, rsp.err);
++			err = 0;
++			break;
++		} else if((err == -1) && (errno == EAGAIN)) {
++			usleep(250000);
++			continue;
++		} else {
++			log_error("Could not read response (%d/%d), daemon died?",
++				  err, errno);
++			err = ISCSI_ERR;
++			break;
++		}
++	}
++
++	if (count == MAX_UIP_BROADCAST_READ_TRIES) {
++		log_error("Could not broadcast to uIP after %d tries",
++			  count);
++		err = ISCSI_ERR_AGAIN;
++	} else if (rsp.err != ISCISD_UIP_MGMT_IPC_DEVICE_UP) {
++		log_debug(3, "Device is not ready\n");
++		err = ISCSI_ERR_AGAIN;
++	}
++
++	close(fd);
++	return err;
++}
+Index: open-iscsi-2.0-873/usr/iscsid_req.h
+===================================================================
+--- open-iscsi-2.0-873.orig/usr/iscsid_req.h
++++ open-iscsi-2.0-873/usr/iscsid_req.h
+@@ -33,4 +33,6 @@ extern int iscsid_req_by_rec(int cmd, st
+ extern int iscsid_req_by_sid_async(int cmd, int sid, int *fd);
+ extern int iscsid_req_by_sid(int cmd, int sid);
+ 
++extern int uip_broadcast(void *buf, size_t buf_len);
++
+ #endif
+Index: open-iscsi-2.0-873/usr/iscsi_err.c
+===================================================================
+--- open-iscsi-2.0-873.orig/usr/iscsi_err.c
++++ open-iscsi-2.0-873/usr/iscsi_err.c
+@@ -51,6 +51,7 @@ static char *iscsi_err_msgs[] = {
+ 	/* 26 */ "iSNS registration failed",
+ 	/* 27 */ "operation not supported",
+ 	/* 28 */ "device or resource in use",
++	/* 29 */ "Retryable failure",
+ };
+ 
+ char *iscsi_err_to_str(int err)
+Index: open-iscsi-2.0-873/usr/Makefile
+===================================================================
+--- open-iscsi-2.0-873.orig/usr/Makefile
++++ open-iscsi-2.0-873/usr/Makefile
+@@ -40,7 +40,8 @@ SYSDEPS_SRCS = $(wildcard ../utils/sysde
+ ISCSI_LIB_SRCS = iscsi_util.o io.o auth.o iscsi_timer.o login.o log.o md5.o \
+ 	sha1.o iface.o idbm.o sysfs.o host.o session_info.o iscsi_sysfs.o \
+ 	iscsi_net_util.o iscsid_req.o transport.o iser.o cxgbi.o be2iscsi.o \
+-	initiator_common.o iscsi_err.o $(IPC_OBJ)  $(SYSDEPS_SRCS)
++	initiator_common.o iscsi_err.o uip_mgmt_ipc.o \
++	$(IPC_OBJ)  $(SYSDEPS_SRCS) $(DCB_OBJ)
+ # core initiator files
+ INITIATOR_SRCS = initiator.o scsi.o actor.o event_poll.o mgmt_ipc.o kern_err_table.o
+ 
+Index: open-iscsi-2.0-873/usr/transport.c
+===================================================================
+--- open-iscsi-2.0-873.orig/usr/transport.c
++++ open-iscsi-2.0-873/usr/transport.c
+@@ -35,6 +35,7 @@
+ #include "log.h"
+ #include "iscsi_util.h"
+ #include "iscsi_sysfs.h"
++#include "uip_mgmt_ipc.h"
+ #include "cxgbi.h"
+ #include "be2iscsi.h"
+ #include "iser.h"
+@@ -79,6 +80,7 @@ struct iscsi_transport_template bnx2i =
+ 	.ep_connect	= ktransport_ep_connect,
+ 	.ep_poll	= ktransport_ep_poll,
+ 	.ep_disconnect	= ktransport_ep_disconnect,
++	.set_net_config = uip_broadcast_params,
+ };
+ 
+ struct iscsi_transport_template be2iscsi = {
+Index: open-iscsi-2.0-873/usr/transport.h
+===================================================================
+--- open-iscsi-2.0-873.orig/usr/transport.h
++++ open-iscsi-2.0-873/usr/transport.h
+@@ -35,6 +35,9 @@ struct iscsi_transport_template {
+ 	int (*ep_poll) (struct iscsi_conn *conn, int timeout_ms);
+ 	void (*ep_disconnect) (struct iscsi_conn *conn);
+ 	void (*create_conn) (struct iscsi_conn *conn);
++	int (*set_net_config) (struct iscsi_transport *t,
++			       struct iface_rec *iface,
++			       struct iscsi_session *session);
+ };
+ 
+ /* represents data path provider */
+Index: open-iscsi-2.0-873/usr/uip_mgmt_ipc.c
+===================================================================
+--- /dev/null
++++ open-iscsi-2.0-873/usr/uip_mgmt_ipc.c
+@@ -0,0 +1,41 @@
++/*
++ * uIP iSCSI Daemon/Admin Management IPC
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published
++ * by the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * See the file COPYING included with this distribution for more details.
++ */
++
++#include <string.h>
++
++#include "log.h"
++#include "uip_mgmt_ipc.h"
++#include "iscsid_req.h"
++
++int uip_broadcast_params(struct iscsi_transport *t,
++			 struct iface_rec *iface,
++			 struct iscsi_session *session)
++{
++	struct iscsid_uip_broadcast broadcast;
++
++        log_debug(3, "broadcasting to uip\n");
++
++	memset(&broadcast, 0, sizeof(broadcast));
++
++	broadcast.header.command = ISCSID_UIP_IPC_GET_IFACE;
++	broadcast.header.payload_len = sizeof(*iface);
++
++	memcpy(&broadcast.u.iface_rec, iface, sizeof(*iface));
++
++	return uip_broadcast(&broadcast,
++			     sizeof(iscsid_uip_broadcast_header_t) +
++			     sizeof(*iface));
++}
+Index: open-iscsi-2.0-873/usr/uip_mgmt_ipc.h
+===================================================================
+--- /dev/null
++++ open-iscsi-2.0-873/usr/uip_mgmt_ipc.h
+@@ -0,0 +1,73 @@
++/*
++ * uIP iSCSI Daemon/Admin Management IPC
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published
++ * by the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * See the file COPYING included with this distribution for more details.
++ */
++#ifndef UIP_MGMT_IPC_H
++#define UIP_MGMT_IPC_H
++
++#include "types.h"
++#include "iscsi_if.h"
++#include "config.h"
++#include "mgmt_ipc.h"
++
++#include "initiator.h"
++#include "transport.h"
++
++#define ISCSID_UIP_NAMESPACE	"ISCSID_UIP_ABSTRACT_NAMESPACE"
++
++typedef enum iscsid_uip_cmd {
++	ISCSID_UIP_IPC_UNKNOWN			= 0,
++	ISCSID_UIP_IPC_GET_IFACE		= 1,
++
++        __ISCSID_UIP_IPC_MAX_COMMAND
++} iscsid_uip_cmd_e;
++
++typedef struct iscsid_uip_broadcast_header {
++	iscsid_uip_cmd_e command;
++	uint32_t payload_len;
++} iscsid_uip_broadcast_header_t;
++
++/* IPC Request */
++typedef struct iscsid_uip_broadcast {
++	struct iscsid_uip_broadcast_header header;
++
++	union {
++		/* messages */
++		struct ipc_broadcast_iface_rec {
++			struct iface_rec rec;
++		} iface_rec;
++	} u;
++} iscsid_uip_broadcast_t;
++
++typedef enum iscsid_uip_mgmt_ipc_err {
++	ISCSID_UIP_MGMT_IPC_OK                     = 0,
++        ISCISD_UIP_MGMT_IPC_ERR                    = 1,
++        ISCISD_UIP_MGMT_IPC_ERR_NOT_FOUND          = 2,
++        ISCISD_UIP_MGMT_IPC_ERR_NOMEM              = 3,
++	ISCISD_UIP_MGMT_IPC_DEVICE_UP              = 4,
++	ISCISD_UIP_MGMT_IPC_DEVICE_INITIALIZING    = 5,
++} iscsid_uip_mgmt_ipc_err_e;
++
++/* IPC Response */
++typedef struct iscsid_uip_mgmt_rsp {
++	iscsid_uip_cmd_e command;
++	iscsid_uip_mgmt_ipc_err_e err;
++} iscsid_uip_rsp_t;
++
++extern int uip_broadcast_params(struct iscsi_transport *t,
++				struct iface_rec *iface,
++				struct iscsi_session *session);
++
++
++#endif /* UIP_MGMT_IPC_H */
+Index: open-iscsi-2.0-873/libiscsi/Makefile
+===================================================================
+--- open-iscsi-2.0-873.orig/libiscsi/Makefile
++++ open-iscsi-2.0-873/libiscsi/Makefile
+@@ -13,7 +13,7 @@ TESTS += tests/test_set_auth tests/test_
+ 
+ COMMON_SRCS = sysdeps.o
+ # sources shared between iscsid, iscsiadm and iscsistart
+-ISCSI_LIB_SRCS = netlink.o transport.o iser.o cxgbi.o be2iscsi.o iscsi_timer.o initiator_common.o iscsi_err.o session_info.o iscsi_util.o io.o auth.o discovery.o login.o log.o md5.o sha1.o iface.o idbm.o sysfs.o iscsi_sysfs.o iscsi_net_util.o iscsid_req.o
++ISCSI_LIB_SRCS = netlink.o uip_mgmt_ipc.o transport.o iser.o cxgbi.o be2iscsi.o iscsi_timer.o initiator_common.o iscsi_err.o session_info.o iscsi_util.o io.o auth.o discovery.o login.o log.o md5.o sha1.o iface.o idbm.o sysfs.o iscsi_sysfs.o iscsi_net_util.o iscsid_req.o
+ FW_PARAM_SRCS = fw_entry.o prom_lex.o prom_parse.tab.o fwparam_ppc.o fwparam_sysfs.o
+ 
+ # sources shared with the userspace utils, note we build these separately

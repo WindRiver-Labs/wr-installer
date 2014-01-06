@@ -1,0 +1,16 @@
+Index: anaconda-16.25/pyanaconda/yuminstall.py
+===================================================================
+--- anaconda-16.25.orig/pyanaconda/yuminstall.py
++++ anaconda-16.25/pyanaconda/yuminstall.py
+@@ -1520,6 +1520,11 @@ reposdir=/etc/anaconda.repos.d,/tmp/upda
+                 if anaconda.ksdata and anaconda.ksdata.packages.handleMissing == KS_MISSING_IGNORE:
+                     break
+ 
++                # For the time being ignore missing dependencies until we
++                # can properly check for MISSINGOK
++                if True:
++                    break
++
+                 if code == 1 and not anaconda.upgrade:
+                     # resolveDeps returns 0 if empty transaction, 1 if error,
+                     # 2 if success

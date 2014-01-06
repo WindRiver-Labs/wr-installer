@@ -1,0 +1,13 @@
+Index: b/CMakeLists.txt
+===================================================================
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -390,7 +390,7 @@ if(ENABLE_NLS)
+   add_subdirectory(po)
+ endif()
+ 
+-add_subdirectory(vncviewer)
++# add_subdirectory(vncviewer)
+ 
+ add_subdirectory(media)
+ 

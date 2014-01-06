@@ -1,0 +1,13 @@
+Index: b/pyanaconda/pyudev.py
+===================================================================
+--- a/pyanaconda/pyudev.py
++++ b/pyanaconda/pyudev.py
+@@ -9,7 +9,7 @@ from ctypes import *
+ # XXX this one may need some tweaking...
+ def find_library(name, somajor=0):
+     env = os.environ.get("LD_LIBRARY_PATH")
+-    common = ["/lib64", "/lib"]
++    common = ["/lib64", "/lib", "/usr/lib64", "/usr/lib"]
+ 
+     if env:
+         libdirs = env.split(":") + common

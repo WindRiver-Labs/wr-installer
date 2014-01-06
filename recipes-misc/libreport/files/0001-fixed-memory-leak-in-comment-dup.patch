@@ -1,0 +1,43 @@
+commit f737cd88eef6c8cde03b3a317cd5ef390f0138e4
+Author: Jakub Filak <jfilak@redhat.com>
+Date:   Wed Apr 18 15:09:02 2012 +0200
+
+    trac#480 : fixed memory leak in is_comment_dup() function
+    
+    Signed-off-by: Jakub Filak <jfilak@redhat.com>
+
+diff --git a/src/plugins/rhbz.c b/src/plugins/rhbz.c
+index a3aa2ef..2e7d62c 100644
+--- a/src/plugins/rhbz.c
++++ b/src/plugins/rhbz.c
+@@ -88,20 +88,19 @@ static char *trim_all_whitespace(const char *str)
+ 
+ int is_comment_dup(GList *comments, const char *comment)
+ {
+-    for (GList *l = comments; l; l = l->next)
++    char * const trim_comment = trim_all_whitespace(comment);
++    bool same_comments = false;
++
++    for (GList *l = comments; l && !same_comments; l = l->next)
+     {
+-        char *comment_body = (char *) l->data;
+-        char *trim_comment_body = trim_all_whitespace(comment_body);
+-        char *trim_comment = trim_all_whitespace(comment);
+-        if (!strcmp(trim_comment_body, trim_comment))
+-        {
+-            free(trim_comment_body);
+-            free(trim_comment);
+-            return 1;
+-        }
++        const char * const comment_body = (const char *) l->data;
++        char * const trim_comment_body = trim_all_whitespace(comment_body);
++        same_comments = !strcmp(trim_comment_body, trim_comment);
++        free(trim_comment_body);
+     }
+ 
+-    return 0;;
++    free(trim_comment);
++    return same_comments;
+ }
+ 
+ static unsigned find_best_bt_rating_in_comments(GList *comments)

@@ -1,0 +1,26 @@
+---
+ pyanaconda/bootloader.py |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -1593,9 +1593,16 @@ class GRUB2(GRUB):
+         defaults.write("GRUB_TIMEOUT=%d\n" % self.timeout)
+         defaults.write("GRUB_DISTRIBUTOR=\"%s\"\n" % productName)
+         defaults.write("GRUB_DEFAULT=saved\n")
+-        if self.console and self.console.startswith("ttyS"):
+-            defaults.write("GRUB_TERMINAL=\"serial console\"\n")
+-            defaults.write("GRUB_SERIAL_COMMAND=\"%s\"\n" % self.serial_command)
++        # Original
++        #if self.console and self.console.startswith("ttyS"):
++        #    defaults.write("GRUB_TERMINAL=\"serial console\"\n")
++        #    defaults.write("GRUB_SERIAL_COMMAND=\"%s\"\n" % self.serial_command)
++        # End Original
++        # Force serial and vga
++        defaults.write("GRUB_TERMINAL_OUTPUT=\"console serial\"\n")
++        defaults.write("GRUB_TERMINAL_INPUT=\"console serial\"\n")
++        defaults.write("GRUB_SERIAL_COMMAND=\"serial --unit=0 --speed 115200\"\n")
++        # EndForce serial and vga
+ 
+         # this is going to cause problems for systems containing multiple
+         # linux installations or even multiple boot entries with different

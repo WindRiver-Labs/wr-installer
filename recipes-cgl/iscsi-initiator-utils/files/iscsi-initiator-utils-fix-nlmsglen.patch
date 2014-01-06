@@ -1,0 +1,12 @@
+diff -aurp open-iscsi-2.0-872-rc4-bnx2i/usr/netlink.c open-iscsi-2.0-872-rc4-bnx2i.test/usr/netlink.c
+--- open-iscsi-2.0-872-rc4-bnx2i/usr/netlink.c	2011-09-20 18:01:34.000000000 -0500
++++ open-iscsi-2.0-872-rc4-bnx2i.test/usr/netlink.c	2011-09-20 18:01:54.000000000 -0500
+@@ -185,7 +185,7 @@ kwritev(enum iscsi_uevent_e type, struct
+ 	for (i = 1; i < count; i++)
+ 		datalen += iovp[i].iov_len;
+ 
+-	nlh->nlmsg_len = NLMSG_ALIGN(datalen);
++	nlh->nlmsg_len = datalen + sizeof(*nlh);
+ 	nlh->nlmsg_pid = getpid();
+ 	nlh->nlmsg_flags = 0;
+ 	nlh->nlmsg_type = type;
