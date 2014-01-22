@@ -1,0 +1,139 @@
+Disable YUM support in the GUI
+
+Yum is hard coded into the task gui.  We want to disable it
+so that we can work on general install settings.
+
+This patch is temporary, as the YUM items will need to be
+replaced with alternatives.
+
+Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
+
+diff -ur pyanaconda/iw/task_gui.py /home/mhatle/anaconda-WIP/pyanaconda/iw/task_gui.py
+--- a/pyanaconda/iw/task_gui.py	2014-01-20 14:45:17.441776784 -0600
++++ b/pyanaconda/iw/task_gui.py	2014-01-19 16:59:21.762987127 -0600
+@@ -34,8 +34,8 @@
+ from pyanaconda import network
+ from pyanaconda import iutil
+ 
+-from pyanaconda.yuminstall import AnacondaYumRepo
+-import yum.Errors
++#from pyanaconda.yuminstall import AnacondaYumRepo
++#import yum.Errors
+ 
+ import logging
+ log = logging.getLogger("anaconda")
+@@ -146,6 +146,8 @@
+             return 0
+ 
+     def _addAndEnableRepo(self, repo):
++        return False
++
+         try:
+             self.backend.ayum.repos.add(repo)
+         except yum.Errors.DuplicateRepoError as e:
+@@ -159,6 +161,8 @@
+         return True
+ 
+     def _disableAndRemoveRepo(self, repo):
++        pass
++
+         repo.disable()
+         repo.close()
+         self.anaconda.backend.ayum.repos.delete(repo.id)
+@@ -213,7 +217,7 @@
+                     (device, fstype, path) = m.split(":")
+ 
+                 # find device in self.partitionComboBox and select it
+-                self.directoryChooser.set_current_folder("%s%s" % (self.anaconda.backend.ayum.isodir, path))
++                #self.directoryChooser.set_current_folder("%s%s" % (self.anaconda.backend.ayum.isodir, path))
+             else:
+                 self.baseurlEntry.set_text(url)
+ 
+@@ -267,6 +271,8 @@
+         return True
+ 
+     def _applyMedia(self, repo):
++        return True
++
+         # FIXME works only if storage has detected format of cdrom drive
+         ayum = self.anaconda.backend.ayum
+         cdr = scanForMedia(ayum.tree, self.anaconda.storage)
+@@ -351,6 +357,8 @@
+             # somehow expire the metadata and refetch.  We'll just have to make
+             # sure that if we're just editing the repo, we grab all the
+             # attributes from the old one before deleting it.
++            break
++
+             if self.repo:
+                 # use temporary id so that we don't get Duplicate Repo error
+                 # when adding
+@@ -501,21 +509,21 @@
+ 
+ class TaskWindow(InstallWindow):
+     def getNext(self):
+-        if not self._anyRepoEnabled():
+-            self.anaconda.intf.messageWindow(_("No Software Repos Enabled"),
+-                _("You must have at least one software repository enabled to "
+-                  "continue installation."))
+-            raise gui.StayOnScreen
++        #if not self._anyRepoEnabled():
++        #    self.anaconda.intf.messageWindow(_("No Software Repos Enabled"),
++        #        _("You must have at least one software repository enabled to "
++        #          "continue installation."))
++        #    raise gui.StayOnScreen
+ 
+         self.dispatch.skip_steps("group-selection")
+ 
+         tasks = self.xml.get_widget("taskList").get_model()
+-        for (cb, task, grps) in filter(lambda x: not x[0], tasks):
+-            map(lambda g: setattr(self.backend.ayum.comps.return_group(g),
+-                                  "default", False), grps)
+-        for (cb, task, grps) in filter(lambda x: x[0], tasks):
+-            map(lambda g: setattr(self.backend.ayum.comps.return_group(g),
+-                                  "default", True), grps)
++        #for (cb, task, grps) in filter(lambda x: not x[0], tasks):
++        #    map(lambda g: setattr(self.backend.ayum.comps.return_group(g),
++        #                          "default", False), grps)
++        #for (cb, task, grps) in filter(lambda x: x[0], tasks):
++        #    map(lambda g: setattr(self.backend.ayum.comps.return_group(g),
++        #                          "default", True), grps)
+ 
+     def _editRepo(self, *args):
+         repo = None
+@@ -562,6 +570,8 @@
+         store[path][0] = True
+ 
+     def _anyRepoEnabled(self):
++        return False
++
+         model = self.rs.get_model()
+         iter = model.get_iter_first()
+ 
+@@ -662,12 +672,12 @@
+         col.set_clickable(False)
+         tl.append_column(col)
+ 
+-        for (reponame, repo) in self.repos.repos.items():
+-            repo_name = gettext.ldgettext(self.anaconda.instClass.l10n_domain,
+-                                          repo.name)
+-            store.append([repo.isEnabled(),
+-                          repo_name,
+-                          repo])
++        #for (reponame, repo) in self.repos.repos.items():
++        #    repo_name = gettext.ldgettext(self.anaconda.instClass.l10n_domain,
++        #                                  repo.name)
++        #    store.append([repo.isEnabled(),
++        #                  repo_name,
++        #                  repo])
+ 
+         store.set_sort_column_id(1, gtk.SORT_ASCENDING)
+         store.set_sort_func(1, self.__sortRepos)
+@@ -681,7 +691,7 @@
+         self.anaconda = anaconda
+ 
+         self.tasks = anaconda.instClass.tasks
+-        self.repos = anaconda.backend.ayum.repos
++        #self.repos = anaconda.backend.ayum.repos
+ 
+         (self.xml, vbox) = gui.getGladeWidget("tasksel.glade", "taskBox")
+ 

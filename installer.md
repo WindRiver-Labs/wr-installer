@@ -75,6 +75,8 @@ Start qemu with installer image:
     TOPTS="-m 1024 -cd export/qemux86-64-glibc-core-standard-dist.iso \
     -no-kernel -disk hd0.vdisk -gc"
 
+Add EX_TARGET_QEMU_OPTS="-vnc :4" to start a VNC capable session...
+
 ## Grub 0.97
 
 To use grub 0.97 instead of grub 1.99+, set the grub preferred

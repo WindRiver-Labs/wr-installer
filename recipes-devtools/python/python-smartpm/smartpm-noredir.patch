@@ -1,0 +1,27 @@
+Disable stdout/stderr redirect during RPM transactions
+
+If this is enabled, it conflicts with the stdout/stderr used by anaconda.
+
+This should only be used when Anaconda is being used, and not generally used.
+
+Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
+
+diff -ur smart/backends/rpm/pm.py /home/mhatle/anaconda-WIP/smart/backends/rpm/pm.py
+--- a/smart/backends/rpm/pm.py	2014-01-20 15:25:47.241325576 -0600
++++ b/smart/backends/rpm/pm.py	2014-01-19 14:06:50.516744776 -0600
+@@ -238,13 +238,13 @@
+             probfilter |= rpm.RPMPROB_FILTER_REPLACENEWFILES
+         ts.setProbFilter(probfilter)
+         cb = RPMCallback(prog, upgradednames)
+-        cb.grabOutput(True)
++        #cb.grabOutput(True)
+         probs = None
+         try:
+             probs = ts.run(cb, None)
+         finally:
+             del getTS.ts
+-            cb.grabOutput(False)
++            #cb.grabOutput(False)
+             prog.setDone()
+             if probs:
+                 raise Error, "\n".join([x[0] for x in probs])

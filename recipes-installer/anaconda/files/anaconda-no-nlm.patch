@@ -1,0 +1,103 @@
+Disable NLM and network setup
+
+Workaround to avoid requireing the network manager while
+we debug things using an NFS boot via QEMU.
+
+Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
+
+diff -ur pyanaconda/isys/__init__.py /home/mhatle/anaconda-WIP/pyanaconda/isys/__init__.py
+--- a/pyanaconda/isys/__init__.py	2014-01-20 14:45:16.601781438 -0600
++++ b/pyanaconda/isys/__init__.py	2014-01-18 14:49:47.233583836 -0600
+@@ -291,6 +291,8 @@
+ 
+ # Return number of network devices
+ def getNetworkDeviceCount():
++    return 0
++
+     bus = dbus.SystemBus()
+     nm = bus.get_object(NM_SERVICE, NM_MANAGER_PATH)
+     devlist = nm.get_dbus_method("GetDevices")()
+@@ -301,6 +303,8 @@
+ # contains all device properties for all interfaces that NetworkManager knows
+ # about.
+ def getDeviceProperties(dev=None):
++    return None
++
+     bus = dbus.SystemBus()
+     nm = bus.get_object(NM_SERVICE, NM_MANAGER_PATH)
+     devlist = nm.get_dbus_method("GetDevices")()
+@@ -344,6 +348,8 @@
+     from pyanaconda.baseudev import udev_get_device
+     desc = "Network Interface"
+ 
++    return desc
++
+     if dev == '' or dev is None:
+         return desc
+ 
+@@ -380,6 +386,8 @@
+ # Returns list of ipv4 or ipv6 addresses, depending
+ # on version parameter. ipv4 is default.
+ def getIPAddresses(dev, version=4):
++    return None
++
+     if dev == '' or dev is None:
+        return None
+ 
+diff -ur pyanaconda/network.py /home/mhatle/anaconda-WIP/pyanaconda/network.py
+--- a/pyanaconda/network.py	2014-01-20 14:45:17.659775576 -0600
++++ b/pyanaconda/network.py	2014-01-18 15:06:31.464634523 -0600
+@@ -153,6 +153,7 @@
+                      isys.NM_STATE_CONNECTED_GLOBAL)
+ 
+ def hasActiveNetDev():
++    return False
+     try:
+         bus = dbus.SystemBus()
+         nm = bus.get_object(isys.NM_SERVICE, isys.NM_MANAGER_PATH)
+@@ -169,6 +170,8 @@
+ # to follow suit here.  Also, if this uses a list now, we can think
+ # about multihomed hosts during installation later.
+ def getActiveNetDevs():
++    return list()
++
+     active_devs = set()
+ 
+     bus = dbus.SystemBus()
+@@ -410,6 +413,8 @@
+         if flags.imageInstall:
+             return
+ 
++        return
++
+         # populate self.netdevices
+         devhash = isys.getDeviceProperties(dev=None)
+         for iface in devhash.keys():
+@@ -874,6 +879,8 @@
+     def waitForDevicesActivation(self, devices):
+         waited_devs_props = {}
+ 
++        return waited_devs_props.keys()
++
+         bus = dbus.SystemBus()
+         nm = bus.get_object(isys.NM_SERVICE, isys.NM_MANAGER_PATH)
+         device_paths = nm.get_dbus_method("GetDevices")()
+@@ -901,6 +908,8 @@
+     # to bring the device up, watch NM state and return to the caller
+     # once we have a state
+     def waitForConnection(self):
++        return False
++
+         bus = dbus.SystemBus()
+         nm = bus.get_object(isys.NM_SERVICE, isys.NM_MANAGER_PATH)
+         props = dbus.Interface(nm, isys.DBUS_PROPS_IFACE)
+@@ -1009,6 +1018,9 @@
+ def getSSIDs(devices_to_scan=None):
+ 
+     rv = {}
++
++    return rv
++
+     bus = dbus.SystemBus()
+     nm = bus.get_object(isys.NM_SERVICE, isys.NM_MANAGER_PATH)
+     device_paths = nm.get_dbus_method("GetDevices")()

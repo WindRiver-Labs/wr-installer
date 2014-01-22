@@ -268,16 +268,18 @@ FOE
            echo "Bypassing installer..."
        else
            su -l -c "/usr/sbin/anaconda $anaconda_opts" $username
-           killall Xorg
            if [ "$stoponfail" != 1 ] ; then
                echo "Rebooting system..."
                /sbin/reboot -f
-           else
-               stty sane
-               echo ""
-               echo "Starting FAIL shell"
-               /bin/sh
            fi
+       fi
+
+       if [ "$stoponfail" = 1 ] ; then
+           killall Xorg
+           stty sane
+           echo ""
+           echo "Starting FAIL shell"
+           /bin/sh
        fi
   ;;
 

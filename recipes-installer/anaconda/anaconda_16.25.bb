@@ -7,12 +7,17 @@ SECTION = "devel"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=8ca43cbc842c2336e835926c2166c28b"
 
+# Disabled networkmanager...
+DEPENDS = "networkmanager"
+
 DEPENDS = "e2fsprogs gettext intltool libarchive virtual/libx11 libnl1 \
            pango python rpm slang zlib dbus iscsi-initiator-utils audit \
            isomd5sum lvm2 system-config-keyboard-native libuser util-linux \
-           libnewt libxcomposite gtk+ networkmanager curl libarchive"
+           libnewt libxcomposite gtk+ curl libarchive"
 
 # yum yum-metadata-parser
+#RDEPENDS_anaconda = "network-manager-applet"
+
 RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs \
                    ntfsprogs xfsprogs btrfs-tools \
                    parted dosfstools gzip libarchive lvm2 \
@@ -25,14 +30,14 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    libreport-python localedef device-mapper device-mapper-multipath \
                    python-pygobject python-rpm pyparted python-urlgrabber\
                    gnome-python libgnomecanvas grub usermode \
-                   metacity rsyslog network-manager-applet \
+                   metacity rsyslog \
                    gnome-themes gnome-icon-theme \
                    gtk-engine-clearlooks gtk-theme-clearlooks rsyslog \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \
                    module-init-tools eglibc-charmaps eglibc-localedatas \
-                   tigervnc"
+                   tigervnc smartpm"
 PR = "r1"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
@@ -66,6 +71,10 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://serial_and_vga_always.patch \
            file://fix_nmicli_args.patch \
            file://NO_dracut_for_WRLINUX.patch \
+           file://anaconda-no-yum.patch \
+           file://anaconda-no-nlm.patch \
+           file://anaconda-no-i18n.patch \
+           file://anaconda-no-tz.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
