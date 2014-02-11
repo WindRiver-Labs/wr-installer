@@ -30,13 +30,15 @@ import os, types
 import gettext
 _ = lambda x: gettext.ldgettext("anaconda", x)
 
+import ConfigParser
+
 from pyanaconda import installmethod
 from pyanaconda import smartinstall
 
 class InstallClass(BaseInstallClass):
     # name has underscore used for mnemonics, strip if you dont need it
     id = "wrlinux"
-    name = N_("Wind River Linux")
+    name = productName
     _description = N_("The default installation of %s includes a set of "
                       "software applicable for general console usage. "
                       "You can optionally select a different set of software "
@@ -44,11 +46,34 @@ class InstallClass(BaseInstallClass):
     _descriptionFields = (productName,)
     sortPriority = 100000
 
-    tasks = [(N_("Standard Workstation (glibc-std)"), ["core","base","bsp","console"]),
-             (N_("Development Workstation (glibc-std, toolchain, dev tools)"), ["core","base","bsp","console","dev","gdb","debug"])
-            ]
+    tasks = [(N_("None"), [])]
 
     _l10n_domain = "anaconda"
+
+    def __init__(self):
+        BaseInstallClass.__init__(self)
+
+        config = ConfigParser.ConfigParser()
+        config.read(["/tmp/product/.buildstamp", "/.buildstamp", os.environ.get("PRODBUILDPATH", "")])
+
+        self.image_list = (config.get("Rootfs", "LIST") or "").split()
+
+        self.image = {} 
+        self.tasks = []
+
+        for image in self.image_list:
+            image_summary = config.get(image, "SUMMARY")
+            image_description = config.get(image, "DESCRIPTION")
+            image_install = config.get(image, "IMAGE_INSTALL")
+            image_features = config.get(image, "FEATURE_INSTALL")
+            self.image[image] = (image_summary, image_description, image_install, image_features)
+
+            short_image = image.replace("%s-image-" % self.id, "")
+
+            self.tasks.append(("%s (%s)" % (image_summary, short_image), [image]))
+            self.tasks.append(("%s with development files (%s, dev-pkgs, staticdev-pkgs)" % (image_summary, short_image), [image, "dev-pkgs", "staticdev-pkgs"]))
+            self.tasks.append(("%s with debug symbols (%s, dbg-pkgs)" % (image_summary, short_image), [image, "dbg-pkgs"]))
+            self.tasks.append(("%s with development files and debug symbols (%s, dev-pkgs, staticdev-pkgs, dbg-pkgs)" % (image_summary, short_image), [image, "dev-pkgs", "staticdev-pkgs", "dbg-pkgs"]))
 
     def getPackagePaths(self, uri):
         if not type(uri) == types.ListType:
@@ -64,7 +89,7 @@ class InstallClass(BaseInstallClass):
 
     def setGroupSelection(self, anaconda):
         BaseInstallClass.setGroupSelection(self, anaconda)
-        map(lambda x: anaconda.backend.selectGroup(x), ["core"])
+        map(lambda x: anaconda.backend.selectGroup(x), ["image", "feature"])
 
     def getBackend(self):
         if flags.livecdInstall:
@@ -116,6 +141,3 @@ class InstallClass(BaseInstallClass):
                 isys.getLinkStatus(devName)):
                 dev.set(('ONBOOT', 'yes'))
                 break
-
-    def __init__(self):
-	BaseInstallClass.__init__(self)

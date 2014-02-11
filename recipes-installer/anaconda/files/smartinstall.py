@@ -38,6 +38,10 @@ import pwd
 
 import anaconda_log
 
+import urlgrabber.progress
+import urlgrabber.grabber
+from urlgrabber.grabber import URLGrabber, URLGrabError
+
 from smart.interface import Interface, getScreenWidth
 from smart.util.strtools import sizeToStr, printColumns
 from smart.progress import Progress
@@ -65,6 +69,8 @@ log = logging.getLogger("anaconda")
 import iutil
 import isys
 
+urlgrabber.grabber.default_grabber.opts.user_agent = "%s (anaconda)/%s" %(productName, productVersion)
+
 class AnacondaProgress(Progress):
     def __init__(self, intf):
         self.intf = intf
@@ -91,11 +97,12 @@ class AnacondaProgress(Progress):
 
             if not self.progressSubWindow:
                 #log.debug("new sub-progressWindow(%s, %s, 100)" % (topic, subtopic))
-                self.progressSubWindow = self.intf.progressWindow (self.windowTitle, subtopic, 100)
+                self.progressSubWindow = self.intf.progressWindow (self.windowTitle, "%s %s%%\n%s" % (topic,percent,subtopic), 100)
                 self.subTitle = topic
                 self.subTopic = subtopic
 
             #log.debug("sub-progressWindow(%s)" % (subpercent))
+            self.progressWindow.set(percent)
             self.progressSubWindow.set(subpercent)
 
     def setDone(self):
@@ -136,11 +143,11 @@ class AnacondaInterface(Interface):
         self.waitWindow = None
 
     def eventsPending(self):
-        log.debug("called smartinstall.AnacondaInterface.eventsPending")
+        #log.debug("called smartinstall.AnacondaInterface.eventsPending")
         return False
 
     def processEvents(self):
-        log.debug("called smartinstall.AnacondaInterface.processEvents")
+        #log.debug("called smartinstall.AnacondaInterface.processEvents")
         pass
 
     def showStatus(self, msg):
@@ -155,7 +162,7 @@ class AnacondaInterface(Interface):
             self.statusWindow = None
 
     def showOutput(self, output):
-        log.debug("called smartinstall.AnacondaInterface.showOutput(%s)" % output)
+        #log.debug("called smartinstall.AnacondaInterface.showOutput(%s)" % output)
         pass
 
     def getProgress(self, obj, hassub=False):
@@ -167,31 +174,31 @@ class AnacondaInterface(Interface):
         return self._progress
 
     def askYesNo(self, question, default=False):
-        log.debug("called smartinstall.AnacondaInterface.askYesNo(%s)" % question)
+        #log.debug("called smartinstall.AnacondaInterface.askYesNo(%s)" % question)
         return True
 
     def askContCancel(self, question, default=False):
-        log.debug("called smartinstall.AnacondaInterface.askContCanel(%s)" % question)
+        #log.debug("called smartinstall.AnacondaInterface.askContCanel(%s)" % question)
         return True
 
     def askOkCancel(self, question, default=False):
-        log.debug("called smartinstall.AnacondaInterface.askOkCancel(%s)" % question)
+        #log.debug("called smartinstall.AnacondaInterface.askOkCancel(%s)" % question)
         return True
 
     def askInput(self, prompt, message=None, widthchars=None, echo=True):
-        log.debug("called smartinstall.AnacondaInterface.askInput(%s)" % prompt)
+        #log.debug("called smartinstall.AnacondaInterface.askInput(%s)" % prompt)
         return ""
 
     def showChangeSet(self, changeset, keep=None, confirm=False):
-        log.debug("called smartinstall.AnacondaInterface.showChangeSet(%s)" % changeset)
+        #log.debug("called smartinstall.AnacondaInterface.showChangeSet(%s)" % changeset)
         pass
 
     def confirmChangeSet(self, changeset):
-        log.debug("called smartinstall.AnacondaInterface.confirmChangeSet(%s)" % changeset)
+        #log.debug("called smartinstall.AnacondaInterface.confirmChangeSet(%s)" % changeset)
         return True
 
     def confirmChange(self, oldchangeset, newchangeset):
-        log.debug("called smartinstall.AnacondaInterface.confirmChange")
+        #log.debug("called smartinstall.AnacondaInterface.confirmChange")
         return True
 
     def error(self, msg):
@@ -216,6 +223,320 @@ class AnacondaInterface(Interface):
         else:
             self.info(msg)
 
+class SmartRepo:
+    def __init__(self, repoid):
+        self.id = repoid
+        self.type = "rpm-md"
+        self.name = repoid
+        self.baseurl = None
+        self.components = None
+
+        # Really priority (default to 100 like YUM)
+        self.cost = 100
+
+        self.enabled = False
+
+        self.mirrorlist = None
+
+        self._anacondaBaseURLs = []
+
+        # MGH: TBD proxy setup
+        self.proxy = False
+        self.proxy_username = None
+        self.proxy_password = None
+
+    # needed to store nfs: repo url that yum doesn't know
+    def _getAnacondaBaseURLs(self):
+        return self._anacondaBaseURLs
+
+    def _setAnacondaBaseURLs(self, value):
+        log.debug("AnacondaSmartRepo(%s):_setAnacondaBaseURLs = %s" % (self.id, value))
+        self._anacondaBaseURLs = value
+
+    anacondaBaseURLs = property(_getAnacondaBaseURLs, _setAnacondaBaseURLs,
+                                doc="Emulate anacondaYum entries:")
+
+    def isEnabled(self):
+        log.debug("SmartRepo(%s): isEnabled - %s" % (self.id, ['False','True'][self.enabled]))
+        return self.enabled
+
+    def needsNetwork(self):
+        # MGH: Fix up later by inspecting the baseurl...
+        return False
+
+class AnacondaSmartRepo(SmartRepo):
+    def __init__(self, repoid, anaconda=None):
+        SmartRepo.__init__(self, repoid)
+        self.anaconda = anaconda
+        self.enablegroups = True
+
+        self.repos = self
+
+    def items(self):
+        item_list = []
+        channels = sysconf.get("channels") or {}
+        log.debug("AnacondaSmartRepo(%s):items() = %s" % (self.id, channels))
+        for channel in channels:
+            reponame = channel
+
+            # MGH need to add in type, name, baseurl, components, enabled, and cost
+            repo = SmartRepo(channel)
+            repo.enabled = True
+            repo.name = channels[channel]["name"]
+            repo.baseurl = [channels[channel]["baseurl"]]
+            repo.cost = channels[channel]["priority"]
+
+            item_list.append((reponame, repo))
+
+        log.debug("AnacondaSmartRepo(%s):items() = %s" % (self.id, item_list))
+        return item_list
+
+    def add(self, repoobj):
+        log.debug("AnacondaSmartRepo(%s):add() = %s" % (self.id, repoobj.id))
+        channels = sysconf.get("channels") or {}
+        if repoobj.id in channels:
+            raise ValueError("Repository %s is listed more than once in the configuration" % (repoobj.id))
+        # MGH: Fix mirrorlist.. We should fetch and add a series of repository mirrors...
+        if repoobj.mirrorlist:
+            raise ValueError("Repository %s -- smart does not yet support mirror lists" % (repoobj.id))
+        if not repoobj.baseurl:
+            raise ValueError("Repository %s does not have the baseurl set" % (repoobj.id))
+
+        argv = []
+        argv.append('--add')
+        argv.append('%s' % repoobj.id)
+        argv.append('type=%s' % repoobj.type)
+        if repoobj.baseurl[0]:
+            argv.append('baseurl=%s' % repoobj.baseurl[0])
+        if repoobj.name:
+            argv.append('name=%s' % repoobj.name)
+        if repoobj.cost:
+            argv.append('priority=%s' % repoobj.cost)
+        if repoobj.components:
+            argv.append('components=%s' % repoobj.components)
+        argv.append('-y')
+
+        self.anaconda.backend.asmart.runSmart('channel', argv)
+
+        repoobj.enabled = True
+
+    def delete(self, repoid):
+        log.debug("AnacondaSmartRepo(%s):delete() = %s" % (self.id, repoid))
+        channels = sysconf.get("channels") or {}
+        if repoid in channels:
+            self.anaconda.backend.asmart.runSmart('channel',
+                                   ['--remove', repoid, "-y"])
+
+    def enable(self):
+        log.debug("AnacondaSmartRepo(%s):enable" % (self.id))
+        channels = sysconf.get("channels") or {}
+        if self.id in channels:
+            self.anaconda.backend.asmart.runSmart('channel',
+                                   ['--enable', self.id])
+        self.enabled = True
+
+    def disable(self):
+        log.debug("AnacondaSmartRepo(%s):disable" % (self.id))
+        channels = sysconf.get("channels") or {}
+        if self.id in channels:
+            self.anaconda.backend.asmart.runSmart('channel',
+                                   ['--disable', self.id])
+        self.enabled = False
+
+    def close(self):
+        pass
+
+
+# Emulate some of the ayum items.
+class AnacondaSmart:
+    complementary_glob = {}
+    complementary_glob['dev-pkgs'] = '*-dev'
+    complementary_glob['staticdev-pkgs'] = '*-staticdev'
+    complementary_glob['doc-pkgs'] = '*-doc'
+    complementary_glob['dbg-pkgs'] = '*-dbg'
+    complementary_glob['ptest-pkgs'] = '*-ptest'
+
+    def __init__(self, anaconda):
+        self.anaconda = anaconda
+
+        self.repoIDcounter = itertools.count()
+
+        # Only needed for hard drive and nfsiso installs.
+        self.isodir = None
+
+        # Only needed for media installs.
+        self.mediagrabber = None
+
+        # Where is the source media mounted?  This is the directory
+        # where Packages/ is located.
+        self.tree = "/mnt/install/source"
+
+        # Parse proxy values from anaconda
+        self.proxy = None
+        self.proxy_url = None
+        self.proxy_username = None
+        self.proxy_password = None
+        if self.anaconda.proxy:
+            self.setProxy(self.anaconda, self)
+
+        self.repos = None
+
+        self.smart_ctrl = None
+
+        self.etcrpm_dir = self.anaconda.backend.instPath + "/etc/rpm"
+        self.librpm_dir = self.anaconda.backend.instPath + "/var/lib/rpm"
+        self.smart_dir = self.anaconda.backend.instPath + "/var/lib/smart"
+
+### Configure smart for a cross-install, and the install wrapper
+    def setup(self, command=None, argv=None):
+        iutil.mkdirChain(self.smart_dir)
+        iutil.mkdirChain(self.anaconda.backend.instPath + "/install/tmp")
+
+        buf = """#!/bin/bash
+
+export PATH="${PATH}"
+export D="%s"
+export OFFLINE_ROOT="$D"
+export IPKG_OFFLINE_ROOT="$D"
+export OPKG_OFFLINE_ROOT="$D"
+export INTERCEPT_DIR="/"
+export NATIVE_ROOT="/"
+
+exec 1>>/tmp/scriptlet.log 2>&1 
+
+echo $2 $1/$3 $4
+if [ $2 = "/bin/sh" ]; then
+  $2 -x $1/$3 $4
+else
+  $2 $1/$3 $4
+fi
+if [ $? -ne 0 ]; then
+  if [ $4 -eq 1 ]; then
+    mkdir -p $1/etc/rpm-postinsts
+    num=100
+    while [ -e $1/etc/rpm-postinsts/${num}-* ]; do num=$((num + 1)); done
+    name=`head -1 $1/$3 | cut -d' ' -f 2`
+    echo "#!$2" > $1/etc/rpm-postinsts/${num}-${name}
+    echo "# Arg: $4" >> $1/etc/rpm-postinsts/${num}-${name}
+    cat $1/$3 >> $1/etc/rpm-postinsts/${num}-${name}
+    chmod +x $1/etc/rpm-postinsts/${num}-${name}
+  else
+    echo "Error: pre/post remove scriptlet failed"
+  fi
+fi
+""" % (self.anaconda.backend.instPath)
+
+        fd = open(self.anaconda.backend.instPath + "/install/scriptlet_wrapper", "w")
+        fd.write(buf)
+        fd.close()
+        os.chmod(self.anaconda.backend.instPath + "/install/scriptlet_wrapper", 0755)
+
+        self.smart_ctrl = init(command, argv=argv,
+                               datadir=self.smart_dir, configfile=None,
+                               gui=False, shell=False, quiet=True,
+                               interface=None, forcelocks=False,
+                               loglevel=None)
+
+        # Override the dummy interface with the locally defined one
+        iface.object = AnacondaInterface(self.smart_ctrl, self.anaconda)
+
+        initDistro(self.smart_ctrl)
+        initPlugins()
+        initPycurl()
+        initPsyco()
+
+        sysconf.set("rpm-root", self.anaconda.backend.instPath, soft=True)
+        sysconf.set("rpm-extra-macros._tmppath", "/install/tmp", soft=True)
+        sysconf.set("rpm-extra-macros._cross_scriptlet_wrapper", self.anaconda.backend.instPath + "/install/scriptlet_wrapper", soft=True)
+
+        sysconf.set("rpm-nolinktos", "1")
+        sysconf.set("rpm-noparentdirs", "1")
+
+        # Ensure we start with a blank channel set...
+        sysconf.remove("channels")
+
+        self.repos = AnacondaSmartRepo("anaconda-config", self.anaconda)
+
+        # Setup repository
+        for localpath in ["/mnt/install/source", "/mnt/install/cdimage", "/mnt/install/isodir", ""]:
+            if os.path.isdir("%s/Packages" % localpath) and os.access("%s/Packages/.feedpriority" % localpath, os.R_OK):
+                f = open("%s/Packages/.feedpriority" % localpath)
+                for line in f:
+                    (priority, feed) = line.split()
+                    if os.path.isdir("%s/Packages/%s/repodata" % (localpath, feed)):
+                        repo = SmartRepo("media_%s" % feed)
+                        repo.name = "Install Media feed for %s" % feed
+                        repo.cost = priority
+                        repo.baseurl = ["file://%s/Packages/%s" % (localpath, feed)]
+                        self.repos.add(repo)
+                f.close()
+
+        self.repos.enable()
+
+        self.smart_ctrl.saveSysConf()
+        self.smart_ctrl.restoreMediaState()
+        self.doRepoSetup(self, self.anaconda)
+
+### Run smart commands directly
+    def runSmart(self, command=None, argv=None):
+        log.debug("runSmart(%s, %s)" % (command, argv))
+        rc = iface.run(command, argv)
+        if rc is None:
+            rc = 0
+        self.smart_ctrl.saveSysConf()
+        self.smart_ctrl.restoreMediaState()
+
+
+    def doGroupSetup(self, anaconda):
+        log.debug("doGroupSetup ...")
+        pass
+
+    def doRepoSetup(self, anaconda, thisrepo = None, fatalerrors = True):
+        #iface.object._progress.windowTitle = "Repository Update"
+        #iface.object.showStatus("Updating package feed cache...")
+
+        try:
+            self.runSmart('update', None)
+        except:
+            if fatalerrors:
+                raise
+        #finally:
+        #    iface.object.hideStatus()
+
+    def doSackSetup(self, anaconda, thisrepo = None, fatalerrors = True):
+        # Do nothing...
+        pass
+
+    def mediaHandler(self, *args, **kwargs):
+        relative = kwargs["relative"]
+
+        ug = URLGrabber(checkfunc=kwargs["checkfunc"])
+        ug.urlgrab("%s/%s" % (self.tree, kwargs["relative"]), kwargs["local"],
+                   text=kwargs["text"], range=kwargs["range"], copy_local=1)
+        return kwargs["local"]
+
+    def avail_groups(self):
+        groups = []
+        for name in self.anaconda.instClass.image_list:
+            groups.append(name)
+        for name in self.complementary_glob:
+            groups.append(name)
+        return ' '.join(groups)
+
+    def group_exists(self, group):
+        if group in self.complementary_glob or group in self.anaconda.instClass.image_list:
+            return True
+        else:
+            return False
+
+    def complementary_globs(self, groups):
+        globs = []
+        for name, glob in self.complementary_glob.items():
+            if name in groups:
+                globs.append(glob)
+        return ' '.join(globs)
+
+
 class SmartBackend(AnacondaBackend):
     def __init__ (self, anaconda):
         AnacondaBackend.__init__(self, anaconda)
@@ -224,17 +545,17 @@ class SmartBackend(AnacondaBackend):
         self.supportsPackageSelection = True
 
         self.anaconda = anaconda
-        self.smart_ctrl = None
 
-        self.etcrpm_dir = self.instPath + "/etc/rpm"
-        self.librpm_dir = self.instPath + "/var/lib/rpm"
-        self.smart_dir = self.instPath + "/var/lib/smart"
+        self.task_to_install = None
 
-        self.pkgs_to_install = None
+        self.pkgs_to_install = []
+        self.grps_to_install = []
         self.feeds = {}
 
+        self.asmart = None
+
     def doBackendSetup(self, anaconda):
-	log.debug("called smartinstall.SmartBackend.doBackendSetup")
+        log.debug("called smartinstall.SmartBackend.doBackendSetup")
 
         if anaconda.dir == DISPATCH_BACK:
             return DISPATH_BACK
@@ -245,73 +566,108 @@ class SmartBackend(AnacondaBackend):
         else:
             self._initRPM()
 
-        self._initSmart()
+        self.asmart = AnacondaSmart(anaconda)
+        self.asmart.setup()
 
-	# Parse and configure the local repos
+        # Parse and configure the local repos
         iface.object._progress.windowTitle = "Package Feeds"
         iface.object.showStatus("Configuring package feeds")
 
-        if os.path.isdir("/pkgfeed") and os.access("/pkgfeed/.feedpriority", os.R_OK):
-            f = open("/pkgfeed/.feedpriority")
-            for line in f:
-                (priority, feed) = line.split()
-                self.feeds[feed] = priority
-            f.close()
+        # Configure proxy
+        if anaconda.proxy:
+            # Setup proxy == anaconda.proxy
+            pass
 
-            for feed in self.feeds:
-                if os.path.isdir("/pkgfeed/%s/repodata" % feed):
-                    priority=self.feeds[feed]
-                    self._runSmart('channel', 
-                                   ['--add', feed, 'type=rpm-md', 
-                                    'priority=%s' % self.feeds[feed],
-                                    'baseurl=/pkgfeed/%s' % feed,
-                                    '-y'])
+            if anaconda.proxyUsername:
+                # Setup username using anaconda.proxyUsername
+                pass
 
-            self._runSmart('update', None)
+            if anaconda.proxyPassword:
+                # Setup password using anaconda.proxyPassword
+                pass
 
         iface.object.hideStatus()
 
 
     def resetPackageSelections(self):
-	log.debug("called smartinstall.SmartBackend.resetPackageSelections")
-        self.pkgs_to_install = ""
+        log.debug("called smartinstall.SmartBackend.resetPackageSelections")
+        self.pkgs_to_install = []
 
     def selectPackage(self, pkg, *args):
-	log.debug("called smartinstall.SmartBackend.selectPackage")
+        log.debug("called smartinstall.SmartBackend.selectPackage %s" % pkg)
+        self.pkgs_to_install.append(pkg)
 
     def deselectPackage(self, pkg, *args):
-	log.debug("called smartinstall.SmartBackend.deselectPackage")
+        log.debug("called smartinstall.SmartBackend.deselectPackage %s" % pkg)
+        self.pkgs_to_install.remove(pkg)
 
     def groupListExists(self, grps):
         """Returns bool of whether all of the given groups exist."""
-	log.debug("called smartinstall.SmartBackend.groupListExists")
-        return True
+        log.debug("called smartinstall.SmartBackend.groupListExists: %s" % grps)
+        rc = True
+        for group in grps:
+            if group == 'image' or group == 'feature':
+                continue
+            rc = self.asmart.group_exists(group)
+            if not rc:
+                break
+        return rc
 
     def groupListDefault(self, grps):
-        """Returns bool of whether all of the given groups exist."""
-	log.debug("called smartinstall.SmartBackend.groupListDefault")
+        """Returns bool of whether all of the given groups are default"""
+        log.debug("called smartinstall.SmartBackend.groupListDefault: %s" % grps)
         return True
 
     def selectGroup(self, group, *args):
-	log.debug("called smartinstall.SmartBackend.selectGroup(%s, %s)" % (group, args))
+        log.debug("called smartinstall.SmartBackend.selectGroup(%s, %s)" % (group, args))
+        if group == 'image' or group == 'feature' or self.asmart.group_exists(group):
+            self.grps_to_install.append(group)
 
     def deselectGroup(self, group, *args):
-	log.debug("called smartinstall.SmartBackend.deselectGroup")
+        log.debug("called smartinstall.SmartBackend.deselectGroup")
+        self.grps_to_install.remove(group)
 
     def getDefaultGroups(self, anaconda):
         log.debug("called smartinstall.SmartBackend.getDefaultGroups")
-        return ['core', 'base', 'bsp', 'console', 'dev']
+        if self.task_to_install:
+            (task, grps) = self.task_to_install
+            return grps
+        return ['image', 'feature']
 
     def doPostSelection(self, anaconda):
-	log.debug("called smartinstall.SmartBackend.doPostSelection")
+        log.debug("called smartinstall.SmartBackend.doPostSelection")
 
         # Only solve dependencies on the way through the installer, not the way back.
         if anaconda.dir == DISPATCH_BACK:
             return
 
-        self.pkgs_to_install = "packagegroup-core-boot@qemux86_64 kernel-image-3.10.19-wr6.0.0.0-standard@qemux86_64"
+        log.debug("Adding task specific groups")
+        (task, grps) = self.task_to_install
+        for group in grps:
+            self.selectGroup(group)
 
-        log.debug("Selected packages %s", self.pkgs_to_install)
+        # figure out which image this is
+        image_install = None
+        for image in self.grps_to_install:
+            if image in self.anaconda.instClass.image_list:
+                image_to_install = image
+                break
+
+        (image_summary, image_description, image_install, image_features) = anaconda.instClass.image[image_to_install]
+
+        for group in self.grps_to_install:
+            if group == 'image':
+                for pkg in image_install.split():
+                    self.pkgs_to_install.append(pkg)
+                continue
+            if group == 'feature':
+                for pkg in image_features.split():
+                    self.pkgs_to_install.append(pkg)
+                continue
+
+        log.debug("Selected image %s" % image_to_install)
+        log.debug("Selected packages %s" % ' '.join(self.pkgs_to_install))
+        log.debug("Selected globs %s" % self.asmart.complementary_globs(self.grps_to_install))
 
         # Verify that the right minimum things are still set..
         # i.e. see yum, select kernel, platform packages, bootloader, FS packages, and installer needed
@@ -321,32 +677,32 @@ class SmartBackend(AnacondaBackend):
         # Verify disk space, download packages, etc..
 
     def doPreInstall(self, anaconda):
-	log.debug("called smartinstall.SmartBackend.doPreInstall")
+        log.debug("called smartinstall.SmartBackend.doPreInstall")
 
         # See yum configuration...
         AnacondaBackend.doPreInstall(self, anaconda)
 
     def doInstall(self, anaconda):
-	log.debug("called smartinstall.SmartBackend.doInstall")
+        log.debug("called smartinstall.SmartBackend.doInstall")
 
         # setup status bars
         # perform the install
         iface.object._progress.windowTitle = "Install Packages"
-        self._runSmart('install', self.pkgs_to_install.split())
+        self.anaconda.backend.asmart.runSmart('install', self.pkgs_to_install)
+
+        # Do complementary packages here...
 
     def doPostInstall(self, anaconda):
-	log.debug("called smartinstall.SmartBackend.doPostInstall")
+        log.debug("called smartinstall.SmartBackend.doPostInstall")
 
         # See yum configuration...
         AnacondaBackend.doPostInstall(self, anaconda)
 
-
-
     def postAction(self, anaconda):
-	log.debug("called smartinstall.SmartBackend.postAction")
+        log.debug("called smartinstall.SmartBackend.postAction")
 
     def kernelVersionList(self, rootPath="/"):
-	log.debug("called smartinstall.SmartBackend.kernelVersionList")
+        log.debug("called smartinstall.SmartBackend.kernelVersionList")
 
         # Look at Yum, query RPM for installed kernel(s)?
         return []
@@ -363,9 +719,18 @@ class SmartBackend(AnacondaBackend):
         # unhappy (#496961)
         iutil.resetRpmDb(self.instPath)
 
+    def doRepoSetup(self, anaconda, thisrepo = None, fatalerrors = True):
+        self.asmart.doRepoSetup(anaconda, thisrepo, fatalerrors)
+
+    def doSackSetup(self, anaconda, thisrepo = None, fatalerrors = True):
+        # Do nothing, not needed
+        pass
 
 ### Configure RPM, and related files
     def _initRPM(self):
+        self.etcrpm_dir = self.instPath + "/etc/rpm"
+        self.librpm_dir = self.instPath + "/var/lib/rpm"
+
         # Configure /etc/rpm
         iutil.mkdirChain(self.etcrpm_dir)
 
@@ -418,82 +783,3 @@ set_lk_max_objects 16384
         fd.close()
 
 
-### Configure smart for a cross-install, and the install wrapper
-    def _initSmart(self, command=None, argv=None):
-        iutil.mkdirChain(self.smart_dir)
-        iutil.mkdirChain(self.instPath + "/install/tmp")
-
-        buf = """#!/bin/bash
-
-export PATH="${PATH}"
-export D="%s"
-export OFFLINE_ROOT="$D"
-export IPKG_OFFLINE_ROOT="$D"
-export OPKG_OFFLINE_ROOT="$D"
-export INTERCEPT_DIR="/"
-export NATIVE_ROOT="/"
-
-exec 1>>/tmp/scriptlet.log 2>&1 
-
-echo $2 $1/$3 $4
-if [ $2 = "/bin/sh" ]; then
-  $2 -x $1/$3 $4
-else
-  $2 $1/$3 $4
-fi
-if [ $? -ne 0 ]; then
-  if [ $4 -eq 1 ]; then
-    mkdir -p $1/etc/rpm-postinsts
-    num=100
-    while [ -e $1/etc/rpm-postinsts/${num}-* ]; do num=$((num + 1)); done
-    name=`head -1 $1/$3 | cut -d' ' -f 2`
-    echo "#!$2" > $1/etc/rpm-postinsts/${num}-${name}
-    echo "# Arg: $4" >> $1/etc/rpm-postinsts/${num}-${name}
-    cat $1/$3 >> $1/etc/rpm-postinsts/${num}-${name}
-    chmod +x $1/etc/rpm-postinsts/${num}-${name}
-  else
-    echo "Error: pre/post remove scriptlet failed"
-  fi
-fi
-""" % (self.instPath)
-
-        fd = open(self.instPath + "/install/scriptlet_wrapper", "w")
-        fd.write(buf)
-        fd.close()
-        os.chmod(self.instPath + "/install/scriptlet_wrapper", 0755)
-
-        self.smart_ctrl = init(command, argv=argv,
-                               datadir=self.smart_dir, configfile=None,
-                               gui=False, shell=False, quiet=True,
-                               interface=None, forcelocks=False,
-                               loglevel=None)
-
-        # Override the dummy interface with the locally defined one
-	iface.object = AnacondaInterface(self.smart_ctrl, self.anaconda)
-
-        initDistro(self.smart_ctrl)
-        initPlugins()
-        initPycurl()
-        initPsyco()
-
-        sysconf.set("rpm-root", self.instPath, soft=True)
-        sysconf.set("rpm-extra-macros._tmppath", "/install/tmp", soft=True)
-        sysconf.set("rpm-extra-macros._cross_scriptlet_wrapper", self.instPath + "/install/scriptlet_wrapper", soft=True)
-
-        sysconf.set("rpm-nolinktos", "1")
-        sysconf.set("rpm-noparentdirs", "1")
-
-        # Ensure we start with a blank channel set...
-        sysconf.remove("channels")
-
-        self.smart_ctrl.saveSysConf()
-        self.smart_ctrl.restoreMediaState()
-
-
-### Run smart commands directly
-    def _runSmart(self, command=None, argv=None):
-        rc = iface.run(command, argv)
-        if rc is None:
-            rc = 0
-        self.smart_ctrl.saveSysConf()
-        self.smart_ctrl.restoreMediaState()
