@@ -4,7 +4,95 @@
 # Image generation functions to setup the installer components
 #
 
-ROOTFS_POSTPROCESS_COMMAND += "wrl_installer; "
+RPM_PREPROCESS_COMMANDS_append  = "wrl_installer_check; "
+
+RPM_POSTPROCESS_COMMANDS_append = "wrl_installer_stamp; ${@['wrl_installer; ', '']['initramfs' in '${BPN}']}"
+
+INSTPRODUCT ?= "${DISTRO_NAME}"
+INSTVER     ?= "${DISTRO_VERSION}"
+INSTBUGURL  ?= "http://www.windriver.com/"
+
+wrl_installer_check() {
+        echo "Installer Target Build: ${INSTALLER_TARGET_BUILD}"
+        if [ ! -e "${INSTALLER_TARGET_BUILD}" ]; then
+                echo "Error: INSTALLER_TARGET_BUILD - ${INSTALLER_TARGET_BUILD}: directory or file doesn't exist!" >&2
+                exit 1
+        fi
+
+        if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
+                filename=$(basename "${INSTALLER_TARGET_BUILD}")
+                extension="${filename##*.}"
+        fi
+
+	if [ -f "${INSTALLER_TARGET_BUILD}" -a "x$extension" = "xext3" ]; then
+		echo "Image based target install selected."
+
+	elif [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build" ]; then
+		# Find the DEFAULT_IMAGE....
+		PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
+			BBCMD="bitbake -e | grep -e '^DEFAULT_IMAGE=.*' > ${BB_LOGFILE}.distro_vals"
+
+		eval `cat ${BB_LOGFILE}.distro_vals`
+
+		# Use the DEFAULT_IMAGE to load the rest of the items...
+		PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
+			BBCMD="bitbake -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | grep -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' -e '^DESCRIPTION=.*' -e '^IMAGE_INSTALL=.*' -e '^FEATURE_INSTALL=.*' > ${BB_LOGFILE}.distro_vals"
+
+		eval `cat ${BB_LOGFILE}.distro_vals`
+
+		echo "Distro based install selected:"
+		echo "  DISTRO_NAME='$DISTRO_NAME'"
+		echo "  DISTRO_VERSION='$DISTRO_VERSION'"
+		echo "  DEFAULT_IMAGE='$DEFAULT_IMAGE'"
+		echo "  SUMMARY='$SUMMARY'"
+		echo "  DESCRIPTION='$DESCRIPTION'"
+		echo "  IMAGE_INSTALL='$IMAGE_INSTALL'"
+		echo "  FEATURE_INSTALL='$FEATURE_INSTALL'"
+		echo
+	fi
+}
+
+
+wrl_installer_stamp() {
+        echo "Installer Target Build: ${INSTALLER_TARGET_BUILD}"
+        if [ ! -e "${INSTALLER_TARGET_BUILD}" ]; then
+                echo "Error: INSTALLER_TARGET_BUILD - ${INSTALLER_TARGET_BUILD}: directory or file doesn't exist!" >&2
+                exit 1
+        fi
+
+        if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
+                filename=$(basename "${INSTALLER_TARGET_BUILD}")
+                extension="${filename##*.}"
+        fi
+
+	# Is this a build directory?
+	if [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build" ]; then
+		eval `cat ${BB_LOGFILE}.distro_vals`
+		echo "[Main]" > ${IMAGE_ROOTFS}/.buildstamp
+		echo "Product=$DISTRO_NAME" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "Version=$DISTRO_VERSION" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "BugURL=${INSTBUGURL}" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "IsFinal=True" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "UUID=${DATETIME}.${TARGET_ARCH}" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "[Rootfs]" >> ${IMAGE_ROOTFS}/.buildstamp
+                echo "LIST=$DEFAULT_IMAGE" >> ${IMAGE_ROOTFS}/.buildstamp
+                echo >> ${IMAGE_ROOTFS}/.buildstamp
+                echo "[$DEFAULT_IMAGE]" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "SUMMARY=$SUMMARY" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "DESCRIPTION=$DESCRIPTION" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "IMAGE_INSTALL=$IMAGE_INSTALL" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "FEATURE_INSTALL=$FEATURE_INSTALL" >> ${IMAGE_ROOTFS}/.buildstamp
+	else
+		# Generate .buildstamp
+		echo "[Main]" > ${IMAGE_ROOTFS}/.buildstamp
+		echo "Product=${INSTPRODUCT}" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "Version=${INSTVER}" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "BugURL=${INSTBUGURL}" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "IsFinal=True" >> ${IMAGE_ROOTFS}/.buildstamp
+		echo "UUID=${DATETIME}.${TARGET_ARCH}" >> ${IMAGE_ROOTFS}/.buildstamp
+	fi
+}
 
 wrl_installer() {
 	echo ${DATETIME} > ${IMAGE_ROOTFS}/.discinfo
@@ -13,7 +101,7 @@ wrl_installer() {
 
 	echo "Installer Target Build: ${INSTALLER_TARGET_BUILD}"
 	if [ ! -e "${INSTALLER_TARGET_BUILD}" ]; then
-		echo "Error: INSTALLER_TARGET_BUILD - ${INSTALLER_TARGET_BUILD}: directory doesn't exist!" >&2
+		echo "Error: INSTALLER_TARGET_BUILD - ${INSTALLER_TARGET_BUILD}: directory or file doesn't exist!" >&2
 		exit 1
 	fi
 
@@ -31,36 +119,27 @@ wrl_installer() {
 	elif [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm" ]; then
 		echo "Copy rpms from target build to installer image."
 		mkdir -p ${IMAGE_ROOTFS}/Packages
-		cp -rvf "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm/"* "${IMAGE_ROOTFS}/Packages/."
 
-		# Define repo dirs
-		target_archs=""
-		for i in ${MULTILIB_PREFIX_LIST} ; do
-			old_IFS="$IFS"
-			IFS=":"
-			set $i
-			IFS="$old_IFS"
-			shift # remove mlib
-			while [ -n "$1" ]; do
-				target_archs="$target_archs $1"
-				shift
+		# Determine the max channel priority
+		channel_priority=5
+		if [ ! -z "$INSTALL_PLATFORM_EXTRA_RPM" ]; then
+			for pt in $INSTALL_PLATFORM_EXTRA_RPM ; do
+				channel_priority=$(expr $channel_priority + 5)
 			done
-		done
+		fi
 
-		target_archs=`echo "$target_archs" | tr - _`
-
-		archs=`for arch in $target_archs ; do
-			echo $arch
-		done | sort | uniq`
-
-		rm -f ${IMAGE_ROOTFS}/Packages/.feedpriority
-		for arch in $archs ; do
-			if [ -d ${IMAGE_ROOTFS}/Packages/$arch ] ; then
-				echo "5 $arch" >> ${IMAGE_ROOTFS}/Packages/.feedpriority
+		: > ${IMAGE_ROOTFS}/Packages/.feedpriority
+		mkdir -p ${IMAGE_ROOTFS}/Packages/pkgdata
+		for canonical_arch in $INSTALL_PLATFORM_EXTRA_RPM; do
+			arch=$(echo $canonical_arch | sed "s,\([^-]*\)-.*,\1,")
+			pkgdata_arch="$arch-*"
+			if [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages/"$arch ]; then
+				channel_priority=$(expr $channel_priority - 5)
+				echo "$channel_priority $arch" >> ${IMAGE_ROOTFS}/Packages/.feedpriority
+				cp -rvf "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages/."
+				cp -rvf "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/pkgdata/"$pkgdata_arch "${IMAGE_ROOTFS}/Packages/pkgdata/."
 			fi
 		done
-
-		# Define various group info, etc...
 	else
 		echo "Invalid configuration of INSTALLER_TARGET_BUILD - ${INSTALLER_TARGET_BUILD}."
 		echo "It must either point to a .ext3 image or to the root of another build directory"
