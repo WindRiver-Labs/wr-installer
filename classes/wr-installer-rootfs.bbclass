@@ -129,15 +129,12 @@ wrl_installer() {
 		fi
 
 		: > ${IMAGE_ROOTFS}/Packages/.feedpriority
-		mkdir -p ${IMAGE_ROOTFS}/Packages/pkgdata
 		for canonical_arch in $INSTALL_PLATFORM_EXTRA_RPM; do
 			arch=$(echo $canonical_arch | sed "s,\([^-]*\)-.*,\1,")
-			pkgdata_arch="$arch-*"
 			if [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages/"$arch ]; then
 				channel_priority=$(expr $channel_priority - 5)
 				echo "$channel_priority $arch" >> ${IMAGE_ROOTFS}/Packages/.feedpriority
 				cp -rvf "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages/."
-				cp -rvf "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/pkgdata/"$pkgdata_arch "${IMAGE_ROOTFS}/Packages/pkgdata/."
 			fi
 		done
 	else

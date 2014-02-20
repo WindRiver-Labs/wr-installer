@@ -350,11 +350,11 @@ class AnacondaSmartRepo(SmartRepo):
 # Emulate some of the ayum items.
 class AnacondaSmart:
     complementary_glob = {}
-    complementary_glob['dev-pkgs'] = '*-dev'
-    complementary_glob['staticdev-pkgs'] = '*-staticdev'
-    complementary_glob['doc-pkgs'] = '*-doc'
-    complementary_glob['dbg-pkgs'] = '*-dbg'
-    complementary_glob['ptest-pkgs'] = '*-ptest'
+    complementary_glob['dev-pkgs'] = '-dev'
+    complementary_glob['staticdev-pkgs'] = '-staticdev'
+    complementary_glob['doc-pkgs'] = '-doc'
+    complementary_glob['dbg-pkgs'] = '-dbg'
+    complementary_glob['ptest-pkgs'] = '-ptest'
 
     def __init__(self, anaconda):
         self.anaconda = anaconda
@@ -548,7 +548,7 @@ class SmartBackend(AnacondaBackend):
 
         self.task_to_install = None
 
-        self.pkgs_to_install = []
+        self.pkgs_to_install = ['base-files', 'base-passwd']
         self.grps_to_install = []
         self.feeds = {}
 
@@ -588,10 +588,9 @@ class SmartBackend(AnacondaBackend):
 
         iface.object.hideStatus()
 
-
     def resetPackageSelections(self):
         log.debug("called smartinstall.SmartBackend.resetPackageSelections")
-        self.pkgs_to_install = []
+        self.pkgs_to_install = ['base-files', 'base-passwd']
 
     def selectPackage(self, pkg, *args):
         log.debug("called smartinstall.SmartBackend.selectPackage %s" % pkg)
@@ -665,9 +664,9 @@ class SmartBackend(AnacondaBackend):
                     self.pkgs_to_install.append(pkg)
                 continue
 
-        log.debug("Selected image %s" % image_to_install)
-        log.debug("Selected packages %s" % ' '.join(self.pkgs_to_install))
-        log.debug("Selected globs %s" % self.asmart.complementary_globs(self.grps_to_install))
+        log.debug("Selected image:    %s" % image_to_install)
+        log.debug("Selected packages: %s" % ' '.join(self.pkgs_to_install))
+        log.debug("Selected globs:    %s" % self.asmart.complementary_globs(self.grps_to_install))
 
         # Verify that the right minimum things are still set..
         # i.e. see yum, select kernel, platform packages, bootloader, FS packages, and installer needed
@@ -689,8 +688,69 @@ class SmartBackend(AnacondaBackend):
         # perform the install
         iface.object._progress.windowTitle = "Install Packages"
         self.anaconda.backend.asmart.runSmart('install', self.pkgs_to_install)
+        iface.object.hideStatus()
+
+        # Enable the installed RPM DB
+        self.anaconda.backend.asmart.runSmart('channel', ['--add', 'rpmsys', 'type=rpm-sys', '-y'])
+        iface.object.hideStatus()
 
         # Do complementary packages here...
+        availpkgs_src = {}
+        availpkgs_pkg = {}
+        comp_pkgs_to_attempt = ['--attempt']
+
+        import StringIO
+
+        ## Get a list of all available packages...
+        stdout = sys.stdout
+        sys.stdout = myout = StringIO.StringIO()
+        self.anaconda.backend.asmart.runSmart('query', [
+                '--show-format=$source $name $version\n'])
+        sys.stdout = stdout
+        iface.object.hideStatus()
+        myout.seek(0)
+        for line in myout:
+            lines = line.split()
+            if not lines:
+                continue
+            (src, pkg, ver_arch) = lines
+            (ver, arch) = ver_arch.split('@')
+            if "%s@%s" % (src, arch) in availpkgs_src:
+                availpkgs_src["%s@%s" % (src, arch)].append("%s@%s" % (pkg, arch))
+            else:
+                availpkgs_src["%s@%s" % (src, arch)] = ["%s@%s" % (pkg, arch)]
+
+            if "%s@%s" % (pkg, arch) in availpkgs_pkg:
+                availpkgs_pkg["%s@%s" % (pkg, arch)].append("%s@%s" % (src, arch))
+            else:
+                availpkgs_pkg["%s@%s" % (pkg, arch)] = ["%s@%s" % (src, arch)]
+
+        ## Get a list of what was installed...
+        sys.stdout = myout = StringIO.StringIO()
+        self.anaconda.backend.asmart.runSmart('query', ['--installed',
+                '--show-format=$source $name $version\n'])
+        sys.stdout = stdout
+        iface.object.hideStatus()
+        myout.seek(0)
+        for line in myout:
+            lines = line.split()
+            if not lines:
+                continue
+            (src, pkg, ver_arch) = lines
+            (ver, arch) = ver_arch.split('@')
+
+            for glob in self.asmart.complementary_globs(self.grps_to_install).split():
+                if "%s%s@%s" % (pkg, glob, arch) in availpkgs_pkg:
+                    comp_pkgs_to_attempt.append("%s%s@%s" % (pkg, glob, arch))
+                    continue
+                for pkg_name in availpkgs_src[availpkgs_pkg["%s@%s" % (pkg, arch)][0]]:
+                    if pkg_name.endswith(glob):
+                        comp_pkgs_to_attempt.append("%s@%s" % (pkg_name, arch))
+                        break
+
+        log.debug('Complementary package install: %s' % (comp_pkgs_to_attempt))
+        self.anaconda.backend.asmart.runSmart('install', comp_pkgs_to_attempt)
+        iface.object.hideStatus()
 
     def doPostInstall(self, anaconda):
         log.debug("called smartinstall.SmartBackend.doPostInstall")
