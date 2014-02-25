@@ -73,10 +73,11 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://serial_and_vga_always.patch \
            file://fix_nmicli_args.patch \
            file://NO_dracut_for_WRLINUX.patch \
+           file://anaconda-yum-to-smart.patch \
+           file://anaconda-oe-grub.patch \
            file://anaconda-no-i18n.patch \
            file://anaconda-no-tz.patch \
            file://anaconda-no-nlm.patch \
-           file://anaconda-yum-to-smart.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
