@@ -64,9 +64,9 @@ class InstallClass(BaseInstallClass):
         for image in self.image_list:
             image_summary = config.get(image, "SUMMARY")
             image_description = config.get(image, "DESCRIPTION")
-            image_install = config.get(image, "IMAGE_INSTALL")
-            image_features = config.get(image, "FEATURE_INSTALL")
-            self.image[image] = (image_summary, image_description, image_install, image_features)
+            package_install = config.get(image, "PACKAGE_INSTALL")
+            package_install_attemptonly = config.get(image, "PACKAGE_INSTALL_ATTEMPTONLY")
+            self.image[image] = (image_summary, image_description, package_install, package_install_attemptonly)
 
             short_image = image.replace("%s-image-" % self.id, "")
 
@@ -89,7 +89,7 @@ class InstallClass(BaseInstallClass):
 
     def setGroupSelection(self, anaconda):
         BaseInstallClass.setGroupSelection(self, anaconda)
-        map(lambda x: anaconda.backend.selectGroup(x), ["image", "feature"])
+        map(lambda x: anaconda.backend.selectGroup(x), ["image"])
 
     def getBackend(self):
         if flags.livecdInstall:

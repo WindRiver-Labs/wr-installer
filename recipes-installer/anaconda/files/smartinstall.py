@@ -549,6 +549,7 @@ class SmartBackend(AnacondaBackend):
         self.task_to_install = None
 
         self.pkgs_to_install = ['base-files', 'base-passwd']
+        self.pkgs_to_attempt = ['--attempt']
         self.grps_to_install = []
         self.feeds = {}
 
@@ -591,6 +592,7 @@ class SmartBackend(AnacondaBackend):
     def resetPackageSelections(self):
         log.debug("called smartinstall.SmartBackend.resetPackageSelections")
         self.pkgs_to_install = ['base-files', 'base-passwd']
+        self.pkgs_to_attempt = ['--attempt']
 
     def selectPackage(self, pkg, *args):
         log.debug("called smartinstall.SmartBackend.selectPackage %s" % pkg)
@@ -605,7 +607,7 @@ class SmartBackend(AnacondaBackend):
         log.debug("called smartinstall.SmartBackend.groupListExists: %s" % grps)
         rc = True
         for group in grps:
-            if group == 'image' or group == 'feature':
+            if group == 'image':
                 continue
             rc = self.asmart.group_exists(group)
             if not rc:
@@ -619,7 +621,7 @@ class SmartBackend(AnacondaBackend):
 
     def selectGroup(self, group, *args):
         log.debug("called smartinstall.SmartBackend.selectGroup(%s, %s)" % (group, args))
-        if group == 'image' or group == 'feature' or self.asmart.group_exists(group):
+        if group == 'image' or self.asmart.group_exists(group):
             self.grps_to_install.append(group)
 
     def deselectGroup(self, group, *args):
@@ -631,7 +633,7 @@ class SmartBackend(AnacondaBackend):
         if self.task_to_install:
             (task, grps) = self.task_to_install
             return grps
-        return ['image', 'feature']
+        return ['image']
 
     def doPostSelection(self, anaconda):
         log.debug("called smartinstall.SmartBackend.doPostSelection")
@@ -646,26 +648,24 @@ class SmartBackend(AnacondaBackend):
             self.selectGroup(group)
 
         # figure out which image this is
-        image_install = None
+        package_install = None
         for image in self.grps_to_install:
             if image in self.anaconda.instClass.image_list:
                 image_to_install = image
                 break
 
-        (image_summary, image_description, image_install, image_features) = anaconda.instClass.image[image_to_install]
+        (image_summary, image_description, package_install, package_install_attemptonly) = anaconda.instClass.image[image_to_install]
 
         for group in self.grps_to_install:
             if group == 'image':
-                for pkg in image_install.split():
+                for pkg in package_install.split():
                     self.pkgs_to_install.append(pkg)
-                continue
-            if group == 'feature':
-                for pkg in image_features.split():
-                    self.pkgs_to_install.append(pkg)
+                for pkg in package_install_attemptonly.split():
+                    self.pkgs_to_attempt.append(pkg)
                 continue
 
         log.debug("Selected image:    %s" % image_to_install)
-        log.debug("Selected packages: %s" % ' '.join(self.pkgs_to_install))
+        log.debug("Selected packages: %s (%s)" % (' '.join(self.pkgs_to_install), ' '.join(self.pkgs_to_attempt)))
         log.debug("Selected globs:    %s" % self.asmart.complementary_globs(self.grps_to_install))
 
         # Verify that the right minimum things are still set..
@@ -688,6 +688,8 @@ class SmartBackend(AnacondaBackend):
         # perform the install
         iface.object._progress.windowTitle = "Install Packages"
         self.anaconda.backend.asmart.runSmart('install', self.pkgs_to_install)
+        if len(self.pkgs_to_attempt) > 1:
+            self.anaconda.backend.asmart.runSmart('install', self.pkgs_to_attempt)
         iface.object.hideStatus()
 
         # Enable the installed RPM DB
@@ -749,7 +751,8 @@ class SmartBackend(AnacondaBackend):
                         break
 
         log.debug('Complementary package install: %s' % (comp_pkgs_to_attempt))
-        self.anaconda.backend.asmart.runSmart('install', comp_pkgs_to_attempt)
+        if len(comp_pkgs_to_attempt) > 1:
+            self.anaconda.backend.asmart.runSmart('install', comp_pkgs_to_attempt)
         iface.object.hideStatus()
 
     def doPostInstall(self, anaconda):
@@ -763,14 +766,14 @@ class SmartBackend(AnacondaBackend):
 
     def kernelVersionList(self, rootPath="/"):
         log.debug("called smartinstall.SmartBackend.kernelVersionList")
-
-        # Look at Yum, query RPM for installed kernel(s)?
-        return []
+        # FIXME: using rpm here is a little lame, but otherwise, we'd
+        # be pulling in filelists
+        return packages.rpmKernelVersionList(rootPath)
 
     def writePackageKS(self, f, anaconda):
         log.debug("called smartinstall.SmartBackend.writePackageKS")
 
-    def writeConfigurations(self):
+    def writeConfiguration(self):
         log.debug("called smartinstall.SmartBackend.writeConfigurations")
 
     def complete(self, anaconda):

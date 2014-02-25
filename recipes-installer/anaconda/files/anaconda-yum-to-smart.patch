@@ -203,7 +203,7 @@ Index: anaconda-16.25/pyanaconda/iw/task_gui.py
  
      def _applyNfs(self):
          server = self.nfsServerEntry.get_text()
-@@ -514,11 +517,14 @@ class TaskWindow(InstallWindow):
+@@ -511,11 +514,14 @@ class TaskWindow(InstallWindow):
  
          tasks = self.xml.get_widget("taskList").get_model()
          for (cb, task, grps) in filter(lambda x: not x[0], tasks):
@@ -222,7 +222,7 @@ Index: anaconda-16.25/pyanaconda/iw/task_gui.py
  
      def _editRepo(self, *args):
          repo = None
-@@ -668,6 +674,7 @@ class TaskWindow(InstallWindow):
+@@ -665,6 +671,7 @@ class TaskWindow(InstallWindow):
          for (reponame, repo) in self.repos.repos.items():
              repo_name = gettext.ldgettext(self.anaconda.instClass.l10n_domain,
                                            repo.name)
@@ -230,7 +230,7 @@ Index: anaconda-16.25/pyanaconda/iw/task_gui.py
              store.append([repo.isEnabled(),
                            repo_name,
                            repo])
-@@ -684,7 +691,7 @@ class TaskWindow(InstallWindow):
+@@ -681,7 +688,7 @@ class TaskWindow(InstallWindow):
          self.anaconda = anaconda
  
          self.tasks = anaconda.instClass.tasks
