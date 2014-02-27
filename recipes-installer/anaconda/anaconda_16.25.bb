@@ -78,6 +78,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-no-i18n.patch \
            file://anaconda-no-tz.patch \
            file://anaconda-no-nlm.patch \
+           file://skip-language-selection.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
