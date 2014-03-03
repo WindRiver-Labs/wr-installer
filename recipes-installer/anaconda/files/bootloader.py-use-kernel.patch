@@ -1,0 +1,37 @@
+From a34f4b21c2b08b2fbd04d83040708b2d9962ce65 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Mon, 3 Mar 2014 06:44:30 -0500
+Subject: [PATCH] pyanaconda/bootloader.py: use bzImage for the kernel
+
+Upstream-Status: Inappropriate [OE specific]
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/bootloader.py |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index 7849469..4b04564 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -104,7 +104,7 @@ class LinuxBootLoaderImage(BootLoaderImage):
+     def kernel(self):
+         filename = self._kernel
+         if self.version and not filename:
+-            filename = "vmlinuz-%s" % self.version
++            filename = "bzImage-%s" % self.version
+         return filename
+ 
+     @property
+@@ -1147,7 +1147,7 @@ class GRUB(BootLoader):
+ # NOTICE:  You %(do)shave a /boot partition. This means that all kernel and
+ #          initrd paths are relative to %(boot)s, eg.
+ #          root %(grub_target)s
+-#          kernel %(prefix)s/vmlinuz-version ro root=%(root_device)s
++#          kernel %(prefix)s/bzImage-version ro root=%(root_device)s
+ #          initrd %(prefix)s/initrd-[generic-]version.img
+ """ % {"do": have_boot, "boot": self.stage2_device.format.mountpoint,
+        "root_device": self.stage2_device.path,
+-- 
+1.7.10.4
+
