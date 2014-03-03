@@ -548,7 +548,7 @@ class SmartBackend(AnacondaBackend):
 
         self.task_to_install = None
 
-        self.pkgs_to_install = ['base-files', 'base-passwd']
+        self.pkgs_to_install = ['base-files', 'base-passwd', 'kernel-image', 'grub']
         self.pkgs_to_attempt = ['--attempt']
         self.grps_to_install = []
         self.feeds = {}
@@ -591,7 +591,7 @@ class SmartBackend(AnacondaBackend):
 
     def resetPackageSelections(self):
         log.debug("called smartinstall.SmartBackend.resetPackageSelections")
-        self.pkgs_to_install = ['base-files', 'base-passwd']
+        self.pkgs_to_install = ['base-files', 'base-passwd', 'kernel-image', 'grub']
         self.pkgs_to_attempt = ['--attempt']
 
     def selectPackage(self, pkg, *args):
