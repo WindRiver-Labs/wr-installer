@@ -53,27 +53,28 @@ class InstallClass(BaseInstallClass):
     def __init__(self):
         BaseInstallClass.__init__(self)
 
-        config = ConfigParser.ConfigParser()
-        config.read(["/tmp/product/.buildstamp", "/.buildstamp", os.environ.get("PRODBUILDPATH", "")])
+        if not flags.livecdInstall:
+            config = ConfigParser.ConfigParser()
+            config.read(["/tmp/product/.buildstamp", "/.buildstamp", os.environ.get("PRODBUILDPATH", "")])
 
-        self.image_list = (config.get("Rootfs", "LIST") or "").split()
+            self.image_list = (config.get("Rootfs", "LIST") or "").split()
 
-        self.image = {} 
-        self.tasks = []
+            self.image = {}
+            self.tasks = []
 
-        for image in self.image_list:
-            image_summary = config.get(image, "SUMMARY")
-            image_description = config.get(image, "DESCRIPTION")
-            package_install = config.get(image, "PACKAGE_INSTALL")
-            package_install_attemptonly = config.get(image, "PACKAGE_INSTALL_ATTEMPTONLY")
-            self.image[image] = (image_summary, image_description, package_install, package_install_attemptonly)
+            for image in self.image_list:
+                image_summary = config.get(image, "SUMMARY")
+                image_description = config.get(image, "DESCRIPTION")
+                package_install = config.get(image, "PACKAGE_INSTALL")
+                package_install_attemptonly = config.get(image, "PACKAGE_INSTALL_ATTEMPTONLY")
+                self.image[image] = (image_summary, image_description, package_install, package_install_attemptonly)
 
-            short_image = image.replace("%s-image-" % self.id, "")
+                short_image = image.replace("%s-image-" % self.id, "")
 
-            self.tasks.append(("%s (%s)" % (image_summary, short_image), [image]))
-            self.tasks.append(("%s with development files (%s, dev-pkgs, staticdev-pkgs)" % (image_summary, short_image), [image, "dev-pkgs", "staticdev-pkgs"]))
-            self.tasks.append(("%s with debug symbols (%s, dbg-pkgs)" % (image_summary, short_image), [image, "dbg-pkgs"]))
-            self.tasks.append(("%s with development files and debug symbols (%s, dev-pkgs, staticdev-pkgs, dbg-pkgs)" % (image_summary, short_image), [image, "dev-pkgs", "staticdev-pkgs", "dbg-pkgs"]))
+                self.tasks.append(("%s (%s)" % (image_summary, short_image), [image]))
+                self.tasks.append(("%s with development files (%s, dev-pkgs, staticdev-pkgs)" % (image_summary, short_image), [image, "dev-pkgs", "staticdev-pkgs"]))
+                self.tasks.append(("%s with debug symbols (%s, dbg-pkgs)" % (image_summary, short_image), [image, "dbg-pkgs"]))
+                self.tasks.append(("%s with development files and debug symbols (%s, dev-pkgs, staticdev-pkgs, dbg-pkgs)" % (image_summary, short_image), [image, "dev-pkgs", "staticdev-pkgs", "dbg-pkgs"]))
 
     def getPackagePaths(self, uri):
         if not type(uri) == types.ListType:
