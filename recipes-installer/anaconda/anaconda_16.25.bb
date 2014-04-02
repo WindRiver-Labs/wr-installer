@@ -79,7 +79,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-no-tz.patch \
            file://anaconda-no-nlm.patch \
            file://skip-language-selection.patch \
-           file://bootloader.py-use-kernel.patch \
+           file://not-set-the-window-icon-when-livecdInstall.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,

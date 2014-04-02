@@ -1,0 +1,34 @@
+From 3403c1102ebc9a119acb14b5e06b2b61cac5c721 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Thu, 27 Feb 2014 02:32:17 -0500
+Subject: [PATCH 2/3] gui.py: don't set the window icon when livecdInstall
+
+It will search "./:pixmaps/:/tmp/updates/:/tmp/updates/pixmaps/" for
+ananconda.png, but we don't have it, and we don't have window manager,
+so that set the icon doesn't make any difference.
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/gui.py |    3 ---
+ 1 file changed, 3 deletions(-)
+ mode change 100755 => 100644 pyanaconda/gui.py
+
+diff --git a/pyanaconda/gui.py b/pyanaconda/gui.py
+old mode 100755
+new mode 100644
+index e6fad4b..24ad152
+--- a/pyanaconda/gui.py
++++ b/pyanaconda/gui.py
+@@ -1404,9 +1404,6 @@ class InstallControlWindow:
+ 
+         if window_reload:
+             self.window.destroy()
+-        elif flags.livecdInstall:
+-            pixbuf = getPixbuf("anaconda.png")
+-            gtk.window_set_default_icon(pixbuf)
+ 
+         self.loadGlade()
+         self.window = self.mainxml.get_widget("mainWindow")
+-- 
+1.7.10.4
+
