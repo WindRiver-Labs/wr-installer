@@ -10,7 +10,7 @@
 
 export PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
-read CMDLINE < /proc/cmdline
+[ -z "$CMDLINE" ] && read CMDLINE < /proc/cmdline
 for x in $CMDLINE; do
         case $x in
         cmdline)
@@ -154,6 +154,12 @@ FOE
            anaconda_opts="$anaconda_opts --kickstart=$ks"
        elif [ -e $KICKSTART_FILE ]; then
            anaconda_opts="$anaconda_opts --kickstart=file:///run/initramfs/live/ks.cfg"
+       fi
+
+       if [ -n "$liveinst" ]; then
+           mkdir -p /mnt/target_rootfs
+           mount -o loop=/dev/loop3 /LiveOS/rootfs.img /mnt/target_rootfs
+           anaconda_opts="$anaconda_opts --liveinst --method=liveinst:/dev/loop3"
        fi
 
        BOOTIF=`cat /proc/cmdline |xargs -n1 echo |grep BOOTIF=`
