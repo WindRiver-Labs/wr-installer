@@ -230,8 +230,10 @@ wrl_installer_check() {
 		extension="${filename##*.}"
 	fi
 
-	if [ -f "${INSTALLER_TARGET_BUILD}" -a "x$extension" = "xext3" ]; then
-		echo "Image based target install selected."
+	if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
+		if [ "x$extension" = "xext2" -o "x$extension" = "xext3" -o "x$extension" = "xext4" ]; then
+			echo "Image based target install selected."
+		fi
 
 	elif [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build" ]; then
 		# Find the DEFAULT_IMAGE....
@@ -321,10 +323,13 @@ wrl_installer() {
 		filename=$(basename "${INSTALLER_TARGET_BUILD}")
 		extension="${filename##*.}"
 	fi
-	if [ -f "${INSTALLER_TARGET_BUILD}" -a "x$extension" = "xext3" ]; then
-		echo "Image based target install selected."
-		mkdir -p "${IMAGE_ROOTFS}/LiveOS"
-		cp "${INSTALLER_TARGET_BUILD}" "${IMAGE_ROOTFS}/LiveOS/rootfs.img"
+
+	if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
+		if [ "x$extension" = "xext2" -o "x$extension" = "xext3" -o "x$extension" = "xext4" ]; then
+			echo "Image based target install selected."
+			mkdir -p "${IMAGE_ROOTFS}/LiveOS"
+			cp "${INSTALLER_TARGET_BUILD}" "${IMAGE_ROOTFS}/LiveOS/rootfs.img"
+		fi
 
 		# Configure for 'livecd' install (KS File?)
 
