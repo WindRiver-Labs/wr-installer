@@ -1,0 +1,38 @@
+From 3d77a789863e461671a10b0550b699c2b07138c1 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Fri, 11 Apr 2014 04:10:11 -0400
+Subject: [PATCH] pyanaconda/kickstart.py: read the ks for liveimg
+
+Upstream-Status: Inappropriate [Upstream supports this]
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/kickstart.py |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/pyanaconda/kickstart.py b/pyanaconda/kickstart.py
+index 287be38..68b405d 100644
+--- a/pyanaconda/kickstart.py
++++ b/pyanaconda/kickstart.py
+@@ -1134,6 +1134,10 @@ class ZFCP(commands.zfcp.F14_ZFCP):
+ 
+         return fcp
+ 
++class Liveimg(commands.liveimg.WRL_Image):
++    def execute(self):
++        self.anaconda.methodstr = "liveinst:%s" % self.liveimg
++
+ ###
+ ### HANDLERS
+ ###
+@@ -1169,6 +1173,7 @@ commandMap = {
+         "upgrade": Upgrade,
+         "xconfig": XConfig,
+         "zfcp": ZFCP,
++        "liveimg": Liveimg,
+ }
+ 
+ dataMap = {
+-- 
+1.7.10.4
+

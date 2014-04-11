@@ -1,0 +1,74 @@
+From 7c1b1f72f819efb01d5ff8b44054db23f2de769e Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Fri, 11 Apr 2014 04:23:44 -0400
+Subject: [PATCH] pykickstart: read the liveimg from the ks file
+
+Upstream-Status: Inappropriate [Upstream supports this]
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pykickstart/commands/liveimg.py |   39 +++++++++++++++++++++++++++++++++++++++
+ pykickstart/handlers/control.py |    1 +
+ 2 files changed, 40 insertions(+)
+ create mode 100644 pykickstart/commands/liveimg.py
+
+diff --git a/pykickstart/commands/liveimg.py b/pykickstart/commands/liveimg.py
+new file mode 100644
+index 0000000..3c1285c
+--- /dev/null
++++ b/pykickstart/commands/liveimg.py
+@@ -0,0 +1,39 @@
++#
++# Copyright (C) 2014 Wind River Systems, Inc.
++#
++from pykickstart.base import *
++from pykickstart.errors import *
++from pykickstart.options import *
++
++import gettext
++_ = lambda x: gettext.ldgettext("pykickstart", x)
++
++class WRL_Image(KickstartCommand):
++    removedKeywords = KickstartCommand.removedKeywords
++    removedAttrs = KickstartCommand.removedAttrs
++
++    def __init__(self, writePriority=0, *args, **kwargs):
++        KickstartCommand.__init__(self, writePriority, *args, **kwargs)
++        self.op = self._getParser()
++        self.liveimg = kwargs.get("liveimg", "")
++
++    def __str__(self):
++        retval = KickstartCommand.__str__(self)
++
++        if self.liveimg != "":
++            retval += "# Liveimg\nliveimg %s\n" % self.liveimg
++
++        return retval
++
++    def _getParser(self):
++        op = KSOptionParser()
++        return op
++
++    def parse(self, args):
++        (opts, extra) = self.op.parse_args(args=args, lineno=self.lineno)
++
++        if len(extra) != 1:
++            raise KickstartValueError, formatErrorMsg(self.lineno, msg=_("Kickstart command %s requires one argument") % "liveimg")
++
++        self.liveimg = extra[0]
++        return self
+diff --git a/pykickstart/handlers/control.py b/pykickstart/handlers/control.py
+index 0a0c494..582d4c0 100644
+--- a/pykickstart/handlers/control.py
++++ b/pykickstart/handlers/control.py
+@@ -821,6 +821,7 @@ commandMap = {
+         "xconfig": xconfig.F14_XConfig,
+         "zerombr": zerombr.F9_ZeroMbr,
+         "zfcp": zfcp.F14_ZFCP,
++        "liveimg": liveimg.WRL_Image,
+     },
+ 
+     # based on fc1
+-- 
+1.7.10.4
+
