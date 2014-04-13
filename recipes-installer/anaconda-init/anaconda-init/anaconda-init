@@ -156,10 +156,18 @@ FOE
            anaconda_opts="$anaconda_opts --kickstart=file:///run/initramfs/live/ks.cfg"
        fi
 
-       if [ -n "$liveinst" ]; then
+       ROOT_IMAGE="/LiveOS/rootfs.img"
+       if [ -e $ROOT_IMAGE ]; then
            mkdir -p /mnt/target_rootfs
-           mount -o loop=/dev/loop3 /LiveOS/rootfs.img /mnt/target_rootfs
-           anaconda_opts="$anaconda_opts --liveinst --method=liveinst:/dev/loop3"
+           mount -o loop=/dev/loop3 $ROOT_IMAGE /mnt/target_rootfs
+           [ $? -eq 0 ] || exit 1
+       fi
+       if [ -n "$liveinst" ]; then
+           if [ ! -e $ROOT_IMAGE ]; then
+               echo "ERROR: no $ROOT_IMAGE" >&2
+           else
+               anaconda_opts="$anaconda_opts --liveinst --method=liveinst:/dev/loop3"
+           fi
        fi
 
        BOOTIF=`cat /proc/cmdline |xargs -n1 echo |grep BOOTIF=`
