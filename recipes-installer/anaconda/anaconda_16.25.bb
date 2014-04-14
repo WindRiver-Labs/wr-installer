@@ -83,6 +83,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-livecd-write-ks.patch \
            file://anaconda-read-ks-for-liveimg.patch \
            file://anaconda-image-installation-based-kickstart.patch \
+           file://anaconda-pyanaconda-check-ksdata.liveimg.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
