@@ -25,7 +25,7 @@ DEPENDS = "sqlite3 nspr zlib"
 RDEPENDS_${PN} = "perl"
 
 SRC_URI = "\
-	http://ftp.mozilla.org/pub/mozilla.org/security/nss/releases/NSS_3_13_6_RTM/src/${PN}-${PV}.tar.gz;name=archive \
+	http://ftp.mozilla.org/pub/mozilla.org/security/nss/releases/NSS_3_13_6_RTM/src/${BPN}-${PV}.tar.gz;name=archive \
 	file://nss-no-rpath.patch;striplevel=0 \
 	file://nss-fixrandom.patch;striplevel=0 \
 	file://nss-3.12.7-format_not_a_string_literal_and_no_format_arguments.patch \

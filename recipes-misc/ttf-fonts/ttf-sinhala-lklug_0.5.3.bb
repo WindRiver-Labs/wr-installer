@@ -8,7 +8,7 @@ FONTNAME="sinhala-lklug"
 FONTCONF="65-${FONTNAME}.conf"
 
 LIC_FILES_CHKSUM="file://COPYING;md5=751419260aa954499f7abaabaa882bbe"
-SRC_URI = "http://ftp.de.debian.org/debian/pool/main/t/ttf-sinhala-lklug/${PN}_${PV}.orig.tar.gz \
+SRC_URI = "http://ftp.de.debian.org/debian/pool/main/t/ttf-sinhala-lklug/${BPN}_${PV}.orig.tar.gz \
            file://65-sinhala-lklug.conf \
            file://fix_convert_ff.patch"
 

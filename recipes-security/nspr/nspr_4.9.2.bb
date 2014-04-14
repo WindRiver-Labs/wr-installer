@@ -9,7 +9,7 @@ SECTION = "libs/network"
 
 PR = "r0"
 
-SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/nspr/releases/v${PV}/src/${PN}-${PV}.tar.gz \ 
+SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/nspr/releases/v${PV}/src/${BPN}-${PV}.tar.gz \
            file://remove-rpath-from-tests.patch \
            file://fix-build-on-x86_64.patch \
            file://trickly-fix-build-on-x86_64.patch \
