@@ -1,0 +1,37 @@
+From 59b443e17ff0e9be5286e8f9ef09946981c367b3 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Mon, 14 Apr 2014 11:11:17 -0400
+Subject: [PATCH] pyanaconda/livecd.py: use uname to find the kernel version
+
+There maybe no rpmdb on the target image, so that we can't find the
+kernel version by the rpmdb, we can use the "uname" to figure out the
+kernel version when rpm failed.
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/livecd.py |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/pyanaconda/livecd.py b/pyanaconda/livecd.py
+index a2290b4..62999e3 100644
+--- a/pyanaconda/livecd.py
++++ b/pyanaconda/livecd.py
+@@ -313,7 +313,14 @@ class LiveCDCopyBackend(backend.AnacondaBackend):
+             packages.recreateInitrd(n, anaconda.rootPath)
+ 
+     def kernelVersionList(self, rootPath = "/"):
+-        return packages.rpmKernelVersionList(rootPath)
++        kvl = packages.rpmKernelVersionList(rootPath)
++        # Use "uname" to find the kernel version if rpm didn't find it since
++        # there maybe no rpmdb on the target
++        if not kvl:
++            kvl = [(iutil.execWithCapture("uname", ["-r"], stderr="/dev/tty5"), \
++                    iutil.execWithCapture("uname", ["-m"], stderr="/dev/tty5"), \
++                    "image")]
++        return kvl
+ 
+     def getMinimumSizeMB(self, part):
+         if part == "/":
+-- 
+1.7.10.4
+
