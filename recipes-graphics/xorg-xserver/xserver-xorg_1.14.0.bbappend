@@ -6,8 +6,12 @@ XSERVER_SOURCE_DIR="${datadir}/${PN}-source"
 FILES_${PN}-source = "${XSERVER_SOURCE_DIR}"
 
 do_install_append () {
-    install -d ${D}${XSERVER_SOURCE_DIR}/{Xext,xkb,GL,hw/{xquartz/bundle,xfree86/common}}
-    install -d ${D}${XSERVER_SOURCE_DIR}/{hw/dmx/doc,man,doc,hw/dmx/doxygen}
+    for subdir in Xext xkb GL hw/xquartz/bundle hw/xfree86/common; do
+        install -d ${D}${XSERVER_SOURCE_DIR}/$subdir
+    done
+    for subdir in hw/dmx/doc man doc hw/dmx/doxygen; do
+        install -d ${D}${XSERVER_SOURCE_DIR}/$subdir
+    done
 
     install -m 0644 hw/xquartz/bundle/cpprules.in ${D}${XSERVER_SOURCE_DIR}/hw/xquartz/bundle/cpprules.in
     install -m 0644 man/Xserver.man ${D}${XSERVER_SOURCE_DIR}/man/Xserver.man
