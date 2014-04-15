@@ -2,8 +2,10 @@ DESCRIPTION = "Libraries providing API for reporting different problems in appli
 to different bug targets like Bugzilla, ftp, trac, etc..."
 HOMEPAGE = "https://fedorahosted.org/abrt/"
 LICENSE = "GPLv2+"
-DEPENDS = "automake flex asciidoc-native xmlto-native xmlrpc-c libgnome-keyring libjson libtar libnewt gtk+ nss"
-PR = "r0"
+DEPENDS = "automake flex asciidoc-native xmlto-native xmlrpc-c \
+        libgnome-keyring libjson libtar libnewt gtk+ nss libproxy"
+
+RDEPENDS_${PN} = "libproxy"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe"
 
