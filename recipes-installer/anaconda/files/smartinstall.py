@@ -770,8 +770,30 @@ class SmartBackend(AnacondaBackend):
         # be pulling in filelists
         return packages.rpmKernelVersionList(rootPath)
 
-    def writePackageKS(self, f, anaconda):
+    def writePackagesKS(self, f, anaconda):
         log.debug("called smartinstall.SmartBackend.writePackageKS")
+
+        import StringIO
+
+        ## Get a list of all available packages...
+        instpkgs = ""
+        stdout = sys.stdout
+        sys.stdout = myout = StringIO.StringIO()
+        self.anaconda.backend.asmart.runSmart('query', ['--installed',
+                '--show-format=$name\n'])
+        sys.stdout = stdout
+        iface.object.hideStatus()
+        myout.seek(0)
+        for line in myout:
+            log.debug("writePackagesKS: %s" % line)
+            if line == '\n':
+                continue
+            else:
+                instpkgs += line
+
+        f.write("\n%packages\n")
+        f.write(instpkgs)
+        f.write("%end\n")
 
     def writeConfiguration(self):
         log.debug("called smartinstall.SmartBackend.writeConfigurations")
