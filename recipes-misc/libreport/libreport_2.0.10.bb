@@ -15,6 +15,7 @@ SRC_URI += "file://0001-Add-cgroup-information-filename.patch \
             file://0001-rhbz-820985-bz-4.2-doesn-t-have-bug_id-member-it-s-i.patch \
             file://0002-bugzilla-query-bz-version-and-for-4.2-use-id-element.patch \
             file://configure.patch \
+            file://Makefile.am-remove-doc.patch \
             file://without-build-plugins.patch"
 
 SRC_URI[md5sum] = "84d564e3acf0039eacb0e139cbe1a642"
