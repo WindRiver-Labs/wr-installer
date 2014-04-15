@@ -597,6 +597,8 @@ class SmartBackend(AnacondaBackend):
     def selectPackage(self, pkg, *args):
         log.debug("called smartinstall.SmartBackend.selectPackage %s" % pkg)
         self.pkgs_to_install.append(pkg)
+        # Return the number of the selected packages
+        return 1
 
     def deselectPackage(self, pkg, *args):
         log.debug("called smartinstall.SmartBackend.deselectPackage %s" % pkg)
@@ -643,18 +645,21 @@ class SmartBackend(AnacondaBackend):
             return
 
         log.debug("Adding task specific groups")
-        (task, grps) = self.task_to_install
-        for group in grps:
-            self.selectGroup(group)
+        if self.task_to_install:
+            (task, grps) = self.task_to_install
+            for group in grps:
+                self.selectGroup(group)
 
         # figure out which image this is
         package_install = None
+        image_to_install = None
         for image in self.grps_to_install:
             if image in self.anaconda.instClass.image_list:
                 image_to_install = image
                 break
 
-        (image_summary, image_description, package_install, package_install_attemptonly) = anaconda.instClass.image[image_to_install]
+        if image_to_install:
+            (image_summary, image_description, package_install, package_install_attemptonly) = anaconda.instClass.image[image_to_install]
 
         for group in self.grps_to_install:
             if group == 'image':
