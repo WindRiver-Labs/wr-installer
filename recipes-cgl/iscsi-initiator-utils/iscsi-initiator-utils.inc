@@ -39,7 +39,9 @@ TARGET_CC_ARCH += "${LDFLAGS}"
 #utils/fwparam_ibft/prom_parse.y utils/fwparam_ibft/prom_lex.l
 #already parsed in source 2.0 but still depends on flex and bison 
 #native in case future version they are not parsed
-DEPENDS += "openssl flex-native bison-native python-setuptools-native python-native python"
+DEPENDS += "openssl flex-native bison-native python-setuptools-native python-native python \
+ doxygen-native \
+"
 
 PACKAGES =+ "${PN}-tests ${PN}-python ${PN}-python-dbg"
 
