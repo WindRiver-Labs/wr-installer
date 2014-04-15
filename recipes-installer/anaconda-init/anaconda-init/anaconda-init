@@ -240,14 +240,14 @@ FOE
            fi
 
            # Add a barrier to ensure that networking is up before running curl
-           nm-online -q --timeout=30
-
-           if [ $? -eq 0 ]; then
-               curl --retry 3 --retry-max-time 30 -o /tmp/updates.img $updates
-           else
-               echo "anaconda-init: Could not detect if NetworkManager was online."
-               exit 1
-           fi
+           #nm-online -q --timeout=30
+           #
+           #if [ $? -eq 0 ]; then
+           #    curl --retry 3 --retry-max-time 30 -o /tmp/updates.img $updates
+           #else
+           #    echo "anaconda-init: Could not detect if NetworkManager was online."
+           #    exit 1
+           #fi
 
            mkdir $UPDATES_DIR
            # We officially support two updates.img formats:  a filesystem image, and
@@ -271,11 +271,11 @@ FOE
        fi
 
        # Add a barrier here to ensure that networking is up before running Anaconda
-       nm-online -q --timeout=30
-       if [ $? -eq 2 ]; then
-           echo "anaconda-init: Could not detect if NetworkManager was online."
-           exit 1
-       fi
+       #nm-online -q --timeout=30
+       #if [ $? -eq 2 ]; then
+       #    echo "anaconda-init: Could not detect if NetworkManager was online."
+       #    exit 1
+       #fi
 
        # Using su rather than sudo as latest 1.8.1 cause failure [YOCTO #1211]
        if [ -n "$noinstall" ]; then
