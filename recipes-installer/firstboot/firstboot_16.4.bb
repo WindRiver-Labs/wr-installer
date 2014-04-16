@@ -35,6 +35,7 @@ EXTRA_OEMAKE += "DESTDIR=${D} SITELIB=${PYTHON_SITEPACKAGES_DIR} RPM_BUILD_ROOT=
 
 FILES_${PN} += "${sysconfdir} ${bindir} ${includedir} ${libdir} ${libexecdir} ${datadir} ${sbindir}"
 FILES_${PN} += "${PYTHON_SITEPACKAGES_DIR}/* ${datadir}/firstboot ${sbindir}/firstboot /lib"
+FILES_${PN} += "${exec_prefix}/local"
 
 do_install() {
     oe_runmake install
