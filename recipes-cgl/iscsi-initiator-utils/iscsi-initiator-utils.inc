@@ -32,6 +32,7 @@ SRC_URI = "http://www.open-iscsi.org/bits/${UPSTREAM_name}-${PV}.tar.gz \
 	   file://04-iscsi \
 	   file://iscsidevs.init \
 	   file://iscsid.init \
+	   file://volatiles.99_iscsi \
 "
 S = "${WORKDIR}/${UPSTREAM_name}-${PV}"
 TARGET_CC_ARCH += "${LDFLAGS}"
@@ -103,7 +104,10 @@ do_install () {
 		${D}${localstatedir}/lib/iscsi/isns \
 		${D}${localstatedir}/lib/iscsi/slp \
 		${D}${localstatedir}/lib/iscsi/ifaces \
-		${D}${localstatedir}/lock/iscsi ${D}/${mandir}/man8
+		${D}/${mandir}/man8
+
+	install -d ${D}/${sysconfdir}/default/volatiles
+	install -m 644 ${WORKDIR}/volatiles.99_iscsi ${D}/${sysconfdir}/default/volatiles/99_iscsi
 
 	install -p -m 755 ${S}/usr/iscsid ${S}/usr/iscsiadm \
 		${S}/utils/iscsi-iname \
