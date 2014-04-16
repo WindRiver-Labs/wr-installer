@@ -1,16 +1,14 @@
 PR = "${INC_PR}.0"
 
-export INST = "${D}"
-
 do_install() {
 
         oe_runmake install
 
         # the crosscompiler is packaged by klcc-cross
         # remove klcc
-        # rm ${D}${base_bindir}/klcc
+        rm ${D}${base_bindir}/klcc
         # remove now empty dir
-        # rmdir ${D}${base_bindir}
+        rmdir ${D}${base_bindir}
 
         install -d ${D}${base_libdir}
         install -m 755 usr/klibc/klibc-*.so ${D}${base_libdir}
