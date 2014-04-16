@@ -3,7 +3,8 @@ inherit python-dir
 DEPENDS += "python"
 PRINC = "1"
 
-EXTRA_OECONF = "--with-python=${STAGING_DIR_HOST}${exec_prefix} --without-debug --without-legacy --with-catalog --without-docbook --with-c14n --without-lzma --with-fexceptions PYTHON=${PYTHON} baselib=${baselib}"
+EXTRA_OECONF = "--with-python=${STAGING_DIR_HOST}${exec_prefix} --without-debug --without-legacy --with-catalog --without-docbook --with-c14n --without-lzma --with-fexceptions PYTHON=${PYTHON} baselib=${baselib} \
+ PYTHON_SITE_PACKAGES=${PYTHON_SITEPACKAGES_DIR}"
 EXTRA_OECONF_virtclass-native = "--with-python=${PYTHON} --without-legacy --with-catalog --without-docbook --with-c14n --without-lzma"
 EXTRA_OECONF_virtclass-nativesdk = "--with-python=${PYTHON} --without-legacy --with-catalog --without-docbook --with-c14n --without-lzma"
 
@@ -17,3 +18,6 @@ FILES_${PN}-dev += "${PYTHON_SITEPACKAGES_DIR}/libxml2mod.la"
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 SRC_URI += "file://autoconf_python.patch"
+SRC_URI_append_class-target += "\
+  file://configure.in-fix-invalid-PYTHON_SITE_PACKAGES.patch \
+"
