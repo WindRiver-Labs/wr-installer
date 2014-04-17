@@ -19,7 +19,9 @@ inherit autotools cmake
 
 SRC_URI = "http://pkgs.fedoraproject.org/repo/pkgs/tigervnc/tigervnc-1.2.80-20130314svn5065.tar.bz2/4522c6f107dbe778f197b2294c0eb867/tigervnc-1.2.80-20130314svn5065.tar.bz2 \
            file://disable_vncviewer.patch \
-           file://remove_includedir.patch"
+           file://remove_includedir.patch \
+           file://add-fPIC-option-to-COMPILE_FLAGS.patch \
+"
 
 SRC_URI[md5sum] = "4522c6f107dbe778f197b2294c0eb867"
 SRC_URI[sha256sum] = "bdb1b4ded129ca45e0ad9b9616851ae6f86ffed83e961991dc04bfef767a3b68"
