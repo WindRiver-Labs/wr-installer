@@ -1,0 +1,32 @@
+Makefile: explicitly assign install_data with none for setup.py
+
+The install_data is the standard command of setup.py, if it was not
+explicitly assigned by the user (--install-data=), the python-native
+incorrectly assigned it with '${STAGING_DIR_NATIVE}/usr' which caused
+subcommand install_data to create dir ${STAGING_DIR_NATIVE}/usr in ${D}.
+
+In this case, the user didn't use install_data while invoking setup.py,
+we should explicitly config it with none.
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+--- a/Makefile
++++ b/Makefile
+@@ -25,7 +25,7 @@ install: all
+ 	for py in progs/* ; do \
+ 		sed -i -e s,@VERSION@,$(VERSION),g $${py} ; \
+ 	done
+-	python setup.py install --root=$(DESTDIR) --install-lib=$(SITELIB)
++	python setup.py install --root=$(DESTDIR) --install-lib=$(SITELIB) --install-data=""
+ 	$(MAKE) -C po install
+ 
+ tag:
+-- 
+1.8.1.2
+

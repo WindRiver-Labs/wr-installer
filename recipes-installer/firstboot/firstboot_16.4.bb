@@ -16,7 +16,9 @@ PR = "r0"
 
 inherit python-dir pythonnative
 
-SRC_URI = "http://pkgs.fedoraproject.org/lookaside/pkgs/firstboot/firstboot-16.4.tar.bz2/1124c87f126bf7823f2dd04f1c324f9f/firstboot-16.4.tar.bz2"
+SRC_URI = "http://pkgs.fedoraproject.org/lookaside/pkgs/firstboot/firstboot-16.4.tar.bz2/1124c87f126bf7823f2dd04f1c324f9f/firstboot-16.4.tar.bz2 \
+           file://Makefile-explicitly-assign-install_data-with-none-fo.patch \
+"
 SRC_URI[md5sum] = "1124c87f126bf7823f2dd04f1c324f9f"
 SRC_URI[sha256sum] = "4c1b17310d213d4740f7e8b88d9ba0488d36b09b7cd84447a41bebb18ac6e933"
 
