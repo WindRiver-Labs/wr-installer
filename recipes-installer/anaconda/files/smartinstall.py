@@ -559,7 +559,7 @@ class SmartBackend(AnacondaBackend):
         log.debug("called smartinstall.SmartBackend.doBackendSetup")
 
         if anaconda.dir == DISPATCH_BACK:
-            return DISPATH_BACK
+            return DISPATCH_BACK
 
         if anaconda.upgrade:
             # make sure that the rpmdb doesn't have stale locks
