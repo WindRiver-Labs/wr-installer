@@ -12,6 +12,8 @@ INSTPRODUCT ?= "${DISTRO_NAME}"
 INSTVER     ?= "${DISTRO_VERSION}"
 INSTBUGURL  ?= "http://www.windriver.com/"
 
+INSTALLER_TARGET_IS_BUILD ?= "0"
+
 # Code below is copied and adapted from package_rpm.bbclass implementation
 # ARG1 should be the MULTILIB_PREFIX_LIST
 wrl_installer_setup_local_multilibs() {
@@ -237,15 +239,33 @@ wrl_installer_check() {
 
 	elif [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build" ]; then
 		# Find the DEFAULT_IMAGE....
-		PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
-			BBCMD="bitbake -e | grep -e '^DEFAULT_IMAGE=.*' > ${BB_LOGFILE}.distro_vals"
+                if [ "${INSTALLER_TARGET_IS_BUILD}" = "1" ]; then
+                    cat > ${BB_LOGFILE}.distro_vals <<_EOF
+DEFAULT_IMAGE="${DEFAULT_IMAGE}"
+DISTRO_NAME="${DISTRO_NAME}"
+DISTRO_VERSION="${DISTRO_VERSION}"
+SUMMARY="${SUMMARY}"
+DESCRIPTION="${DESCRIPTION}"
+PACKAGE_INSTALL="${PACKAGE_INSTALL}"
+PACKAGE_INSTALL_ATTEMPTONLY="${PACKAGE_INSTALL_ATTEMPTONLY}"
+MULTILIB_PREFIX_LIST="${MULTILIB_PREFIX_LIST}"
+BB_LOGFILE="${BB_LOGFILE}"
+_EOF
+                else
+                    PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
+                    BBCMD="bitbake -e | grep -e '^DEFAULT_IMAGE=.*' > ${BB_LOGFILE}.distro_vals"
+                    eval `cat ${BB_LOGFILE}.distro_vals`
 
-		eval `cat ${BB_LOGFILE}.distro_vals`
+                    # Use the DEFAULT_IMAGE to load the rest of the items...
+                    PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
+                        BBCMD="bitbake -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | \
+                            grep -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
+                            -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' \
+                            -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' \
+                            -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' \
+                            -e '^MULTILIB_PREFIX_LIST=.*' > ${BB_LOGFILE}.distro_vals"
 
-		# Use the DEFAULT_IMAGE to load the rest of the items...
-		PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
-			BBCMD="bitbake -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | grep -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' -e '^MULTILIB_PREFIX_LIST=.*' > ${BB_LOGFILE}.distro_vals"
-
+                fi
 		unset DISTRO_NAME DISTRO_VERSION DEFAULT_IMAGE SUMMARY DESCRIPTION MULTILIB_PRELIX_LIST PACKAGE_INSTALL PACKAGE_INSTALL_ATTEMPTONLY
 		eval `cat ${BB_LOGFILE}.distro_vals`
 
@@ -383,6 +403,7 @@ python __anonymous() {
 
     if bb.data.inherits_class('image', d) and not d.getVar('INSTALLER_TARGET_BUILD', True):
         d.setVar('INSTALLER_TARGET_BUILD', '${WRL_TOP_BUILD_DIR}')
+        d.setVar('INSTALLER_TARGET_IS_BUILD', '1')
 }
 
 
