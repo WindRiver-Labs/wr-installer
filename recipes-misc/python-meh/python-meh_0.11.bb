@@ -10,7 +10,7 @@ LICENSE = "GPLv2+"
 DEPENDS = "python dbus python-pygtk libglade rpm openssh libnewt"
 PR = "r0"
 
-inherit autotools python-dir
+inherit autotools python-dir pythonnative
 
 SRC_URI = "http://pkgs.fedoraproject.org/repo/pkgs/python-meh/python-meh-0.11.tar.gz/c2d412c275dd1675d4e3b174696fd8ca/python-meh-0.11.tar.gz \
 	   file://Install-to-usr-instead-of-usr-local.patch"

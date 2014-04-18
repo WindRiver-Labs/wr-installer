@@ -13,7 +13,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=8ca43cbc842c2336e835926c2166c28b"
 
 PR = "r0"
 
-inherit autotools gettext python-dir
+inherit autotools gettext python-dir pythonnative
 
 SRC_URI = "http://pkgs.fedoraproject.org/repo/pkgs/system-config-date/system-config-date-1.10.5.tar.bz2/2b9c05684952a9ffb1ce927f12560202/system-config-date-1.10.5.tar.bz2 \
 	   file://Install-to-usr-instead-of-usr-local.patch"

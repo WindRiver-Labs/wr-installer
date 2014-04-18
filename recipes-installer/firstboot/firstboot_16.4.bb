@@ -14,13 +14,7 @@ PR = "r0"
 
 # FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-inherit python-dir
-
-export STAGING_INCDIR
-export STAGING_LIBDIR
-export HOST_SYS
-export BUILD_SYS
-export PYTHON_DIR
+inherit python-dir pythonnative
 
 SRC_URI = "http://pkgs.fedoraproject.org/lookaside/pkgs/firstboot/firstboot-16.4.tar.bz2/1124c87f126bf7823f2dd04f1c324f9f/firstboot-16.4.tar.bz2"
 SRC_URI[md5sum] = "1124c87f126bf7823f2dd04f1c324f9f"
