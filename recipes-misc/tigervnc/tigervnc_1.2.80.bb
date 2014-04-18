@@ -44,15 +44,15 @@ EXTRA_OECONF = "--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \
 #        --with-default-font-path="catalogue:%{_sysconfdir}/X11/fontpath.d,built-ins"
 
 do_configure_append () {
-    cp -r ${STAGING_DATADIR}/xserver-xorg-source/* unix/xserver
+    cp -r ${STAGING_DATADIR}/${MLPREFIX}xserver-xorg-source/* unix/xserver
 
     pushd unix/xserver
     for all in `find . -type f -perm -001`; do
         chmod -x "$all"
     done
 
-    PACKAGE_VERSION_MAJOR=$(grep 'PACKAGE_VERSION_MAJOR' ${STAGING_DATADIR}/xserver-xorg-source/include/do-not-use-config.h | cut -d\  -f3)
-    PACKAGE_VERSION_MINOR=$(grep 'PACKAGE_VERSION_MINOR' ${STAGING_DATADIR}/xserver-xorg-source/include/do-not-use-config.h | cut -d\  -f3)
+    PACKAGE_VERSION_MAJOR=$(grep 'PACKAGE_VERSION_MAJOR' ${STAGING_DATADIR}//${MLPREFIX}xserver-xorg-source/include/do-not-use-config.h | cut -d\  -f3)
+    PACKAGE_VERSION_MINOR=$(grep 'PACKAGE_VERSION_MINOR' ${STAGING_DATADIR}//${MLPREFIX}xserver-xorg-source/include/do-not-use-config.h | cut -d\  -f3)
 
     patch -p1 -b --suffix .vnc < ../xserver$PACKAGE_VERSION_MAJOR$PACKAGE_VERSION_MINOR.patch
 
