@@ -4,7 +4,7 @@
 DESCRIPTION = "Tools for certain user account management tasks"
 HOMEPAGE = "https://fedorahosted.org/usermode/"
 LICENSE = "GPLv2+"
-DEPENDS = "libuser libpam gtk+"
+DEPENDS = "libuser libpam gtk+ desktop-file-utils-native"
 PR = "r0"
 
 inherit autotools gettext
