@@ -2,7 +2,7 @@ DESCRIPTION = "Libraries providing API for reporting different problems in appli
 to different bug targets like Bugzilla, ftp, trac, etc..."
 HOMEPAGE = "https://fedorahosted.org/abrt/"
 LICENSE = "GPLv2+"
-DEPENDS = "automake flex asciidoc-native xmlto-native xmlrpc-c \
+DEPENDS = "automake flex xmlrpc-c \
         libgnome-keyring libjson libtar libnewt gtk+ nss libproxy"
 
 RDEPENDS_${PN} = "libproxy"
@@ -18,6 +18,7 @@ SRC_URI += "file://0001-Add-cgroup-information-filename.patch \
             file://0002-bugzilla-query-bz-version-and-for-4.2-use-id-element.patch \
             file://configure.patch \
             file://Makefile.am-remove-doc.patch \
+            file://configure.ac-remove-prog-test-of-xmlto-and-asciidoc.patch \
             file://without-build-plugins.patch"
 
 SRC_URI[md5sum] = "84d564e3acf0039eacb0e139cbe1a642"
