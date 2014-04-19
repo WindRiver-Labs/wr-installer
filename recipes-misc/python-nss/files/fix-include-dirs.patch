@@ -9,8 +9,8 @@ Index: b/setup.py
 -    nss_include_dir  = find_include_dir(['nss3', 'nss'],   ['nss.h',  'pk11pub.h'])
 -    nspr_include_dir = find_include_dir(['nspr4', 'nspr'], ['nspr.h', 'prio.h'])
 +    base_include_dir = os.getenv("STAGING_INCDIR")
-+    nss_include_dir  = find_include_dir(['nss3', 'nss'],   ['nss.h',  'pk11pub.h'], [base_include_dir])
-+    nspr_include_dir = find_include_dir(['nspr4', 'nspr'], ['nspr.h', 'prio.h'], [base_include_dir])
++    nss_include_dir  = find_include_dir(['nss3', 'nss', '.'],   ['nss.h',  'pk11pub.h'], [base_include_dir])
++    nspr_include_dir = find_include_dir(['nspr4', 'nspr', '.'], ['nspr.h', 'prio.h'], [base_include_dir])
  
      nss_error_extension = \
          Extension('nss.error',
