@@ -12,6 +12,11 @@ INSTPRODUCT ?= "${DISTRO_NAME}"
 INSTVER     ?= "${DISTRO_VERSION}"
 INSTBUGURL  ?= "http://www.windriver.com/"
 
+# NOTE: Please update anaconda-init when you change INSTALLER_CONFDIR, use "="
+#       but not "?=" since this is not configurable.
+INSTALLER_CONFDIR = "${IMAGE_ROOTFS}/installer-config"
+KICKSTART_FILE ?= ""
+
 INSTALLER_TARGET_IS_BUILD ?= "0"
 
 # Code below is copied and adapted from package_rpm.bbclass implementation
@@ -394,6 +399,26 @@ wrl_installer() {
 
 	## Stop udev from automounting disks during install process
 	#rm -f ${IMAGE_ROOTFS}/etc/udev/scripts/mount.sh
+
+        KS_CFG="${INSTALLER_CONFDIR}/ks.cfg"
+        if [ -n "${KICKSTART_FILE}" ]; then
+            if [ -e "${KICKSTART_FILE}" ]; then
+                KS_FILE="${KICKSTART_FILE}"
+            else
+                bberror "The kickstart file ${KICKSTART_FILE} doesn't exist!"
+            fi
+        elif [ -e "${INSTALLER_TARGET_BUILD}/anaconda-ks.cfg" ]; then
+            # Try to find the anaconda-ks.cfg in ${INSTALLER_TARGET_BUILD}
+            KS_FILE="${INSTALLER_TARGET_BUILD}/anaconda-ks.cfg"
+        elif [ -e "${WRL_TOP_BUILD_DIR}/anaconda-ks.cfg" ]; then
+            # Try to find the anaconda-ks.cfg in ${WRL_TOP_BUILD_DIR}
+            KS_FILE="${WRL_TOP_BUILD_DIR}/anaconda-ks.cfg"
+        fi
+        if [ -e "$KS_FILE" ]; then
+            bbnote "Copying kickstart file $KS_FILE to $KS_CFG ..."
+            mkdir -p ${INSTALLER_CONFDIR}
+            cp $KS_FILE $KS_CFG
+        fi
 }
 
 python __anonymous() {
