@@ -45,28 +45,6 @@ RDEPENDS_packagegroup-installer-x11-anaconda = "\
     ${VIRTUAL-RUNTIME_xserver_common} \
     ${VIRTUAL-RUNTIME_graphical_init_manager} \
     liberation-fonts \
-    ttf-lohit-assamese \
-    ttf-lohit-bengali \
-    ttf-lohit-devanagari \
-    ttf-lohit-gujarati \
-    ttf-lohit-kannada \
-    ttf-lohit-malayalam \
-    ttf-lohit-marathi \
-    ttf-lohit-nepali \
-    ttf-lohit-oriya \
-    ttf-lohit-punjabi \
-    ttf-lohit-tamil \
-    ttf-lohit-tamil-classical \
-    ttf-lohit-telugu \
-    ttf-wqy-zenhei \
-    ttf-dejavu-sans \
-    ttf-dejavu-sans-mono \
-    ttf-dejavu-sans-condensed \
-    ttf-dejavu-serif \
-    ttf-dejavu-serif-condensed \
-    ttf-sazanami-gothic \
-    ttf-sazanami-mincho \
-    ttf-sinhala-lklug \
     xauth \
     xhost \
     xset \
