@@ -11,7 +11,10 @@ S = "${WORKDIR}"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 # For nm-online
-RDEPENDS_${PN} = "networkmanager-tests"
+#RDEPENDS_${PN} = "networkmanager-tests"
+
+# For mount -oloop=/dev/loopX, busybox's mount doesn't support this.
+RDEPENDS_${PN} = "util-linux"
 
 do_install() {
     install -d ${D}/${sysconfdir}
@@ -26,7 +29,7 @@ do_install() {
 inherit update-rc.d useradd
 
 INITSCRIPT_NAME = "anaconda-init"
-INITSCRIPT_PARAMS = "start 30 5 2 . stop 20 0 1 6 ."
+INITSCRIPT_PARAMS = "start 30 2 3 4 5 . stop 20 0 1 6 ."
 
 # Use fixed Xusername of xuser for now, this will need to be
 # fixed if the Xusername changes from xuser

@@ -13,16 +13,9 @@ INITRD_IMAGE = "wrlinux-image-installer-initramfs"
 
 # We override what gets set in core-image.bbclass
 IMAGE_INSTALL = "\
-    packagegroup-wr-base \
     packagegroup-wr-boot \
-    packagegroup-wr-core-util \
-    packagegroup-wr-core-net \
-    packagegroup-wr-core-sys-util \
-    packagegroup-wr-core-python \
     packagegroup-core-ssh-openssh \
     packagegroup-installer-x11-anaconda \
-    net-tools \
-    wr-init \
     kernel-modules \
     windriver-gnome-theme \
     windriver-logos \
