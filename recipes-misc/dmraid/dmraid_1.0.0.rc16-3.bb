@@ -9,7 +9,7 @@ HOMEPAGE = "http://people.redhat.com/heinzm/sw/dmraid"
 LICENSE = "GPLv2+"
 PR = "r0"
 
-DEPENDS = "klibc lvm2"
+DEPENDS = "lvm2"
 
 # XXX kpartx and  dmraid-events were listed as requires in spec file
 RDEPENDS_${PN} = "lvm2"
@@ -50,7 +50,7 @@ inherit autotools gettext
 
 export DESTDIR="${D}"
 EXTRA_OECONF += " --prefix=${D}/${prefix} --sbindir=${D}/${base_sbindir} --libdir=${D}/${base_libdir} --mandir=${D}/${mandir} --includedir=${D}/${includedir}"
-EXTRA_OECONF += " --disable-static_link --enable-led --enable-intel_led"
+EXTRA_OECONF += " --disable-static_link --enable-led --enable-intel_led --disable-klibc"
 
 do_configure_prepend () {
     cp ${WORKDIR}/klibc.m4 ${S}
