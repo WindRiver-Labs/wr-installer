@@ -41,7 +41,6 @@ TARGET_CC_ARCH += "${LDFLAGS}"
 #already parsed in source 2.0 but still depends on flex and bison 
 #native in case future version they are not parsed
 DEPENDS += "openssl flex-native bison-native python-setuptools-native python-native python \
- doxygen-native \
 "
 
 PACKAGES =+ "${PN}-tests ${PN}-python ${PN}-python-dbg"
@@ -82,7 +81,7 @@ do_compile () {
          BUILD_SYS=${BUILD_SYS} HOST_SYS=${HOST_SYS} \
          ${STAGING_BINDIR_NATIVE}/python-native/python setup.py build ${DISTUTILS_BUILD_ARGS} || \
          bbfatal "python setup.py build_ext execution failed."; \
-         touch -r libiscsi.doxy html/* )
+         )
 }
 
 do_install () {
