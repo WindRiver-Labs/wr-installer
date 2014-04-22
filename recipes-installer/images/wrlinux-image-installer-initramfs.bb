@@ -4,7 +4,7 @@ the Minimal RAM-based Initial Root Filesystem (initramfs), which finds the \
 first 'init' program more efficiently."
 
 IMAGE_INSTALL = "\
-    installer-initramfs-live-boot \
+    initramfs-live-boot \
     initramfs-live-install \
     initramfs-live-install-efi \
     busybox udev \
