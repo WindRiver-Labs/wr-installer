@@ -1,5 +1,3 @@
-#DEPENDS += "polkit"
-
 inherit update-rc.d
 
 INITSCRIPT_NAME = "NetworkManager"
@@ -12,9 +10,17 @@ SRC_URI += " \
 	file://NetworkManager.init \
 	"
 
-#EXTRA_OECONF += " \
-#    --enable-polkit \
-#"
+# We don't need polkit in wr-installer and drop the recipes,
+# so disable it explicitly.
+EXTRA_OECONF += " \
+    --disable-polkit \
+"
+# And override the config for systemd to remove polkit option
+# (it is enable in meta-oe).
+PACKAGECONFIG[systemd] = " \
+    --with-systemdsystemunitdir=${systemd_unitdir}/system --with-session-tracking=systemd, \
+    --with-systemdsystemunitdir=no,, \
+"
 
 do_install_prepend() {
 	sed -i -e s:log_daemon_msg:log_begin_msg:g ${S}/initscript/Debian/NetworkManager
