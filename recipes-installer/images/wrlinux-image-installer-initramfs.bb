@@ -64,12 +64,14 @@ installer_initramfs_image_pp () {
     touch ${IMAGE_ROOTFS}/etc/ld.so.conf
 
     # Generate .buildstamp
-    BUILDSTAMP_FILE="${IMAGE_ROOTFS}/.buildstamp"
-    echo '[Main]' > $BUILDSTAMP_FILE
-    echo 'Product=${DISTRO_NAME}' >> $BUILDSTAMP_FILE
-    echo 'Version=${DISTRO_VERSION}' >> $BUILDSTAMP_FILE
-    echo 'BugURL=http://www.windriver.com/' >> $BUILDSTAMP_FILE
-    echo 'IsFinal=True' >> $BUILDSTAMP_FILE
-    DATESTAMP=`date +%Y%m%d%H%M%S`
-    echo "UUID=$DATESTAMP.${TARGET_ARCH}" >> $BUILDSTAMP_FILE
+    if [ ! -f $BUILDSTAMP_FILE ]; then
+        BUILDSTAMP_FILE="${IMAGE_ROOTFS}/.buildstamp"
+        echo '[Main]' > $BUILDSTAMP_FILE
+        echo 'Product=${DISTRO_NAME}' >> $BUILDSTAMP_FILE
+        echo 'Version=${DISTRO_VERSION}' >> $BUILDSTAMP_FILE
+        echo 'BugURL=http://www.windriver.com/' >> $BUILDSTAMP_FILE
+        echo 'IsFinal=True' >> $BUILDSTAMP_FILE
+        DATESTAMP=`date +%Y%m%d%H%M%S`
+        echo "UUID=$DATESTAMP.${TARGET_ARCH}" >> $BUILDSTAMP_FILE
+    fi
 }
