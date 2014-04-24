@@ -1,0 +1,32 @@
+From 8155e9b8a968f7ca4290b0bde23b11bee58d6390 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Thu, 24 Apr 2014 15:50:18 +0800
+Subject: [PATCH] storage/__init__.py: skip mounting loop dev
+
+When we are on live boot, the /media/sr0/rootfs.img is mounted on
+/dev/loop0, the findExistingRootDevices will mount it to /mnt/sysimage,
+and the "losetup -d" can't umount it, then there would be errors.
+
+Upstream-Status: Inappropriate [WR specific]
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/storage/__init__.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyanaconda/storage/__init__.py b/pyanaconda/storage/__init__.py
+index daf56a1..5fd747f 100644
+--- a/pyanaconda/storage/__init__.py
++++ b/pyanaconda/storage/__init__.py
+@@ -1513,7 +1513,7 @@ def findExistingRootDevices(anaconda, upgradeany=False):
+         if not device.format.linuxNative or not device.format.mountable:
+             continue
+ 
+-        if device.protected:
++        if device.protected or device.type == "loop":
+             # can't upgrade the part holding hd: media so why look at it?
+             continue
+ 
+-- 
+1.8.3.1
+
