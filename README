@@ -59,6 +59,18 @@ configure their local.conf file.
     edit <installer_build_dir>/bitbake_build/conf/local.conf
     WRL_INSTALLER_CONF = "/my/installer.conf"
 
+The installer can support the kickstart installs, you can use the ks
+file from /root/anaconda-ks.cfg after the installation and edit it for
+later installs, you can specific the ks file by either of the following
+3 ways:
+  - Set KICKSTART_FILE in the conf file (e.g.: local.conf)
+  - Put it to <installer-target-build>/anaconda-ks.cfg
+  - Put it to <installer-build>/anaconda-ks.cfg
+
+Then the build will take it and start the kickstart installs by default
+when you start the target.
+
+
 License
 -------
 Copyright (C) 2013-2014 Wind River Systems, Inc.
