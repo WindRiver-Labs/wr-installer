@@ -2,25 +2,24 @@
 
 Three main use cases:
 
-1) Minimal installer image which contains ext3 image from target build
-to be copied to local disk. Requires 2 builds.
+1) Installer image which contains ext2, ext3 or ext4 image from target
+   build to be copied to local disk. Requires 2 builds.
 
-2) Minimal installer image which contains rpms from target build to be
-installed to local disk. Requires 2 builds.
+2) Installer image which contains rpms from target build to be installed
+   to local disk. Requires 2 builds.
 
 3) Any image which also contains installer and all the rpms used to
-build that image. Requires single build.
+   build that image. Requires single build.
 
 Note: The build and installer board configuration should be the same.
 
 ## Use Case 1: Target installer with image
 
-Create an the target build image that will be installed onto the
-target.
+Create the target build image that will be installed onto the target.
 
     cd dir1
     ../wrlinux-x/wrlinux/configure --enable-board=qemux86-64 \
-    --enable-kernel=standard --enable-rootfs=glibc-std \
+    --enable-kernel=standard --enable-rootfs=glibc-std+installer-support \
     --enable-bootimage=ext3
     make all
 
@@ -29,7 +28,7 @@ Create the installer image and point to ext3 image:
 
     cd dir2
     ../wrlinux-x/wrlinux/configure --enable-board=qemux86-64 \
-    --enable-kernel=standard --enable-rootfs=glibc-core \
+    --enable-kernel=standard --enable-rootfs=wr-installer \
     --enable-target-installer=yes \
     --with-installer-target-build=<dir1>/export/qemux86-64-glibc-std-standard-dist.ext3
     make all
@@ -41,7 +40,7 @@ installed onto the target.
 
     cd dir1
     ../wrlinux-x/wrlinux/configure --enable-board=qemux86-64 \
-    --enable-kernel=standard --enable-rootfs=glibc-std \
+    --enable-kernel=standard --enable-rootfs=glibc-std+installer-support \
     make all
 
 Create the installer image and point to top level of build:
@@ -59,7 +58,7 @@ Create the installer image without specifying target build:
 
     cd dir2
     ../wrlinux-x/wrlinux/configure --enable-board=qemux86-64 \
-    --enable-kernel=standard --enable-rootfs=glibc-core \
+    --enable-kernel=standard --enable-rootfs=wr-installer \
     --enable-target-installer=yes \
     make all
 
