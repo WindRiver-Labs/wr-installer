@@ -162,15 +162,17 @@ FOE
        ROOT_IMAGE="/LiveOS/rootfs.img"
        if [ -e $ROOT_IMAGE ]; then
            mkdir -p /mnt/target_rootfs
-           mount -o loop=/dev/loop3 $ROOT_IMAGE /mnt/target_rootfs
-           [ $? -eq 0 ] || exit 1
-       fi
-       if [ -n "$liveinst" ]; then
-           if [ ! -e $ROOT_IMAGE ]; then
-               echo "ERROR: no $ROOT_IMAGE" >&2
+           mount | grep /mnt/target_rootfs | grep -q $ROOT_IMAGE
+           if [ $? -eq 0 ]; then
+               echo "Skipping mounting $ROOT_IMAGE since it is already mounted."
            else
-               anaconda_opts="$anaconda_opts --liveinst --method=liveinst:/dev/loop3"
+               mount -o loop=/dev/loop3 $ROOT_IMAGE /mnt/target_rootfs
+               [ $? -eq 0 ] || exit 1
            fi
+           anaconda_opts="$anaconda_opts --liveinst --method=liveinst:/dev/loop3"
+       elif [ -n "$liveinst" ]; then
+               echo "ERROR: no $ROOT_IMAGE" >&2
+               exit 1
        fi
 
        BOOTIF=`cat /proc/cmdline |xargs -n1 echo |grep BOOTIF=`
