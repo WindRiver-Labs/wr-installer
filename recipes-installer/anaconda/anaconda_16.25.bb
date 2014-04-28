@@ -28,7 +28,7 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    libreport-python localedef device-mapper device-mapper-multipath \
                    python-pygobject python-rpm pyparted python-urlgrabber\
                    gnome-python libgnomecanvas grub usermode \
-                   metacity rsyslog \
+                   rsyslog \
                    gnome-themes gnome-icon-theme \
                    gtk-engine-clearlooks gtk-theme-clearlooks rsyslog \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
@@ -91,6 +91,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-pyanaconda-task_text-add-setGroupSelection.patch \
            file://anaconda-check-lokkit-before-run-it.patch \
            file://anaconda-backend_log.py-remove-c-from-rsyslogd.patch \
+           file://anaconda-check-metacity-before-run-it.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
