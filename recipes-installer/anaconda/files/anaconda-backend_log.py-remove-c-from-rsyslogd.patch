@@ -1,0 +1,32 @@
+From 78d40b2c105b21b55092d4f7d364d97cadb4c22b Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Mon, 28 Apr 2014 10:57:17 +0800
+Subject: [PATCH 2/3] pyanaconda/backend_log.py: remove -c from rsyslogd
+
+Fixed this error:
+rsyslogd: error: option -c is no longer supported - ignored
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/backend_log.py | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/pyanaconda/backend_log.py b/pyanaconda/backend_log.py
+index d053bcc..921c561 100644
+--- a/pyanaconda/backend_log.py
++++ b/pyanaconda/backend_log.py
+@@ -67,8 +67,7 @@ class BackendSyslog:
+         give us problems with remote logging.
+         """
+         self.build_cfg(root, log)
+-        args = ['-c', '4', 
+-                '-f', SYSLOG_CFGFILE,
++        args = ['-f', SYSLOG_CFGFILE,
+                 '-i', str(SYSLOG_PIDFILE)]
+         status = iutil.execWithRedirect(SYSLOG_PATH, args)
+         if status == 0:
+-- 
+1.8.3.1
+
