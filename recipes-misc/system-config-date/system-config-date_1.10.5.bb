@@ -5,7 +5,7 @@ SUMMARY = "A graphical interface for modifying system date and time"
 HOMEPAGE = "http://fedorahosted.org/system-config-date"
 LICENSE = "GPLv2+"
 
-DEPENDS = "python"
+DEPENDS = "python intltool-native"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
