@@ -15,7 +15,7 @@ INITRD_IMAGE = "wrlinux-image-installer-initramfs"
 IMAGE_INSTALL = "\
     packagegroup-wr-boot \
     packagegroup-core-ssh-openssh \
-    packagegroup-installer-x11-anaconda \
+    ${@['', 'packagegroup-installer-x11-anaconda'][bool(d.getVar('XSERVER', True))]} \
     kernel-modules \
     windriver-gnome-theme \
     windriver-logos \

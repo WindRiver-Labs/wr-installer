@@ -20,7 +20,7 @@ PACKAGES = "\
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-XSERVER ?= "xserver-kdrive-fbdev"
+XSERVER ?= ""
 
 ALLOW_EMPTY_${PN} = "1"
 
