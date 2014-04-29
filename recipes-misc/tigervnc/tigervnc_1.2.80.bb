@@ -46,7 +46,8 @@ EXTRA_OECONF = "--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \
 do_configure_append () {
     cp -r ${STAGING_DATADIR}/${MLPREFIX}xserver-xorg-source/* unix/xserver
 
-    pushd unix/xserver
+    olddir=`pwd`
+    cd unix/xserver
     for all in `find . -type f -perm -001`; do
         chmod -x "$all"
     done
@@ -64,23 +65,25 @@ do_configure_append () {
     ACLOCAL="aclocal --system-acdir=${ACLOCALDIR}/" autoreconf -Wcross --verbose --install --force ${EXTRA_AUTORECONF} $acpaths || bbfatal "autoreconf execution failed."
     chmod +x ./configure
     ${CACHED_CONFIGUREVARS} ./configure ${CONFIGUREOPTS} ${EXTRA_OECONF}
-    popd
+    cd $olddir
 }
 
 do_compile_append () {
-    pushd unix/xserver
+    olddir=`pwd`
+    cd unix/xserver
 
     oe_runmake
 
-    popd
+    cd $olddir
 }
 
 do_install_append() {
-    pushd unix/xserver/hw/vnc
+    olddir=`pwd`
+    cd unix/xserver/hw/vnc
 
     oe_runmake 'DESTDIR=${D}' install
 
-    popd
+    cd $olddir
 }
 
 FILES_${PN} += "${libdir}/xorg/modules/extensions"
