@@ -127,7 +127,9 @@ do_install () {
 
 	#install regression tests
 	[ ! -d ${D}/opt/${PN}-tests ] && mkdir -p ${D}/opt/${PN}-tests
-	install ${S}/test/{regression.dat,regression.sh} ${D}/opt/${PN}-tests/
+	for reg_file in regression.dat regression.sh; do
+		install ${S}/test/$reg_file ${D}/opt/${PN}-tests/
+	done
 
 	#open-isns tests
 	mkdir -p ${D}/opt/${PN}-tests/isns-tests
