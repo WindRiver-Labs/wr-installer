@@ -7,6 +7,8 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 RDEPENDS_${PN} = "python"
 
+DEPENDS += "intltool-native"
+
 SRC_URI = "https://fedorahosted.org/releases/s/y/system-config-keyboard/system-config-keyboard-${PV}.tar.gz"
 SRC_URI[md5sum] = "012b1aec6d237f853bea6824e71d19ed"
 SRC_URI[sha256sum] = "ba446a871fa4db096930825cbc656541cac5e0302e955e3656289532967159ed"
