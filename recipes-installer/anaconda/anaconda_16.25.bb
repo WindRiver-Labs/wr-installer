@@ -140,5 +140,5 @@ do_setupdistro() {
 do_install() {
         echo ${S} "--" ${D}
 	install -d ${D}${bindir}
-	DESTDIR=${D} oe_runmake install
+	oe_runmake install DESTDIR=${D}
 }
