@@ -47,19 +47,4 @@ installer_image_pp () {
 
     bbnote "INSTALLER - disable lvm auto activate"
     rm -rf ${IMAGE_ROOTFS}/etc/rcS.d/*lvm2.sh
-
-    # Temporary workaround for WIND00386811
-    touch ${IMAGE_ROOTFS}/etc/ld.so.conf
-
-    # Generate .buildstamp
-    BUILDSTAMP_FILE="${IMAGE_ROOTFS}/.buildstamp"
-    if [ ! -f $BUILDSTAMP_FILE ]; then
-        echo '[Main]' > $BUILDSTAMP_FILE
-        echo 'Product=${DISTRO_NAME}' >> $BUILDSTAMP_FILE
-        echo 'Version=${DISTRO_VERSION}' >> $BUILDSTAMP_FILE
-        echo 'BugURL=http://www.windriver.com/' >> $BUILDSTAMP_FILE
-        echo 'IsFinal=True' >> $BUILDSTAMP_FILE
-        DATESTAMP=`date +%Y%m%d%H%M%S`
-        echo "UUID=$DATESTAMP.${TARGET_ARCH}" >> $BUILDSTAMP_FILE
-    fi
 }
