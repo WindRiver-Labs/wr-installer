@@ -6,7 +6,7 @@ DESCRIPTION = "The gnome-python package contains the source packages for the Pyt
 bindings for GNOME called PyGNOME."
 HOMEPAGE = "http://download.gnome.org/sources/gnome-python/"
 LICENSE = "LGPLv2+"
-DEPENDS = "libgnome libgnomecanvas python-pygtk pyorbit"
+DEPENDS = "libgnome libgnomecanvas python-pygtk"
 PR = "r0"
 
 S = "${WORKDIR}/gnome-python-2.28.0"
