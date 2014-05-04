@@ -71,10 +71,10 @@ Create the qemu disk:
 Start qemu with installer image:
 
     make start-target \
-    TOPTS="-m 1024 -cd export/qemux86-64-glibc-core-standard-dist.iso \
-    -no-kernel -disk hd0.vdisk -gc"
+    TOPTS="-m 2048 -cd export/qemux86-64-installer-standard-dist.iso \
+    -no-kernel -disk hd0.vdisk -gc" EX_TARGET_QEMU_OPTS="-vga vmware"
 
-Add EX_TARGET_QEMU_OPTS="-vnc :4" to start a VNC capable session...
+Add "-vnc :4" to EX_TARGET_QEMU_OPTS to start a VNC capable session...
 
 ## Grub 0.97
 

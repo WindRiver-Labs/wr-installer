@@ -30,7 +30,7 @@ partitioned and formatted.  If a target-build is not specified, the
 installer project will be used as the target-build.
 
 For example:
-configure --enable-board=common_pc \
+configure --enable-board=qemux86 \
           --enable-kernel=standard \
           --enable-rootfs=glibc_small \
           --enable-bootimage=iso \
