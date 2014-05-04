@@ -43,7 +43,6 @@ RDEPENDS_packagegroup-installer-x11-anaconda = "\
     pointercal \
     ${XSERVER} \
     ${VIRTUAL-RUNTIME_xserver_common} \
-    ${VIRTUAL-RUNTIME_graphical_init_manager} \
     liberation-fonts \
     xauth \
     xhost \
@@ -55,6 +54,5 @@ RDEPENDS_packagegroup-installer-x11-anaconda = "\
     xrandr \
     x11vnc \
     libsdl \
-    anaconda \
     createrepo"
 

@@ -16,6 +16,8 @@ IMAGE_INSTALL = "\
     packagegroup-wr-boot \
     packagegroup-core-ssh-openssh \
     ${@['', 'packagegroup-installer-x11-anaconda'][bool(d.getVar('XSERVER', True))]} \
+    anaconda \
+    anaconda-init \
     kernel-modules \
     windriver-gnome-theme \
     windriver-logos \

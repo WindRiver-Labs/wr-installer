@@ -14,9 +14,6 @@ IMAGE_INSTALL = "\
     device-mapper \
     wr-init \
     kernel-modules \
-    windriver-gnome-theme \
-    windriver-logos \
-    packagegroup-installer-x11-anaconda \
 "
 
 # Do not pollute the initrd image with rootfs features
