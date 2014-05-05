@@ -1,0 +1,32 @@
+From db48fdd5bc5eb8148f9bcf53c69cca3bad53b5b9 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Mon, 5 May 2014 22:18:05 +0800
+Subject: [PATCH] storage/formats/fs.py: use -F 32 for FAT
+
+The FATFS has defined maxSize to 1T (should be 2T in fact), but the
+mkdosfs runs with "-F 16" by default whose max size is 2G, we need
+specify "-F 32" clearly, otherwise it may fail when the EFI partition is
+larger than 2G.
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/storage/formats/fs.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/pyanaconda/storage/formats/fs.py b/pyanaconda/storage/formats/fs.py
+index f8118ad..bcf500d 100644
+--- a/pyanaconda/storage/formats/fs.py
++++ b/pyanaconda/storage/formats/fs.py
+@@ -1095,6 +1095,7 @@ class FATFS(FS):
+     _formattable = True
+     _maxSize = 1024 * 1024
+     _packages = [ "dosfstools" ]
++    _defaultFormatOptions = ["-F", "32"]
+     _defaultMountOptions = ["umask=0077", "shortname=winnt"]
+     # FIXME this should be fat32 in some cases
+     partedSystem = fileSystemType["fat16"]
+-- 
+1.8.3.1
+

@@ -90,6 +90,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-check-lokkit-before-run-it.patch \
            file://anaconda-backend_log.py-remove-c-from-rsyslogd.patch \
            file://anaconda-check-metacity-before-run-it.patch \
+           file://anaconda-storage-fat32.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
