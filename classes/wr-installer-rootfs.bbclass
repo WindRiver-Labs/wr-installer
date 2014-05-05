@@ -4,9 +4,7 @@
 # Image generation functions to setup the installer components
 #
 
-RPM_PREPROCESS_COMMANDS_append  = "wrl_installer_check; "
-
-RPM_POSTPROCESS_COMMANDS_append = "wrl_installer_stamp; ${@['wrl_installer; ', '']['initramfs' in '${BPN}']}"
+RPM_POSTPROCESS_COMMANDS_append = "${@['wrl_installer; ', '']['initramfs' in '${BPN}']}"
 
 INSTPRODUCT ?= "${DISTRO_NAME}"
 INSTVER     ?= "${DISTRO_VERSION}"
@@ -225,27 +223,12 @@ wrl_installer_translate_oe_to_smart() {
     export pkgs_to_install
 }
 
-wrl_installer_check() {
-    echo "Installer Target Build: ${INSTALLER_TARGET_BUILD}"
-    if [ ! -e "${INSTALLER_TARGET_BUILD}" ]; then
-        echo "Error: INSTALLER_TARGET_BUILD - ${INSTALLER_TARGET_BUILD}: directory or file doesn't exist!" >&2
-        exit 1
-    fi
-
-    if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
-        filename=$(basename "${INSTALLER_TARGET_BUILD}")
-        extension="${filename##*.}"
-    fi
-
-    if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
-        if [ "x$extension" = "xext2" -o "x$extension" = "xext3" -o "x$extension" = "xext4" ]; then
-            echo "Image based target install selected."
-        fi
-
-    elif [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build" ]; then
-        # Find the DEFAULT_IMAGE....
-                if [ "${INSTALLER_TARGET_IS_BUILD}" = "1" ]; then
-                    cat > ${BB_LOGFILE}.distro_vals <<_EOF
+# Update .buildstamp and copy rpm packages to IMAGE_ROOTFS
+wrl_installer_copy_pkgs() {
+    # We don't need run "bitbake -e" when INSTALLER_TARGET_BUILD and
+    # WRL_TOP_BUILD_DIR are the same since we can get the var by ${VAR}
+    if [ "${INSTALLER_TARGET_IS_BUILD}" = "1" ]; then
+        cat > ${BB_LOGFILE}.distro_vals <<_EOF
 DEFAULT_IMAGE="${DEFAULT_IMAGE}"
 DISTRO_NAME="${DISTRO_NAME}"
 DISTRO_VERSION="${DISTRO_VERSION}"
@@ -256,115 +239,39 @@ PACKAGE_INSTALL_ATTEMPTONLY="${PACKAGE_INSTALL_ATTEMPTONLY}"
 MULTILIB_PREFIX_LIST="${MULTILIB_PREFIX_LIST}"
 BB_LOGFILE="${BB_LOGFILE}"
 _EOF
-                else
-                    PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
-                    BBCMD="bitbake -e | grep -e '^DEFAULT_IMAGE=.*' > ${BB_LOGFILE}.distro_vals"
-                    eval `cat ${BB_LOGFILE}.distro_vals`
-
-                    # Use the DEFAULT_IMAGE to load the rest of the items...
-                    PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
-                        BBCMD="bitbake -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | \
-                            grep -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
-                            -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' \
-                            -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' \
-                            -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' \
-                            -e '^MULTILIB_PREFIX_LIST=.*' > ${BB_LOGFILE}.distro_vals"
-
-                fi
-        unset DISTRO_NAME DISTRO_VERSION DEFAULT_IMAGE SUMMARY DESCRIPTION MULTILIB_PRELIX_LIST PACKAGE_INSTALL PACKAGE_INSTALL_ATTEMPTONLY
-        eval `cat ${BB_LOGFILE}.distro_vals`
-
-        echo "Distro based install selected:"
-        echo "  DISTRO_NAME='$DISTRO_NAME'"
-        echo "  DISTRO_VERSION='$DISTRO_VERSION'"
-        echo "  DEFAULT_IMAGE='$DEFAULT_IMAGE'"
-        echo "  SUMMARY='$SUMMARY'"
-        echo "  DESCRIPTION='$DESCRIPTION'"
-        echo "  MULTILIB_PREFIX_LIST='$MULTILIB_PREFIX_LIST'"
-        wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL
-        echo "  PACKAGE_INSTALL='$pkgs_to_install'"
-        wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL_ATTEMPTONLY
-        echo "  PACKAGE_INSTALL_ATTEMPTONLY='$pkgs_to_install'"
-        echo
-    fi
-}
-
-
-wrl_installer_stamp() {
-    echo "Installer Target Build: ${INSTALLER_TARGET_BUILD}"
-    if [ ! -e "${INSTALLER_TARGET_BUILD}" ]; then
-        echo "Error: INSTALLER_TARGET_BUILD - ${INSTALLER_TARGET_BUILD}: directory or file doesn't exist!" >&2
-        exit 1
-    fi
-
-    if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
-        filename=$(basename "${INSTALLER_TARGET_BUILD}")
-        extension="${filename##*.}"
-    fi
-
-    # Is this a build directory?
-    if [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build" ]; then
-        eval `cat ${BB_LOGFILE}.distro_vals`
-        echo "[Main]" > ${IMAGE_ROOTFS}/.buildstamp
-        echo "Product=$DISTRO_NAME" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "Version=$DISTRO_VERSION" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "BugURL=${INSTBUGURL}" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "IsFinal=True" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "UUID=${DATETIME}.${TARGET_ARCH}" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "[Rootfs]" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "LIST=$DEFAULT_IMAGE" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "[$DEFAULT_IMAGE]" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "SUMMARY=$SUMMARY" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "DESCRIPTION=$DESCRIPTION" >> ${IMAGE_ROOTFS}/.buildstamp
-        wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL
-        echo "PACKAGE_INSTALL=$pkgs_to_install" >> ${IMAGE_ROOTFS}/.buildstamp
-        wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL_ATTEMPTONLY
-        echo "PACKAGE_INSTALL_ATTEMPTONLY=$pkgs_to_install" >> ${IMAGE_ROOTFS}/.buildstamp
     else
-        # Generate .buildstamp
-        echo "[Main]" > ${IMAGE_ROOTFS}/.buildstamp
-        echo "Product=${INSTPRODUCT}" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "Version=${INSTVER}" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "BugURL=${INSTBUGURL}" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "IsFinal=True" >> ${IMAGE_ROOTFS}/.buildstamp
-        echo "UUID=${DATETIME}.${TARGET_ARCH}" >> ${IMAGE_ROOTFS}/.buildstamp
-    fi
-}
+        # Find the DEFAULT_IMAGE....
+        PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
+        BBCMD="bitbake -e | grep -e '^DEFAULT_IMAGE=.*' > ${BB_LOGFILE}.distro_vals"
+        eval `cat ${BB_LOGFILE}.distro_vals`
 
-wrl_installer() {
-    echo ${DATETIME} > ${IMAGE_ROOTFS}/.discinfo
-    echo ${DISTRO_NAME} ${DISTRO_VERSION} >> ${IMAGE_ROOTFS}/.discinfo
-    echo ${TARGET_ARCH} >> ${IMAGE_ROOTFS}/.discinfo
+        # Use the DEFAULT_IMAGE to load the rest of the items...
+        PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
+        BBCMD="bitbake -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | \
+            grep -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
+            -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' \
+            -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' \
+            -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' \
+            -e '^MULTILIB_PREFIX_LIST=.*' > ${BB_LOGFILE}.distro_vals"
 
-    echo "Installer Target Build: ${INSTALLER_TARGET_BUILD}"
-    if [ ! -e "${INSTALLER_TARGET_BUILD}" ]; then
-        echo "Error: INSTALLER_TARGET_BUILD - ${INSTALLER_TARGET_BUILD}: directory or file doesn't exist!" >&2
-        exit 1
     fi
 
-    if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
-        filename=$(basename "${INSTALLER_TARGET_BUILD}")
-        extension="${filename##*.}"
-    fi
+    eval `cat ${BB_LOGFILE}.distro_vals`
+    echo >> ${IMAGE_ROOTFS}/.buildstamp
+    echo "[Rootfs]" >> ${IMAGE_ROOTFS}/.buildstamp
+    echo "LIST=$DEFAULT_IMAGE" >> ${IMAGE_ROOTFS}/.buildstamp
+    echo >> ${IMAGE_ROOTFS}/.buildstamp
+    echo "[$DEFAULT_IMAGE]" >> ${IMAGE_ROOTFS}/.buildstamp
+    echo "SUMMARY=$SUMMARY" >> ${IMAGE_ROOTFS}/.buildstamp
+    echo "DESCRIPTION=$DESCRIPTION" >> ${IMAGE_ROOTFS}/.buildstamp
+    wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL
+    echo "PACKAGE_INSTALL=$pkgs_to_install" >> ${IMAGE_ROOTFS}/.buildstamp
+    wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL_ATTEMPTONLY
+    echo "PACKAGE_INSTALL_ATTEMPTONLY=$pkgs_to_install" >> ${IMAGE_ROOTFS}/.buildstamp
 
-    if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
-        if [ "x$extension" = "xext2" -o "x$extension" = "xext3" -o "x$extension" = "xext4" ]; then
-            echo "Image based target install selected."
-            mkdir -p "${IMAGE_ROOTFS}/LiveOS"
-            cp "${INSTALLER_TARGET_BUILD}" "${IMAGE_ROOTFS}/LiveOS/rootfs.img"
-        fi
-
-        # Configure for 'livecd' install (KS File?)
-
-    elif [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm" ]; then
+    if [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm" ]; then
         echo "Copy rpms from target build to installer image."
         mkdir -p ${IMAGE_ROOTFS}/Packages
-
-        eval `cat ${BB_LOGFILE}.distro_vals`
-
-        wrl_installer_setup_local_multilibs "$MULTILIB"
 
         # Determine the max channel priority
         channel_priority=5
@@ -380,10 +287,42 @@ wrl_installer() {
                 cp -rvf "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages/."
             fi
         done
+    fi
+}
+
+wrl_installer() {
+    echo ${DATETIME} > ${IMAGE_ROOTFS}/.discinfo
+    echo ${DISTRO_NAME} ${DISTRO_VERSION} >> ${IMAGE_ROOTFS}/.discinfo
+    echo ${TARGET_ARCH} >> ${IMAGE_ROOTFS}/.discinfo
+
+    echo "Installer Target Build: ${INSTALLER_TARGET_BUILD}"
+
+    # Generate .buildstamp
+    echo "[Main]" > ${IMAGE_ROOTFS}/.buildstamp
+    echo "Product=${INSTPRODUCT}" >> ${IMAGE_ROOTFS}/.buildstamp
+    echo "Version=${INSTVER}" >> ${IMAGE_ROOTFS}/.buildstamp
+    echo "BugURL=${INSTBUGURL}" >> ${IMAGE_ROOTFS}/.buildstamp
+    echo "IsFinal=True" >> ${IMAGE_ROOTFS}/.buildstamp
+    echo "UUID=${DATETIME}.${TARGET_ARCH}" >> ${IMAGE_ROOTFS}/.buildstamp
+
+    if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
+        filename=$(basename "${INSTALLER_TARGET_BUILD}")
+        extension="${filename##*.}"
+        if [ "x$extension" = "xext2" -o "x$extension" = "xext3" -o "x$extension" = "xext4" ]; then
+            echo "Image based target install selected."
+            mkdir -p "${IMAGE_ROOTFS}/LiveOS"
+            cp "${INSTALLER_TARGET_BUILD}" "${IMAGE_ROOTFS}/LiveOS/rootfs.img"
+        else
+            bberror "Unsupported image: ${INSTALLER_TARGET_BUILD}."
+            bberror "The image must be ext2, ext3 or ext4"
+            exit 1
+        fi
+    elif [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build" ]; then
+        wrl_installer_copy_pkgs
     else
-        echo "Invalid configuration of INSTALLER_TARGET_BUILD - ${INSTALLER_TARGET_BUILD}."
-        echo "It must either point to a .ext3 image or to the root of another build directory"
-        false
+        bberror "Invalid configuration of INSTALLER_TARGET_BUILD: ${INSTALLER_TARGET_BUILD}."
+        bberror "It must either point to an image (ext2, ext3 or ext4) or to the root of another build directory"
+        exit 1
     fi
 
     # Need a link to make grub 0.97 grub-install work properly
@@ -400,25 +339,25 @@ wrl_installer() {
     ## Stop udev from automounting disks during install process
     #rm -f ${IMAGE_ROOTFS}/etc/udev/scripts/mount.sh
 
-        KS_CFG="${INSTALLER_CONFDIR}/ks.cfg"
-        if [ -n "${KICKSTART_FILE}" ]; then
-            if [ -e "${KICKSTART_FILE}" ]; then
-                KS_FILE="${KICKSTART_FILE}"
-            else
-                bberror "The kickstart file ${KICKSTART_FILE} doesn't exist!"
-            fi
-        elif [ -e "${INSTALLER_TARGET_BUILD}/anaconda-ks.cfg" ]; then
-            # Try to find the anaconda-ks.cfg in ${INSTALLER_TARGET_BUILD}
-            KS_FILE="${INSTALLER_TARGET_BUILD}/anaconda-ks.cfg"
-        elif [ -e "${WRL_TOP_BUILD_DIR}/anaconda-ks.cfg" ]; then
-            # Try to find the anaconda-ks.cfg in ${WRL_TOP_BUILD_DIR}
-            KS_FILE="${WRL_TOP_BUILD_DIR}/anaconda-ks.cfg"
+    KS_CFG="${INSTALLER_CONFDIR}/ks.cfg"
+    if [ -n "${KICKSTART_FILE}" ]; then
+        if [ -e "${KICKSTART_FILE}" ]; then
+            KS_FILE="${KICKSTART_FILE}"
+        else
+            bberror "The kickstart file ${KICKSTART_FILE} doesn't exist!"
         fi
-        if [ -e "$KS_FILE" ]; then
-            bbnote "Copying kickstart file $KS_FILE to $KS_CFG ..."
-            mkdir -p ${INSTALLER_CONFDIR}
-            cp $KS_FILE $KS_CFG
-        fi
+    elif [ -e "${INSTALLER_TARGET_BUILD}/anaconda-ks.cfg" ]; then
+        # Try to find the anaconda-ks.cfg in ${INSTALLER_TARGET_BUILD}
+        KS_FILE="${INSTALLER_TARGET_BUILD}/anaconda-ks.cfg"
+    elif [ -e "${WRL_TOP_BUILD_DIR}/anaconda-ks.cfg" ]; then
+        # Try to find the anaconda-ks.cfg in ${WRL_TOP_BUILD_DIR}
+        KS_FILE="${WRL_TOP_BUILD_DIR}/anaconda-ks.cfg"
+    fi
+    if [ -e "$KS_FILE" ]; then
+        bbnote "Copying kickstart file $KS_FILE to $KS_CFG ..."
+        mkdir -p ${INSTALLER_CONFDIR}
+        cp $KS_FILE $KS_CFG
+    fi
 }
 
 python __anonymous() {
