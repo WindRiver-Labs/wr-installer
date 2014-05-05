@@ -28,13 +28,11 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    libreport-python localedef device-mapper device-mapper-multipath \
                    python-pygobject python-rpm pyparted python-urlgrabber\
                    gnome-python libgnomecanvas grub usermode \
-                   rsyslog \
-                   gnome-themes gnome-icon-theme \
                    gtk-engine-clearlooks gtk-theme-clearlooks rsyslog \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \
-                   module-init-tools eglibc-charmaps eglibc-localedatas \
+                   module-init-tools \
                    tigervnc smartpm util-linux"
 
 # Disabled networkmanager...
