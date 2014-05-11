@@ -33,7 +33,7 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \
                    module-init-tools \
-                   tigervnc smartpm util-linux"
+                   tigervnc smartpm util-linux efibootmgr"
 
 # Disabled networkmanager...
 #RDEPENDS_anaconda += "network-manager-applet"
