@@ -235,6 +235,23 @@ wrl_installer_copy_buildstamp() {
     fi
 }
 
+# Hardlink when possible, otherwise copy.
+# $1: src
+# $2: target
+wrl_installer_hardlinktree() {
+    src_dev="`stat -c %d $1`"
+    if [ -e "$2" ]; then
+        tgt_dev="`stat -c %d $2`"
+    else
+        tgt_dev="`stat -c %d $(dirname $2)`"
+    fi
+    hdlink=""
+    if [ "$src_dev" = "$tgt_dev" ]; then
+        hdlink="--link"
+    fi
+    cp -rvf $hdlink $1 $2
+}
+
 # Update .buildstamp and copy rpm packages to IMAGE_ROOTFS
 wrl_installer_copy_pkgs() {
     if [ -n "${WRL_INSTALLER_CONF}" ]; then
@@ -315,7 +332,7 @@ _EOF
             if [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages/"$arch ]; then
                 channel_priority=$(expr $channel_priority - 5)
                 echo "$channel_priority $arch" >> ${IMAGE_ROOTFS}/Packages/.feedpriority
-                cp -rvf "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages/."
+                wrl_installer_hardlinktree "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages/."
             fi
         done
     fi
@@ -346,7 +363,7 @@ wrl_installer() {
         if [ "x$extension" = "xext2" -o "x$extension" = "xext3" -o "x$extension" = "xext4" ]; then
             echo "Image based target install selected."
             mkdir -p "${IMAGE_ROOTFS}/LiveOS"
-            cp "${INSTALLER_TARGET_BUILD}" "${IMAGE_ROOTFS}/LiveOS/rootfs.img"
+            wrl_installer_hardlinktree "${INSTALLER_TARGET_BUILD}" "${IMAGE_ROOTFS}/LiveOS/rootfs.img"
         else
             bberror "Unsupported image: ${INSTALLER_TARGET_BUILD}."
             bberror "The image must be ext2, ext3 or ext4"
