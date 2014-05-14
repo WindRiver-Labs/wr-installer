@@ -76,6 +76,10 @@ Start qemu with installer image:
 
 Add "-vnc :4" to EX_TARGET_QEMU_OPTS to start a VNC capable session...
 
+Note: Please make sure that you have more memory than the disk size of
+      ISO when you do the installs, for example, if the ISO is 1G, then
+      more than 1G memory is required, usually, 2G is preferred.
+
 ## Grub 0.97
 
 To use grub 0.97 instead of grub 1.99+, set the grub preferred

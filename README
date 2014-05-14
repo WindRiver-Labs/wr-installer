@@ -47,6 +47,10 @@ Note: the board configuration should be the same in both project.
 Note: The installer program is incompatible with selinux and this
 combination has been disabled.
 
+Note: Please make sure that you have more memory than the disk size of ISO when
+      you do the installs, for example, if the ISO is 1G, then more than 1G
+      memory is required, usually, 2G is preferred.
+
 The installer script can read answers from /etc/installer.conf to help
 speed up the installation process.  To add one to the installer image
 requires the user to either copy the file to their project directory and/or
