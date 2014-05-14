@@ -14,6 +14,7 @@ INSTBUGURL  ?= "http://www.windriver.com/"
 #       but not "?=" since this is not configurable.
 INSTALLER_CONFDIR = "${IMAGE_ROOTFS}/installer-config"
 KICKSTART_FILE ?= ""
+WRL_INSTALLER_CONF ?= ""
 
 INSTALLER_TARGET_IS_BUILD ?= "0"
 
@@ -223,12 +224,38 @@ wrl_installer_translate_oe_to_smart() {
     export pkgs_to_install
 }
 
+# Check WRL_INSTALLER_CONF and copy it to ${IMAGE_ROOTFS}/.buildstamp
+# when exists
+wrl_installer_copy_buildstamp() {
+    if [ -f "${WRL_INSTALLER_CONF}" ]; then
+        bbnote "Using ${WRL_INSTALLER_CONF} as the buildstamp"
+        cp ${WRL_INSTALLER_CONF} ${IMAGE_ROOTFS}/.buildstamp
+    else
+        bbfatal "Can't find WRL_INSTALLER_CONF: ${WRL_INSTALLER_CONF}"
+    fi
+}
+
 # Update .buildstamp and copy rpm packages to IMAGE_ROOTFS
 wrl_installer_copy_pkgs() {
-    # We don't need run "bitbake -e" when INSTALLER_TARGET_BUILD and
-    # WRL_TOP_BUILD_DIR are the same since we can get the var by ${VAR}
-    if [ "${INSTALLER_TARGET_IS_BUILD}" = "1" ]; then
-        cat > ${BB_LOGFILE}.distro_vals <<_EOF
+    if [ -n "${WRL_INSTALLER_CONF}" ]; then
+        wrl_installer_copy_buildstamp
+        eval `grep -e "^MULTILIB_PREFIX_LIST=" -e "^PACKAGE_INSTALL=.*" \
+                   -e "^PACKAGE_INSTALL_ATTEMPTONLY=" ${WRL_INSTALLER_CONF} \
+                    | sed -e 's/=/="/' -e 's/$/"/'`
+        if [ $? -ne 0 ]; then
+            bbfatal "Something is wrong in ${WRL_INSTALLER_CONF}, please correct it"
+        fi
+        if [ -z "$MULTILIB_PREFIX_LIST" -o -z "$PACKAGE_INSTALL" ]; then
+            bbfatal "MULTILIB_PREFIX_LIST or PACKAGE_INSTALL is null, please check ${WRL_INSTALLER_CONF}"
+        fi
+
+        wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL
+        wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL_ATTEMPTONLY
+    else
+        # We don't need run "bitbake -e" when INSTALLER_TARGET_BUILD and
+        # WRL_TOP_BUILD_DIR are the same since we can get the var by ${VAR}
+        if [ "${INSTALLER_TARGET_IS_BUILD}" = "1" ]; then
+            cat > ${BB_LOGFILE}.distro_vals <<_EOF
 DEFAULT_IMAGE="${DEFAULT_IMAGE}"
 DISTRO_NAME="${DISTRO_NAME}"
 DISTRO_VERSION="${DISTRO_VERSION}"
@@ -239,35 +266,39 @@ PACKAGE_INSTALL_ATTEMPTONLY="${PACKAGE_INSTALL_ATTEMPTONLY}"
 MULTILIB_PREFIX_LIST="${MULTILIB_PREFIX_LIST}"
 BB_LOGFILE="${BB_LOGFILE}"
 _EOF
-    else
-        # Find the DEFAULT_IMAGE....
-        PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
-        BBCMD="bitbake -e | grep -e '^DEFAULT_IMAGE=.*' > ${BB_LOGFILE}.distro_vals"
+        else
+            # Find the DEFAULT_IMAGE....
+            PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
+            BBCMD="bitbake -e | grep -e '^DEFAULT_IMAGE=.*' > ${BB_LOGFILE}.distro_vals"
+            eval `cat ${BB_LOGFILE}.distro_vals`
+
+            # Use the DEFAULT_IMAGE to load the rest of the items...
+            PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
+            BBCMD="bitbake -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | \
+                grep -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
+                -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' \
+                -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' \
+                -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' \
+                -e '^MULTILIB_PREFIX_LIST=.*' > ${BB_LOGFILE}.distro_vals"
+
+        fi
+
         eval `cat ${BB_LOGFILE}.distro_vals`
-
-        # Use the DEFAULT_IMAGE to load the rest of the items...
-        PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
-        BBCMD="bitbake -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | \
-            grep -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
-            -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' \
-            -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' \
-            -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' \
-            -e '^MULTILIB_PREFIX_LIST=.*' > ${BB_LOGFILE}.distro_vals"
-
+        echo >> ${IMAGE_ROOTFS}/.buildstamp
+        echo "[Rootfs]" >> ${IMAGE_ROOTFS}/.buildstamp
+        echo "LIST=$DEFAULT_IMAGE" >> ${IMAGE_ROOTFS}/.buildstamp
+        echo >> ${IMAGE_ROOTFS}/.buildstamp
+        echo "[$DEFAULT_IMAGE]" >> ${IMAGE_ROOTFS}/.buildstamp
+        echo "SUMMARY=$SUMMARY" >> ${IMAGE_ROOTFS}/.buildstamp
+        echo "DESCRIPTION=$DESCRIPTION" >> ${IMAGE_ROOTFS}/.buildstamp
+        wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL
+        echo "PACKAGE_INSTALL=$pkgs_to_install" >> ${IMAGE_ROOTFS}/.buildstamp
+        wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL_ATTEMPTONLY
+        echo "PACKAGE_INSTALL_ATTEMPTONLY=$pkgs_to_install" >> ${IMAGE_ROOTFS}/.buildstamp
+        # The MULTILIB_PREFIX_LIST in .buildstamp is only used for
+        # wrl_installer_copy_pkgs () reads it.
+        echo "MULTILIB_PREFIX_LIST==$MULTILIB_PREFIX_LIST" >> ${IMAGE_ROOTFS}/.buildstamp
     fi
-
-    eval `cat ${BB_LOGFILE}.distro_vals`
-    echo >> ${IMAGE_ROOTFS}/.buildstamp
-    echo "[Rootfs]" >> ${IMAGE_ROOTFS}/.buildstamp
-    echo "LIST=$DEFAULT_IMAGE" >> ${IMAGE_ROOTFS}/.buildstamp
-    echo >> ${IMAGE_ROOTFS}/.buildstamp
-    echo "[$DEFAULT_IMAGE]" >> ${IMAGE_ROOTFS}/.buildstamp
-    echo "SUMMARY=$SUMMARY" >> ${IMAGE_ROOTFS}/.buildstamp
-    echo "DESCRIPTION=$DESCRIPTION" >> ${IMAGE_ROOTFS}/.buildstamp
-    wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL
-    echo "PACKAGE_INSTALL=$pkgs_to_install" >> ${IMAGE_ROOTFS}/.buildstamp
-    wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL_ATTEMPTONLY
-    echo "PACKAGE_INSTALL_ATTEMPTONLY=$pkgs_to_install" >> ${IMAGE_ROOTFS}/.buildstamp
 
     if [ -d "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm" ]; then
         echo "Copy rpms from target build to installer image."
@@ -298,12 +329,16 @@ wrl_installer() {
     echo "Installer Target Build: ${INSTALLER_TARGET_BUILD}"
 
     # Generate .buildstamp
-    echo "[Main]" > ${IMAGE_ROOTFS}/.buildstamp
-    echo "Product=${INSTPRODUCT}" >> ${IMAGE_ROOTFS}/.buildstamp
-    echo "Version=${INSTVER}" >> ${IMAGE_ROOTFS}/.buildstamp
-    echo "BugURL=${INSTBUGURL}" >> ${IMAGE_ROOTFS}/.buildstamp
-    echo "IsFinal=True" >> ${IMAGE_ROOTFS}/.buildstamp
-    echo "UUID=${DATETIME}.${TARGET_ARCH}" >> ${IMAGE_ROOTFS}/.buildstamp
+    if [ -n "${WRL_INSTALLER_CONF}" ]; then
+        wrl_installer_copy_buildstamp
+    else
+        echo "[Main]" > ${IMAGE_ROOTFS}/.buildstamp
+        echo "Product=${INSTPRODUCT}" >> ${IMAGE_ROOTFS}/.buildstamp
+        echo "Version=${INSTVER}" >> ${IMAGE_ROOTFS}/.buildstamp
+        echo "BugURL=${INSTBUGURL}" >> ${IMAGE_ROOTFS}/.buildstamp
+        echo "IsFinal=True" >> ${IMAGE_ROOTFS}/.buildstamp
+        echo "UUID=${DATETIME}.${TARGET_ARCH}" >> ${IMAGE_ROOTFS}/.buildstamp
+    fi
 
     if [ -f "${INSTALLER_TARGET_BUILD}" ]; then
         filename=$(basename "${INSTALLER_TARGET_BUILD}")
