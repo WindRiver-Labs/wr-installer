@@ -34,12 +34,6 @@ installer_image_pp () {
     bbnote "INSTALLER - Turn off console mingetty"
     sed -i -e "s~^S:12345:respawn:/sbin/mingetty console~#S:12345:respawn:/sbin/mingetty console~" ${IMAGE_ROOTFS}/etc/inittab
 
-    if [ -e ${IMAGE_ROOTFS}/etc/network/interfaces ] ; then
-        bbnote "INSTALLER - forcing /etc/network/interfaces"
-        echo "auto lo" > ${IMAGE_ROOTFS}/etc/network/interfaces
-        echo "iface lo inet loopback" >> ${IMAGE_ROOTFS}/etc/network/interfaces
-    fi
-
     if [ -e ${IMAGE_ROOTFS}/etc/udev/rules.d/local.rules ] ; then
         bbnote "INSTALLER - turning off block device mounts"
         sed -i -e 's/^SUBSYSTEM=="block", ACTION==/#SUBSYSTEM=="block", ACTION==/' ${IMAGE_ROOTFS}/etc/udev/rules.d/local.rules

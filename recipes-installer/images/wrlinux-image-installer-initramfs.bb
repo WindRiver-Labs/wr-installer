@@ -46,12 +46,6 @@ installer_initramfs_image_pp () {
     bbnote "INSTALLER - disable lvm auto activate"
     rm -rf ${IMAGE_ROOTFS}/etc/rcS.d/*lvm2.sh
 
-    if [ -e ${IMAGE_ROOTFS}/etc/network/interfaces ] ; then
-        bbnote "INSTALLER - forcing /etc/network/interfaces"
-        echo "auto lo" > ${IMAGE_ROOTFS}/etc/network/interfaces
-        echo "iface lo inet loopback" >> ${IMAGE_ROOTFS}/etc/network/interfaces
-    fi
-
     if [ -e ${IMAGE_ROOTFS}/etc/udev/rules.d/local.rules ] ; then
         bbnote "INSTALLER - turning off block device mounts"
         sed -i -e 's/^SUBSYSTEM=="block", ACTION==/#SUBSYSTEM=="block", ACTION==/' ${IMAGE_ROOTFS}/etc/udev/rules.d/local.rules
