@@ -95,6 +95,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-bootloader.py-fix-for-WR-efi.patch \
            file://anaconda-bootloader.py-efigrub2.patch \
            file://anaconda-no-destroy-all-devices.patch \
+           file://anaconda-formats-fs.py-enable-EFIFS.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
