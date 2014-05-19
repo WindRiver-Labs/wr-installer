@@ -559,7 +559,17 @@ class SmartBackend(AnacondaBackend):
         log.debug("called smartinstall.SmartBackend.doBackendSetup")
 
         if anaconda.dir == DISPATCH_BACK:
-            return DISPATCH_BACK
+            rc = anaconda.intf.messageWindow(_("Warning"),
+                    _("Filesystems have already been activated.  You "
+                      "cannot go back past this point.\n\nWould you like to "
+                      "continue with the installation?"),
+                    type="custom", custom_icon=["error","error"],
+                    custom_buttons=[_("_Exit installer"), _("_Continue")])
+
+            if rc == 0:
+                sys.exit(0)
+            anaconda.dir = DISPATCH_FORWARD
+            return DISPATCH_FORWARD
 
         if anaconda.upgrade:
             # make sure that the rpmdb doesn't have stale locks
