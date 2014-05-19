@@ -298,6 +298,7 @@ FOE
            stty sane
            echo ""
            echo "Starting FAIL shell"
+           export HOME="/root"
            /bin/sh
        fi
   ;;
