@@ -1,0 +1,34 @@
+From 68edf48a8a79fe2fee9001c4b660534bd173e873 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Mon, 19 May 2014 13:53:01 +0800
+Subject: [PATCH] devicetree.py: don't ask when the disk is in clearPartDisks
+
+Anaconda asks what to do when it found a new disk (for example, a
+disk with no partitions), it should not ask if we have set this in the
+kickstart file:
+clearpart --all --drives=<disk>
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/storage/devicetree.py | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/pyanaconda/storage/devicetree.py b/pyanaconda/storage/devicetree.py
+index 5930eff..9d3abb6 100644
+--- a/pyanaconda/storage/devicetree.py
++++ b/pyanaconda/storage/devicetree.py
+@@ -1126,7 +1126,10 @@ class DeviceTree(object):
+                 # some devices don't have a /dev/disk/by-path/ #!@#@!@#
+                 bypath = device.name
+ 
+-            initcb = lambda: self.intf.questionInitializeDisk(bypath,
++            if not self.clearPartDisks or device.name in self.clearPartDisks:
++                initcb = lambda: False
++            else:
++                initcb = lambda: self.intf.questionInitializeDisk(bypath,
+                                                               description,
+                                                               device.size)
+ 
+-- 
+1.8.3.1
+
