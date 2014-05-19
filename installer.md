@@ -1,15 +1,13 @@
 # Target Installer
 
-Three main use cases:
+Two main use cases, each of them requires two builds, one is for the
+target build, the other one is for the installer itself.
 
 1) Installer image which contains ext2, ext3 or ext4 image from target
-   build to be copied to local disk. Requires 2 builds.
+   build to be copied to local disk.
 
 2) Installer image which contains rpms from target build to be installed
-   to local disk. Requires 2 builds.
-
-3) Any image which also contains installer and all the rpms used to
-   build that image. Requires single build.
+   to local disk.
 
 Note: The build and installer board configuration should be the same.
 
@@ -50,16 +48,6 @@ Create the installer image and point to top level of build:
     --enable-kernel=standard --enable-rootfs=wr-installer \
     --enable-target-installer=yes \
     --with-installer-target-build=<dir1>
-    make all
-
-## Use case 3: Reuse installer rpms to install on target
-
-Create the installer image without specifying target build:
-
-    cd dir2
-    ../wrlinux-x/wrlinux/configure --enable-board=qemux86-64 \
-    --enable-kernel=standard --enable-rootfs=wr-installer \
-    --enable-target-installer=yes \
     make all
 
 ## Testing
