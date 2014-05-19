@@ -28,7 +28,7 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    libreport-python localedef device-mapper device-mapper-multipath \
                    python-pygobject python-rpm pyparted python-urlgrabber\
                    gnome-python libgnomecanvas grub usermode \
-                   gtk-engine-clearlooks gtk-theme-clearlooks rsyslog \
+                   gtk-engine-clearlooks gtk-theme-clearlooks \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \
@@ -99,6 +99,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-storage-check-boot-efi.patch \
            file://anaconda-devicetree.py-no-ask-when-ks.patch \
            file://anaconda-mount-run-as-tmpfs.patch \
+           file://anaconda-save-log-root.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
