@@ -103,6 +103,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-disable-unsupported-options.patch \
            file://anaconda-remove-un-verified-options.patch \
            file://anaconda-only-support-standard-partition.patch \
+           file://anaconda-disable-the-partition-encrypt.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
