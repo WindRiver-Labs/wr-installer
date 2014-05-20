@@ -22,8 +22,8 @@ index 5930eff..9d3abb6 100644
                  bypath = device.name
  
 -            initcb = lambda: self.intf.questionInitializeDisk(bypath,
-+            if not self.clearPartDisks or device.name in self.clearPartDisks:
-+                initcb = lambda: False
++            if self.clearPartDisks and device.name in self.clearPartDisks:
++                initcb = lambda: True
 +            else:
 +                initcb = lambda: self.intf.questionInitializeDisk(bypath,
                                                                description,
