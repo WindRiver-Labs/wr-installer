@@ -12,3 +12,6 @@ autotools_do_install_append() {
 do_install_append() {
 	mv ${D}/pkgconfig ${D}${libdir}/.
 }
+
+# Fix the hardcoded path in .pc for sstate
+SSTATE_SCAN_FILES += "pygtk-2.0.pc"
