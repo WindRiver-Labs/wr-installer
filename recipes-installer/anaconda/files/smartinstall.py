@@ -780,6 +780,9 @@ class SmartBackend(AnacondaBackend):
                             stdout="/dev/tty5", stderr="/dev/tty5",
                             root=anaconda.rootPath)
 
+        # Write out the "real" fstab and mtab
+        anaconda.storage.write(anaconda.rootPath)
+
         # See yum configuration...
         AnacondaBackend.doPostInstall(self, anaconda)
 
