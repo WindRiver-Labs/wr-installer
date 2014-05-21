@@ -775,7 +775,7 @@ class SmartBackend(AnacondaBackend):
 
         # Run the depmod as we do in image.bbclass
         for (ver, arch, tag) in self.kernelVersionList(anaconda.rootPath):
-            args = ["-a ", ver]
+            args = ["-a", ver]
             rc = iutil.execWithRedirect("depmod", args,
                             stdout="/dev/tty5", stderr="/dev/tty5",
                             root=anaconda.rootPath)
