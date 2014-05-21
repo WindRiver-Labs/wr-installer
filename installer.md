@@ -73,17 +73,16 @@ The current installer only supports grub 2.
 
 ## Adding custom installer.conf to installer image
 
-The intaller script can read answers from /etc/installer.conf to help
-speed up the installation process.  To add one to the installer image
-requires the user to either copy the file to their project directory and/or
-configure their local.conf file.
-
-    cp <path>/installer.conf <installer_build_dir>/bitbake_build/conf/.
-
-    or
+The second build can read answers from installer.conf to help speed up the
+build process when package based installs, the user can set WRL_INSTALLER_CONF
+in the conf file, e.g.:
 
     edit <installer_build_dir>/bitbake_build/conf/local.conf
     WRL_INSTALLER_CONF = "/my/installer.conf"
+
+You can custom the installer.conf when needed, for example, add packages that
+you would like to install, but please make sure that the added packages are in the
+first build.
 
 ## The kickstart installation
 The installer can support the kickstart installs, you can use the ks
