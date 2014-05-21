@@ -773,6 +773,13 @@ class SmartBackend(AnacondaBackend):
     def doPostInstall(self, anaconda):
         log.debug("called smartinstall.SmartBackend.doPostInstall")
 
+        # Run the depmod as we do in image.bbclass
+        for (ver, arch, tag) in self.kernelVersionList(anaconda.rootPath):
+            args = ["-a ", ver]
+            rc = iutil.execWithRedirect("depmod", args,
+                            stdout="/dev/tty5", stderr="/dev/tty5",
+                            root=anaconda.rootPath)
+
         # See yum configuration...
         AnacondaBackend.doPostInstall(self, anaconda)
 
