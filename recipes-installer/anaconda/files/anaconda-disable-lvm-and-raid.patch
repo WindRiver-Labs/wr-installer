@@ -1,0 +1,38 @@
+From 35e226eab11970e41c7505188fbb33a76c66080b Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Wed, 21 May 2014 16:25:01 +0800
+Subject: [PATCH] partition_ui_helpers_gui: disable lvm and raid
+
+We don't support lvm or raid atm, so disable them from the
+createFSTypeMenu.
+
+Upstream-Status: Inappropriate [WR-installer specific]
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/iw/partition_ui_helpers_gui.py | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/pyanaconda/iw/partition_ui_helpers_gui.py b/pyanaconda/iw/partition_ui_helpers_gui.py
+index 0c26996..63a9d54 100644
+--- a/pyanaconda/iw/partition_ui_helpers_gui.py
++++ b/pyanaconda/iw/partition_ui_helpers_gui.py
+@@ -182,6 +182,15 @@ def createFSTypeMenu(format, fstypechangeCB, mountCombo,
+                      availablefstypes = None, ignorefs = None):
+     store = gtk.TreeStore(gobject.TYPE_STRING, gobject.TYPE_PYOBJECT)
+     fstypecombo = datacombo.DataComboBox(store)
++
++    # Disable LVM and RAID
++    disabledfs = ['lvmpv', 'mdmember']
++    if ignorefs:
++        for f in disabledfs:
++            if f not in ignorefs:
++                ignorefs.append(f)
++    else:
++        ignorefs = disabledfs
+     
+     if availablefstypes:
+         names = availablefstypes
+-- 
+1.8.3.1
+
