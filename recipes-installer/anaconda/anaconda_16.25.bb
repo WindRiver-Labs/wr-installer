@@ -107,6 +107,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-disable-lvm-and-raid.patch \
            file://tweak-write-debian-style-net-config-files.patch \
            file://anaconda-livecd.py-remove-symlink.patch \
+           file://anaconda-umount-before-mount.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
