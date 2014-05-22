@@ -14,7 +14,7 @@
      ts = rpm.TransactionSet(rootPath)
  
 -    mi = ts.dbMatch('provides', 'kernel')
-+    mi = ts.dbMatch('provides', 'kernel-image')
++    mi = ts.dbMatch('provides', 'kernel-image-base')
      for h in mi:
          v = get_version(h)
          tag = get_tag(h)
