@@ -166,7 +166,7 @@ FOE
            if [ $? -eq 0 ]; then
                echo "Skipping mounting $ROOT_IMAGE since it is already mounted."
            else
-               mount -o loop=/dev/loop3 $ROOT_IMAGE /mnt/target_rootfs
+               mount -o loop=/dev/loop3 -o ro $ROOT_IMAGE /mnt/target_rootfs
                [ $? -eq 0 ] || exit 1
            fi
            anaconda_opts="$anaconda_opts --liveinst --method=liveinst:/dev/loop3"
