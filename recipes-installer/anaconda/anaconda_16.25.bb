@@ -111,6 +111,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-no-check-LiveOS.patch \
            file://pyanaconda-storage-update-fstab-by-appending.patch \
            file://anaconda-set-for-selinux.patch \
+           file://anaconda-use-shadow-passswd.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
