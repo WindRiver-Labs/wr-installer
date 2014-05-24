@@ -1,0 +1,39 @@
+From 3f1236284ef2baf5e89fb60ad1b25ef7d4fd4437 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Sat, 24 May 2014 15:38:26 +0800
+Subject: [PATCH] pyanaconda/bootloader.py: set rw for selinux
+
+The rootfs was read only at the boot time. This caused
+SELinux is in permissive mode after installing CGP ISO
+which required the rootfs was read/write at the boot
+time.
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/bootloader.py | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index 890ae8a..4f4146f 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -1602,6 +1602,15 @@ class GRUB2(GRUB):
+         except:
+             pass
+ 
++        selinux_config = install_root + "/etc/selinux/config"
++        grub_10_linux = install_root + "/etc/grub.d/10_linux"
++        if os.path.exists(selinux_config) and os.path.exists(grub_10_linux):
++            try:
++                cmd_enable_rw = "sed -i 's/\(linux.*linux_root_device_thisversion.*\) ro /\\1 rw /' %s" % grub_10_linux
++                os.system(cmd_enable_rw)
++            except Exception:
++                pass
++
+         # now tell grub2 to generate the main configuration file
+         rc = iutil.execWithRedirect("grub-mkconfig",
+                                     ["-o", self.config_file],
+-- 
+1.8.3.1
+
