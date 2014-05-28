@@ -1,0 +1,27 @@
+Upstream-Status: Pending
+
+Try to umount a partition before resize it. If it is mounted already, resize fails.
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+
+diff --git a/pyanaconda/storage/deviceaction.py b/pyanaconda/storage/deviceaction.py
+index 7b91dc7..6602fa0 100644
+--- a/pyanaconda/storage/deviceaction.py
++++ b/pyanaconda/storage/deviceaction.py
+@@ -548,6 +548,16 @@ class ActionResizeFormat(DeviceAction):
+         self.device.format.targetSize = newsize
+ 
+     def execute(self, intf=None):
++        from pyanaconda import iutil
++        try:
++            iutil.execWithRedirect("umount",
++                                   ["/dev/" + self.device.name],
++                                   stdout="/dev/tty5",
++                                   stderr="/dev/tty5")
++        except Exception, e:
++            log.debug(e)
++            pass
++
+         self.device.setup(orig=True)
+         self.device.format.doResize(intf=intf)
+ 
