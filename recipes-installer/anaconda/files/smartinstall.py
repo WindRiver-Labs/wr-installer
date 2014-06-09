@@ -783,6 +783,8 @@ class SmartBackend(AnacondaBackend):
         # Write out the "real" fstab and mtab
         anaconda.storage.write(anaconda.rootPath)
 
+        packages.rpmSetupGraphicalSystem(anaconda)
+
         # See yum configuration...
         AnacondaBackend.doPostInstall(self, anaconda)
 
