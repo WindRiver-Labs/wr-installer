@@ -1,0 +1,31 @@
+From 0e27b3642d8658c4472e6300c0b36bf8259d1977 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Tue, 17 Jun 2014 21:29:08 +0800
+Subject: [PATCH 4/4] upgrade.py: check the existence of /usr/tmp
+
+The anconda would report error if /usr/tmp isn't a symlink, we don't
+have /usr/tmp, so check its existence to fix the problem.
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/upgrade.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyanaconda/upgrade.py b/pyanaconda/upgrade.py
+index e741b5a..c09dccd 100644
+--- a/pyanaconda/upgrade.py
++++ b/pyanaconda/upgrade.py
+@@ -232,7 +232,7 @@ def upgradeMountFilesystems(anaconda):
+     badLinks = []
+     mustBeLinks = ( '/usr/tmp', )
+     for n in mustBeLinks:
+-        if not os.path.islink(anaconda.rootPath + n):
++        if not os.path.islink(anaconda.rootPath + n) and os.path.exists(anaconda.rootPath + n):
+             badLinks.append(n)
+ 
+     if badLinks: 
+-- 
+1.8.3.1
+

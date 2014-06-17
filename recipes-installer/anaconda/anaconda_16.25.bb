@@ -117,6 +117,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-storage-check-Wind-River-Linux.patch \
            file://anaconda-not-check-rootfs-partition.patch \
            file://anaconda-fix-bin-sh.patch \
+           file://anaconda-check-the-existence-of-usr-tmp.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
