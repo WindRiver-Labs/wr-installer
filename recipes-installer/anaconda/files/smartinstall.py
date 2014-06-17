@@ -696,19 +696,54 @@ class SmartBackend(AnacondaBackend):
         # See yum configuration...
         AnacondaBackend.doPreInstall(self, anaconda)
 
+    # Add a plus(+) prefix for the element
+    def addPlusPrefix(self, pkg_list):
+        new_list = []
+        for p in pkg_list:
+            # Skip --attempt
+            if p.startswith('--'):
+                continue
+            new_list.append('+' + p)
+
+        return new_list
+
     def doInstall(self, anaconda):
         log.debug("called smartinstall.SmartBackend.doInstall")
 
         # setup status bars
-        # perform the install
-        iface.object._progress.windowTitle = "Install Packages"
-        self.anaconda.backend.asmart.runSmart('install', self.pkgs_to_install)
-        if len(self.pkgs_to_attempt) > 1:
-            self.anaconda.backend.asmart.runSmart('install', self.pkgs_to_attempt)
-        iface.object.hideStatus()
 
-        # Enable the installed RPM DB
-        self.anaconda.backend.asmart.runSmart('channel', ['--add', 'rpmsys', 'type=rpm-sys', '-y'])
+        if anaconda.upgrade:
+            # perform the upgrade
+            iface.object._progress.windowTitle = "Upgrade Packages"
+
+            # Enable the installed RPM DB
+            self.anaconda.backend.asmart.runSmart('channel', ['--add', 'rpmsys', 'type=rpm-sys', '-y'])
+            iface.object.hideStatus()
+
+            # Do the upgrade for the installed packages
+            self.anaconda.backend.asmart.runSmart('upgrade')
+
+            # Maybe we have new pkgs to install so we need install the
+            # self.pkgs_to_install again
+            # The addPlusPrefix() adds a plus(+) prefix for the pkg so
+            # that the upgrade would install it if it isn't installed
+            self.anaconda.backend.asmart.runSmart('upgrade', self.addPlusPrefix(self.pkgs_to_install))
+        else:
+            # perform the install
+            iface.object._progress.windowTitle = "Install Packages"
+            self.anaconda.backend.asmart.runSmart('install', self.pkgs_to_install)
+            # Enable the installed RPM DB
+            self.anaconda.backend.asmart.runSmart('channel', ['--add', 'rpmsys', 'type=rpm-sys', '-y'])
+            iface.object.hideStatus()
+
+        if len(self.pkgs_to_attempt) > 1:
+            if anaconda.upgrade:
+                # Maybe we have new pkgs to install so we need install
+                # the self.pkgs_to_attempt again
+                self.anaconda.backend.asmart.runSmart('upgrade', self.addPlusPrefix(self.pkgs_to_attempt))
+            else:
+                self.anaconda.backend.asmart.runSmart('install', self.pkgs_to_attempt)
+
         iface.object.hideStatus()
 
         # Do complementary packages here...
@@ -767,7 +802,11 @@ class SmartBackend(AnacondaBackend):
 
         log.debug('Complementary package install: %s' % (comp_pkgs_to_attempt))
         if len(comp_pkgs_to_attempt) > 1:
-            self.anaconda.backend.asmart.runSmart('install', comp_pkgs_to_attempt)
+            if anaconda.upgrade:
+                self.anaconda.backend.asmart.runSmart('upgrade', self.addPlusPrefix(comp_pkgs_to_attempt))
+            else:
+                self.anaconda.backend.asmart.runSmart('install', comp_pkgs_to_attempt)
+
         iface.object.hideStatus()
 
     def doPostInstall(self, anaconda):
