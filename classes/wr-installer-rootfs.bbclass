@@ -16,8 +16,6 @@ INSTALLER_CONFDIR = "${IMAGE_ROOTFS}/installer-config"
 KICKSTART_FILE ?= ""
 WRL_INSTALLER_CONF ?= ""
 
-INSTALLER_TARGET_IS_BUILD ?= "0"
-
 # Code below is copied and adapted from package_rpm.bbclass implementation
 # ARG1 should be the MULTILIB_PREFIX_LIST
 wrl_installer_setup_local_multilibs() {
@@ -269,36 +267,19 @@ wrl_installer_copy_pkgs() {
         wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL
         wrl_installer_translate_oe_to_smart "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL_ATTEMPTONLY
     else
-        # We don't need run "bitbake -e" when INSTALLER_TARGET_BUILD and
-        # WRL_TOP_BUILD_DIR are the same since we can get the var by ${VAR}
-        if [ "${INSTALLER_TARGET_IS_BUILD}" = "1" ]; then
-            cat > ${BB_LOGFILE}.distro_vals <<_EOF
-DEFAULT_IMAGE="${DEFAULT_IMAGE}"
-DISTRO_NAME="${DISTRO_NAME}"
-DISTRO_VERSION="${DISTRO_VERSION}"
-SUMMARY="${SUMMARY}"
-DESCRIPTION="${DESCRIPTION}"
-PACKAGE_INSTALL="${PACKAGE_INSTALL}"
-PACKAGE_INSTALL_ATTEMPTONLY="${PACKAGE_INSTALL_ATTEMPTONLY}"
-MULTILIB_PREFIX_LIST="${MULTILIB_PREFIX_LIST}"
-BB_LOGFILE="${BB_LOGFILE}"
-_EOF
-        else
-            # Find the DEFAULT_IMAGE....
-            PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
-            BBCMD="bitbake -e | grep -e '^DEFAULT_IMAGE=.*' > ${BB_LOGFILE}.distro_vals"
-            eval `cat ${BB_LOGFILE}.distro_vals`
+        # Find the DEFAULT_IMAGE....
+        PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
+        BBCMD="bitbake -e | grep -e '^DEFAULT_IMAGE=.*' > ${BB_LOGFILE}.distro_vals"
+        eval `cat ${BB_LOGFILE}.distro_vals`
 
-            # Use the DEFAULT_IMAGE to load the rest of the items...
-            PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
-            BBCMD="bitbake -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | \
-                grep -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
-                -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' \
-                -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' \
-                -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' \
-                -e '^MULTILIB_PREFIX_LIST=.*' > ${BB_LOGFILE}.distro_vals"
-
-        fi
+        # Use the DEFAULT_IMAGE to load the rest of the items...
+        PSEUDO_UNLOAD=1 make -C ${INSTALLER_TARGET_BUILD} bbc \
+        BBCMD="bitbake -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | \
+            grep -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
+            -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' \
+            -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' \
+            -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' \
+            -e '^MULTILIB_PREFIX_LIST=.*' > ${BB_LOGFILE}.distro_vals"
 
         eval `cat ${BB_LOGFILE}.distro_vals`
         echo >> ${IMAGE_ROOTFS}/.buildstamp
@@ -417,8 +398,10 @@ python __anonymous() {
         bb.fatal("Unable to build the installer when selinux is enabled.")
         return False
 
-    if bb.data.inherits_class('image', d) and not d.getVar('INSTALLER_TARGET_BUILD', True):
-        d.setVar('INSTALLER_TARGET_BUILD', '${WRL_TOP_BUILD_DIR}')
-        d.setVar('INSTALLER_TARGET_IS_BUILD', '1')
+    if bb.data.inherits_class('image', d):
+        if not d.getVar('INSTALLER_TARGET_BUILD', True):
+            bb.fatal("No INSTALLER_TARGET_BUILD is found, missing --with-installer-target-build ?")
+        elif d.getVar('INSTALLER_TARGET_BUILD', True) == d.getVar('WRL_TOP_BUILD_DIR', True):
+            bb.fatal("The INSTALLER_TARGET_BUILD can't be the current dir")
 }
 
