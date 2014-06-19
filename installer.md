@@ -16,7 +16,7 @@ Note: The build and installer board configuration should be the same.
 Create the target build image that will be installed onto the target.
 
     cd dir1
-    ../wrlinux-x/wrlinux/configure --enable-board=qemux86-64 \
+    ../wrlinux-x/wrlinux/configure --enable-board=intel-x86-64 \
     --enable-kernel=standard --enable-rootfs=glibc-std+installer-support \
     --enable-bootimage=ext3
     make all
@@ -25,10 +25,10 @@ Create the target build image that will be installed onto the target.
 Create the installer image and point to ext3 image:
 
     cd dir2
-    ../wrlinux-x/wrlinux/configure --enable-board=qemux86-64 \
+    ../wrlinux-x/wrlinux/configure --enable-board=intel-x86-64 \
     --enable-kernel=standard --enable-rootfs=wr-installer \
     --enable-target-installer=yes \
-    --with-installer-target-build=<dir1>/export/qemux86-64-glibc-std-standard-dist.ext3
+    --with-installer-target-build=<dir1>/export/intel-x86-64-glibc-std-standard-dist.ext3
     make all
 
 ## Use case 2: Target installer with rpms
@@ -37,14 +37,14 @@ For use case #2, create the target build that will be
 installed onto the target.
 
     cd dir1
-    ../wrlinux-x/wrlinux/configure --enable-board=qemux86-64 \
+    ../wrlinux-x/wrlinux/configure --enable-board=intel-x86-64 \
     --enable-kernel=standard --enable-rootfs=glibc-std+installer-support \
     make all
 
 Create the installer image and point to top level of build:
 
     cd dir2
-    ../wrlinux-x/wrlinux/configure --enable-board=qemux86-64 \
+    ../wrlinux-x/wrlinux/configure --enable-board=intel-x86-64 \
     --enable-kernel=standard --enable-rootfs=wr-installer \
     --enable-target-installer=yes \
     --with-installer-target-build=<dir1>
@@ -59,7 +59,7 @@ Create the qemu disk:
 Start qemu with installer image:
 
     make start-target \
-    TOPTS="-m 2048 -cd export/qemux86-64-installer-standard-dist.iso \
+    TOPTS="-m 2048 -cd export/intel-x86-64-installer-standard-dist.iso \
     -no-kernel -disk hd0.vdisk -gc" EX_TARGET_QEMU_OPTS="-vga vmware"
 
 Add "-vnc :4" to EX_TARGET_QEMU_OPTS to start a VNC capable session...

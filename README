@@ -26,13 +26,15 @@ The target installer is enabled by passing
 the build directory that will supply rpms and kernel to be installed on
 the target.  If the path is an .ext2, .ext3, or ext4 image file, then
 the installer will copy this image to the target after the disk has been
-partitioned and formatted.  If a target-build is not specified, the
-installer project will be used as the target-build.
+partitioned and formatted.
+
+Note: The installer requires two builds, one is for the target build, the other
+      one is for the installer itself.
 
 For example:
-configure --enable-board=qemux86 \
+configure --enable-board=intel-x86-64 \
           --enable-kernel=standard \
-          --enable-rootfs=glibc_small \
+          --enable-rootfs=wr-installer \
           --enable-bootimage=iso \
           --enable-target-installer=yes \
           --with-installer-target-build=/home/user/my_project
