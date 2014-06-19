@@ -314,6 +314,7 @@ wrl_installer_copy_pkgs() {
                 channel_priority=$(expr $channel_priority - 5)
                 echo "$channel_priority $arch" >> ${IMAGE_ROOTFS}/Packages/.feedpriority
                 wrl_installer_hardlinktree "${INSTALLER_TARGET_BUILD}/bitbake_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages/."
+                createrepo --update -q ${IMAGE_ROOTFS}/Packages/$arch
             fi
         done
     fi
