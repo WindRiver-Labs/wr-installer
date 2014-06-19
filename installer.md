@@ -28,6 +28,7 @@ Create the installer image and point to ext3 image:
     ../wrlinux-x/wrlinux/configure --enable-board=intel-x86-64 \
     --enable-kernel=standard --enable-rootfs=wr-installer \
     --enable-target-installer=yes \
+    --enable-bootimage=iso \
     --with-installer-target-build=<dir1>/export/intel-x86-64-glibc-std-standard-dist.ext3
     make all
 
@@ -47,6 +48,7 @@ Create the installer image and point to top level of build:
     ../wrlinux-x/wrlinux/configure --enable-board=intel-x86-64 \
     --enable-kernel=standard --enable-rootfs=wr-installer \
     --enable-target-installer=yes \
+    --enable-bootimage=iso \
     --with-installer-target-build=<dir1>
     make all
 
