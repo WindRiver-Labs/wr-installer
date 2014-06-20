@@ -327,20 +327,20 @@ class AnacondaSmartRepo(SmartRepo):
             self.anaconda.backend.asmart.runSmart('channel',
                                    ['--remove', repoid, "-y"])
 
-    def enable(self):
-        log.debug("AnacondaSmartRepo(%s):enable" % (self.id))
+    def enable(self, repoid):
+        log.debug("AnacondaSmartRepo(%s):enable() = %s" % (self.id, repoid))
         channels = sysconf.get("channels") or {}
-        if self.id in channels:
+        if repoid in channels:
             self.anaconda.backend.asmart.runSmart('channel',
-                                   ['--enable', self.id])
+                                   ['--enable', repoid])
         self.enabled = True
 
-    def disable(self):
-        log.debug("AnacondaSmartRepo(%s):disable" % (self.id))
+    def disable(self, repoid):
+        log.debug("AnacondaSmartRepo(%s):disable() = %s" % (self.id, repoid))
         channels = sysconf.get("channels") or {}
-        if self.id in channels:
+        if repoid in channels:
             self.anaconda.backend.asmart.runSmart('channel',
-                                   ['--disable', self.id])
+                                   ['--disable', repoid])
         self.enabled = False
 
     def close(self):
@@ -470,8 +470,6 @@ fi
                         repo.baseurl = ["file://%s/Packages/%s" % (localpath, feed)]
                         self.repos.add(repo)
                 f.close()
-
-        self.repos.enable()
 
         self.smart_ctrl.saveSysConf()
         self.smart_ctrl.restoreMediaState()
