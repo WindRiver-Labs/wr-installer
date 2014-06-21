@@ -387,6 +387,22 @@ class AnacondaSmart:
         self.librpm_dir = self.anaconda.backend.instPath + "/var/lib/rpm"
         self.smart_dir = self.anaconda.backend.instPath + "/var/lib/smart"
 
+    # Remove the local repos that we added during the install
+    def removeWrlLoclRepo(self):
+        channels = sysconf.get("channels") or {}
+        for channel in channels:
+            if channel.startswith('media_'):
+                name = channels[channel]["name"]
+                baseurl = [channels[channel]["baseurl"]]
+                if len(baseurl) == 0:
+                    # Should never reach here
+                    baseurl = [""]
+                # Only remove the local repo since the network repo maybe available.
+                if name.startswith("Install Media feed for") and \
+                        baseurl[0].startswith("file:///Packages/"):
+                    log.debug("AnacondaSmart: remove channel: %s" % channel)
+                    self.runSmart('channel', ['--remove', channel, '-y'])
+
 ### Configure smart for a cross-install, and the install wrapper
     def setup(self, command=None, argv=None):
         iutil.mkdirChain(self.smart_dir)
@@ -452,8 +468,21 @@ fi
         sysconf.set("rpm-nolinktos", "1")
         sysconf.set("rpm-noparentdirs", "1")
 
-        # Ensure we start with a blank channel set...
-        sysconf.remove("channels")
+        if self.anaconda.upgrade:
+            # Note:
+            # This is a fix, we didn't remove the channels that we added in
+            # previous installs, so remove them here.
+            #FIXME: Do we need disable user's channels ?
+            self.removeWrlLoclRepo()
+
+            # Enable the installed RPM DB
+            channels = sysconf.get("channels") or {}
+            if 'rpmsys' not in channels:
+                self.runSmart('channel', ['--add', 'rpmsys', 'type=rpm-sys', '-y'])
+                iface.object.hideStatus()
+        else:
+            # Ensure we start with a blank channel set...
+            sysconf.remove("channels")
 
         self.repos = AnacondaSmartRepo("anaconda-config", self.anaconda)
 
@@ -713,10 +742,6 @@ class SmartBackend(AnacondaBackend):
         if anaconda.upgrade:
             # perform the upgrade
             iface.object._progress.windowTitle = "Upgrade Packages"
-
-            # Enable the installed RPM DB
-            self.anaconda.backend.asmart.runSmart('channel', ['--add', 'rpmsys', 'type=rpm-sys', '-y'])
-            iface.object.hideStatus()
 
             # Do the upgrade for the installed packages
             self.anaconda.backend.asmart.runSmart('upgrade')
