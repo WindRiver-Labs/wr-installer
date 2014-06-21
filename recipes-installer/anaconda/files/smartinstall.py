@@ -889,6 +889,11 @@ class SmartBackend(AnacondaBackend):
 
     def complete(self, anaconda):
         log.debug("called smartinstall.SmartBackend.complete")
+
+        # Remove the local repos that we added for install, they would not
+        # available any more after install.
+        self.asmart.removeWrlLoclRepo()
+
         # clean up rpmdb locks so that kickstart %post scripts aren't
         # unhappy (#496961)
         iutil.resetRpmDb(self.instPath)
