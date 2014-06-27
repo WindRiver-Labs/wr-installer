@@ -853,6 +853,11 @@ class SmartBackend(AnacondaBackend):
     def postAction(self, anaconda):
         log.debug("called smartinstall.SmartBackend.postAction")
 
+        # The kernel-image can't handle the bootloader's config well, so update
+        # the config.
+        if anaconda.upgrade:
+            anaconda.bootloader.write_config(anaconda.rootPath)
+
     def kernelVersionList(self, rootPath="/"):
         log.debug("called smartinstall.SmartBackend.kernelVersionList")
         # FIXME: using rpm here is a little lame, but otherwise, we'd
