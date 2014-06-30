@@ -914,6 +914,7 @@ class SmartBackend(AnacondaBackend):
         iutil.mkdirChain(self.etcrpm_dir)
 
         # Setup /etc/rpm/platform
+        shutil.copy("/etc/rpm/platform", self.etcrpm_dir)
 
         # Setup /etc/rpm/sysinfo/Dirnames
         iutil.mkdirChain(self.etcrpm_dir + "/sysinfo")
