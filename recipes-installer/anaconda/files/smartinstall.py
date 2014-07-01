@@ -502,7 +502,7 @@ fi
 
         self.smart_ctrl.saveSysConf()
         self.smart_ctrl.restoreMediaState()
-        self.doRepoSetup(self, self.anaconda)
+        self.doRepoSetup(self.anaconda)
 
 ### Run smart commands directly
     def runSmart(self, command=None, argv=None):
@@ -522,8 +522,12 @@ fi
         #iface.object._progress.windowTitle = "Repository Update"
         #iface.object.showStatus("Updating package feed cache...")
 
+        argv = []
+        if thisrepo:
+            argv.append(thisrepo)
+
         try:
-            self.runSmart('update', None)
+            self.runSmart('update', argv)
         except:
             if fatalerrors:
                 raise
