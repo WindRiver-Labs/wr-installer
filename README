@@ -123,6 +123,18 @@ Building the target installer
 7. About Grub version
    The current installer only supports grub 2.
 
+8. Upgrade an existed OS rather than fresh install.
+   Note: Only the installer which contains the RPMs can do the upgrade, you
+         can't use the installer which contains the image to upgrade an
+         existed OS.
+
+   Note: The previous build and current build master use the same PRSever,
+         otherwise you can't do the upgrade, which means that the previous
+         project_1 and the current project_1 must use the same PRSever, please
+         refer to the manual on how to setup the PRSever.
+
+   Boot the target machine with the new ISO, select "Upgrade Existing Installation"
+   rather than "Fresh Installation", then the existed OS will be upgraded.
 
 License
 -------
