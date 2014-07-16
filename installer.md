@@ -6,7 +6,7 @@ target build, the other one is for the installer itself.
 1) Installer image which contains ext2, ext3 or ext4 image from target
    build to be copied to local disk.
 
-2) Installer image which contains rpms from target build to be installed
+2) Installer image which contains RPMs from target build to be installed
    to local disk.
 
 Note: The build and installer board configuration should be the same.
@@ -32,10 +32,10 @@ Create the installer image and point to ext3 image:
     --with-installer-target-build=<dir1>/export/intel-x86-64-glibc-std-standard-dist.ext3
     make all
 
-## Use case 2: Target installer with rpms
+## Use case 2: Target installer with RPMs
 
-For use case #2, create the target build that will be
-installed onto the target.
+For use case #2, create the target build project that will be installed
+onto the target.
 
     cd dir1
     ../wrlinux-x/wrlinux/configure --enable-board=intel-x86-64 \
@@ -66,10 +66,6 @@ Start qemu with installer image:
 
 Add "-vnc :4" to EX_TARGET_QEMU_OPTS to start a VNC capable session...
 
-Note: Please make sure that you have more memory than the disk size of
-      ISO when you do the installs, for example, if the ISO is 1G, then
-      more than 1G memory is required, usually, 2G is preferred.
-
 ## About Grub
 The current installer only supports grub 2.
 
@@ -92,8 +88,8 @@ file from /root/anaconda-ks.cfg after the installation and edit it for
 later installs, you can specific the ks file by either of the following
 3 ways:
 - Set KICKSTART_FILE in the conf file (e.g.: local.conf)
-- Put it to <installer-target-build>/anaconda-ks.cfg
-- Put it to <installer-build>/anaconda-ks.cfg
+- Put it as <installer-target-build>/anaconda-ks.cfg
+- Put it as <installer-build>/anaconda-ks.cfg
 
 Then the build will take it and start the kickstart installs by default
 when you start the target.

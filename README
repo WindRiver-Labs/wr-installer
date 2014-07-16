@@ -20,60 +20,108 @@ information on submitting changes.
 
 Building the target installer
 -----------------------------
-The target installer is enabled by passing
-"--enable-target-installer=yes" to configure.  A second option
-"--with-installer-target-build=<path>" is used to specify the path to
-the build directory that will supply rpms and kernel to be installed on
-the target.  If the path is an .ext2, .ext3, or ext4 image file, then
-the installer will copy this image to the target after the disk has been
-partitioned and formatted.
+1. Summary
+   The target installer is enabled by passing "--enable-target-installer=yes"
+   to configure. A second option "--with-installer-target-build=<path>"
+   is used to specify the path to the build directory that will supply RPMs
+   to be installed on the target.  If the path is an .ext2, .ext3, or ext4
+   image file, then the installer will copy this image to the target after
+   the disk has been partitioned and formatted.
 
-Note: The installer requires two builds, one is for the target build, the other
-      one is for the installer itself.
+2. There are two main use cases:
+   2.1 Installer image which contains ext2, ext3 or ext4 image from target
+       build to be copied to local disk.
 
-For example:
-configure --enable-board=intel-x86-64 \
-          --enable-kernel=standard \
-          --enable-rootfs=wr-installer \
-          --enable-bootimage=iso \
-          --enable-target-installer=yes \
-          --with-installer-target-build=/home/user/my_project
+   2.2 Installer image which contains RPMs from target build to be installed
+       to local disk.
 
-make fs
+   Note: Each of them requires two builds, one is for the target build,
+         the other one is for the installer itself. The build and installer
+         board configuration should be the same.
 
-The resulting installer will contain the packages from "my_project", and
-the default system configuration will match the settings in "my_project".
+3. Examples for the use cases:
+   3.1 Target installer with the image
+       3.1.1 Create and build the target image in project_1, the output
+             image(ext3) will be used by project_2 to install on the target.
 
-Note: the board configuration should be the same in both project.
+             Note: The installer-support template is a must for project_1.
 
-Note: The installer program is incompatible with selinux and this
-combination has been disabled.
+             $ configure --enable-board=intel-x86-64 \
+                 --enable-kernel=standard \
+                 --enable-rootfs=glibc-std+installer-support \
+                 --enable-bootimage=ext3
+             $ make all
 
-Note: Please make sure that you have more memory than the disk size of ISO when
-      you do the installs, for example, if the ISO is 1G, then more than 1G
-      memory is required, usually, 2G is preferred.
+       3.2.2 Create and build the installer image in project_2, let the
+             --with-installer-target-build point to ext3 image:
+             $ configure --enable-board=intel-x86-64 \
+                 --enable-kernel=standard --enable-rootfs=wr-installer \
+                 --enable-target-installer=yes --enable-bootimage=iso \
+                 --with-installer-target-build=<project_1>/export/intel-x86-64-glibc-std-standard-dist.ext3
+             $ make all
 
-The second build can read answers from installer.conf to help speed up the
-build process when package based installs, the user can set WRL_INSTALLER_CONF
-in the conf file, e.g.:
+   3.2 Target installer with the RPMs
+       3.2.1 Create and build target RPMs in project_1, the output RPMs
+             will be used by project_2 to install on the target.
 
-    edit <installer_build_dir>/bitbake_build/conf/local.conf
-    WRL_INSTALLER_CONF = "/my/installer.conf"
+             Note: The installer-support template is a must for project_1.
 
-You can custom the installer.conf when needed, for example, add packages that
-you would like to install, but please make sure that the added packages are in the
-first build.
+             $ configure --enable-board=intel-x86-64 \
+                    --enable-kernel=standard
+                    --enable-rootfs=glibc-std+installer-support
+             $ make all
 
-The installer can support the kickstart installs, you can use the ks
-file from /root/anaconda-ks.cfg after the installation and edit it for
-later installs, you can specific the ks file by either of the following
-3 ways:
-  - Set KICKSTART_FILE in the conf file (e.g.: local.conf)
-  - Put it to <installer-target-build>/anaconda-ks.cfg
-  - Put it to <installer-build>/anaconda-ks.cfg
+       3.3.2 Create and build the installer image in project_2, let the
+             --with-installer-target-build point to top of project_1:
 
-Then the build will take it and start the kickstart installs by default
-when you start the target.
+             $ configure --enable-board=intel-x86-64 \
+					--enable-kernel=standard --enable-rootfs=wr-installer \
+					--enable-target-installer=yes \
+					--enable-bootimage=iso \
+					--with-installer-target-build=<project_1>
+             $ make all
+
+4. Install
+   4.1 Burn the output ISO to a DVD or dd it to a USB disk, use it to
+       boot the target board and start the install.
+
+   4.2 Use qemu for testing
+       Create the qemu disk:
+       $ host-cross/usr/bin/qemu-img create -f qcow hd0.vdisk 5000M
+
+       Start qemu with installer image:
+       $ make start-target \
+         TOPTS="-m 2048 -cd export/intel-x86-64-installer-standard-dist.iso \
+         -no-kernel -disk hd0.vdisk -gc" EX_TARGET_QEMU_OPTS="-vga vmware"
+
+       Add "-vnc :4" to EX_TARGET_QEMU_OPTS to start a VNC capable session.
+
+5. Use custom installer.conf
+   The second build can use installer.conf to help speed up the build
+   process when package based installs, the user can set WRL_INSTALLER_CONF
+   in the conf file, e.g.:
+
+   edit <installer_build_dir>/bitbake_build/conf/local.conf
+   WRL_INSTALLER_CONF = "/my/installer.conf"
+
+   You can custom the installer.conf when needed, for example, add
+   packages that you would like to install, but please make sure that the
+   added packages are in the first build.
+
+6. Do the kickstart installation
+   The installer can support the kickstart installs, you can use the ks
+   file from /root/anaconda-ks.cfg after the installation and edit it for
+   later installs, you can specific the ks file by either of the following
+   three ways:
+   7.1 Set KICKSTART_FILE in the conf file (e.g.: local.conf)
+   7.2 Put it as <installer-target-build>/anaconda-ks.cfg
+   7.3 Put it as <installer-build>/anaconda-ks.cfg
+
+   Then the second build will take it and start the kickstart installs
+   by default when you start the target with installer image.
+
+7. About Grub version
+   The current installer only supports grub 2.
 
 
 License
