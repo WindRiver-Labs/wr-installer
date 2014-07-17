@@ -237,6 +237,7 @@ class SmartRepo:
         self.enabled = False
 
         self.mirrorlist = None
+        self.mirrorrepos = []
 
         self._anacondaBaseURLs = []
 
@@ -291,14 +292,58 @@ class AnacondaSmartRepo(SmartRepo):
         log.debug("AnacondaSmartRepo(%s):items() = %s" % (self.id, item_list))
         return item_list
 
+    def fetchMirrorlist(self, repoobj):
+        output = '/tmp/%s' % repoobj.id
+        try:
+            os.unlink(output)
+        except:
+            pass
+
+        try:
+            with open(output, 'w') as f:
+                import pycurl
+
+                curl = pycurl.Curl()
+                curl.setopt(curl.URL, repoobj.mirrorlist)
+                curl.setopt(curl.WRITEDATA, f)
+                curl.perform()
+                curl.close()
+            return True
+        except:
+            log.debug("Failed to fetch repository mirrorlist %s" % repoobj.id)
+            return False
+
     def add(self, repoobj):
         log.debug("AnacondaSmartRepo(%s):add() = %s" % (self.id, repoobj.id))
         channels = sysconf.get("channels") or {}
         if repoobj.id in channels:
             raise ValueError("Repository %s is listed more than once in the configuration" % (repoobj.id))
-        # MGH: Fix mirrorlist.. We should fetch and add a series of repository mirrors...
+
         if repoobj.mirrorlist:
-            raise ValueError("Repository %s -- smart does not yet support mirror lists" % (repoobj.id))
+            try:
+                if not self.fetchMirrorlist(repoobj):
+                    raise ValueError("Failed to fetch repository mirrorlist %s" % repoobj.id)
+
+                import ConfigParser
+                config = ConfigParser.ConfigParser()
+                config.read('/tmp/%s' % repoobj.id)
+                for reponame in config.sections():
+                    newrepoobj = AnacondaSmartRepo(reponame.replace(' ', ''), repoobj.anaconda)
+                    if config.has_option(reponame, 'type'):
+                        newrepoobj.type = config.get(reponame, 'type')
+                    if config.has_option(reponame, 'priority'):
+                        newrepoobj.cost = config.getint(reponame, 'priority')
+                    if config.has_option(reponame, 'baseurl'):
+                        newrepoobj.baseurl = [config.get(reponame, 'baseurl')]
+                    if config.has_option(reponame, 'name'):
+                        newrepoobj.name = config.get(reponame, 'name')
+                    self.add(newrepoobj)
+                    repoobj.mirrorrepos.append(newrepoobj)
+
+                return None
+            except:
+                raise ValueError("Invalid repository mirror list %s" % repoobj.id)
+
         if not repoobj.baseurl:
             raise ValueError("Repository %s does not have the baseurl set" % (repoobj.id))
 

@@ -1,0 +1,67 @@
+For network installation, we would support the URL is a mirror list file
+and it's content looks like:
+
+[qemux86_64]
+type = rpm-md
+priority = 55
+baseurl = http://10.0.2.2/feeds/rpm/qemux86_64
+
+[x86_64]
+type = rpm-md
+priority = 50
+baseurl = http://10.0.2.2/feeds/rpm/x86_64
+
+Then we can add the smart channels in the mirror list file.
+
+Upstream-Status: Inappropriate [WR specific]
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+
+--- anaconda-16.25/pyanaconda/iw/task_gui.py.orig	2014-07-17 10:16:08.604514809 +0800
++++ anaconda-16.25/pyanaconda/iw/task_gui.py	2014-07-17 10:16:13.284514937 +0800
+@@ -154,7 +154,11 @@
+                     "URL.") % repo.name, type="ok", custom_icon="error")
+             return False
+ 
+-        self.backend.asmart.repos.enable(repo.id)
++        if not repo.mirrorlist:
++            self.backend.asmart.repos.enable(repo.id)
++        else:
++            for mp in repo.mirrorrepos:
++                self.backend.asmart.repos.enable(mp.id)
+         return True
+ 
+     def _disableAndRemoveRepo(self, repo):
+@@ -370,9 +374,16 @@
+             if (not applyFuncs[type](newRepoObj) or
+                 not self._addAndEnableRepo(newRepoObj)):
+                 continue
+-            if not setupRepo(self.anaconda, newRepoObj):
+-                self._disableAndRemoveRepo(newRepoObj)
+-                continue
++
++            if not newRepoObj.mirrorlist:
++                if not setupRepo(self.anaconda, newRepoObj):
++                    self._disableAndRemoveRepo(newRepoObj)
++                    continue
++            else:
++                for repo in newRepoObj.mirrorrepos:
++                    if not setupRepo(self.anaconda, repo):
++                        self._disableAndRemoveRepo(repo)
++                        continue
+ 
+             if removeOld:
+                 # MGH: Don't cleanup the cachedir!
+@@ -557,7 +568,11 @@
+             return gtk.RESPONSE_CANCEL
+ 
+         s = self.xml.get_widget("repoList").get_model()
+-        s.append([dialog.repo.isEnabled(), dialog.repo.name, dialog.repo])
++        if not dialog.repo.mirrorlist:
++            s.append([dialog.repo.isEnabled(), dialog.repo.name, dialog.repo])
++        else:
++            for repo in dialog.repo.mirrorrepos:
++                s.append([repo.isEnabled(), repo.name, repo])
+ 
+     def _taskToggled(self, button, path, store):
+         # First, untoggle everything in the store.
