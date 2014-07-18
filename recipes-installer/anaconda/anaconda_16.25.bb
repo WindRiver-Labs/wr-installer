@@ -17,7 +17,7 @@ DEPENDS += "networkmanager"
 
 
 RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs \
-                   ntfsprogs xfsprogs btrfs-tools \
+                   ntfsprogs xfsprogs btrfs-tools nfs-utils-client \
                    parted dosfstools gzip libarchive lvm2 \
                    squashfs-tools openssh python python-misc python-modules python-dbus \
                    nspr nss python-nss parted python-pyblock python-pygtk \
@@ -120,6 +120,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-storage-release.patch \
            file://anaconda-correct-calls-of-smartrepo.patch \
            file://anaconda-implement-smart-mirrorlist.patch \
+           file://anaconda-correct-nfs-repo-baseurl.patch \
 "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
