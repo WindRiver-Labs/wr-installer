@@ -101,6 +101,46 @@ for x in $CMDLINE; do
         esac
 done
 
+# Check which rootfs to be installed
+blist="/.target_build_list"
+if [ -f "$blist" ]; then
+    lines=`cat $blist | wc -l`
+    if [ $lines -gt 1 ]; then
+        echo ""
+        echo "=============== Found the following products ==============="
+        for lineno in `seq $lines`; do
+            echo "  $lineno) `sed -n "${lineno}p" $blist | sed -e 's/^:://' -e 's/::/\t/g'`"
+        done
+        while true; do
+            echo ""
+            echo -n "Please enter your choice (0 to quit): "
+            read choice
+            right_choice=0
+            if [ "$choice" = "0" ]; then
+                exit 1
+            fi
+            for cnt in `seq $lines`; do
+                if [ "$cnt" = "$choice" ]; then
+                    right_choice=1
+                    break
+                fi
+            done
+            if [ $right_choice -eq 1 ]; then
+                break
+            else
+                echo "Invalid choice: $choice, it should be one of: " `seq $counter`
+            fi
+        done
+        prj_name="`sed -n "${choice}p" $blist | awk -F:: '{print $2}'`"
+        entries=".buildstamp LiveOS Packages installer-config/ks.cfg"
+        for f in $entries; do
+            if [ -e /$f.$prj_name ]; then
+                ln -sf `basename $f.$prj_name` /$f
+            fi
+        done
+    fi
+fi
+
 case "$1" in
   start)
        # configure X, allowing user to override xdriver
