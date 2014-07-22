@@ -4,4 +4,6 @@ NOREDIRPATCH = ""
 NOREDIRPATCH_class-target = "file://smartpm-noredir.patch"
 
 SRC_URI += "${NOREDIRPATCH} \
-      file://smart-add-query.patch"
+            file://smart-add-query.patch \
+            file://smart-enable-proxy-for-rpm-channel.patch \
+           "
