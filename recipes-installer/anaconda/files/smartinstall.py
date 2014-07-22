@@ -306,6 +306,11 @@ class AnacondaSmartRepo(SmartRepo):
                 curl = pycurl.Curl()
                 curl.setopt(curl.URL, repoobj.mirrorlist)
                 curl.setopt(curl.WRITEDATA, f)
+                if repoobj.proxy:
+                    curl.setopt(curl.PROXY, repoobj.proxy)
+                    if repoobj.proxy_username:
+                        curl.setopt(curl.PROXYUSERPWD, '%s:%s'
+                                     % (repoobj.proxy_username, repoobj.proxy_password or ''))
                 curl.perform()
                 curl.close()
             return True
@@ -337,6 +342,10 @@ class AnacondaSmartRepo(SmartRepo):
                         newrepoobj.baseurl = [config.get(reponame, 'baseurl')]
                     if config.has_option(reponame, 'name'):
                         newrepoobj.name = config.get(reponame, 'name')
+                    if repoobj.proxy:
+                        newrepoobj.proxy = repoobj.proxy
+                        newrepoobj.proxy_username = repoobj.proxy_username
+                        newrepoobj.proxy_password = repoobj.proxy_password
                     self.add(newrepoobj)
                     repoobj.mirrorrepos.append(newrepoobj)
 
@@ -359,6 +368,12 @@ class AnacondaSmartRepo(SmartRepo):
             argv.append('priority=%s' % repoobj.cost)
         if repoobj.components:
             argv.append('components=%s' % repoobj.components)
+        if repoobj.proxy:
+            argv.append('proxy=%s' % repoobj.proxy)
+            if repoobj.proxy_username:
+                argv.append('proxy-username=%s' % repoobj.proxy_username)
+                if repoobj.proxy_password:
+                    argv.append('proxy-password=%s' % repoobj.proxy_password)
         argv.append('-y')
 
         self.anaconda.backend.asmart.runSmart('channel', argv)
