@@ -121,7 +121,8 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-correct-calls-of-smartrepo.patch \
            file://anaconda-implement-smart-mirrorlist.patch \
            file://anaconda-correct-nfs-repo-baseurl.patch \
-"
+           file://anaconda-remove-option-add-repo-from-cd.patch \
+          "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
 # and on the first compile pass bitbake will tell you what md5 value to insert.
