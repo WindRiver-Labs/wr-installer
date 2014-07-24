@@ -70,7 +70,7 @@ for x in $CMDLINE; do
         resolution=*)
             resolution="${x#resolution=}"
             ;;
-        serial)
+        serial|console=*)
             serial=1
             textinst=1
             ;;
