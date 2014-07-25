@@ -129,10 +129,13 @@ Building the target installer
          can't use the installer which contains the image to upgrade an
          existed OS.
 
-   Note: The previous build and current build master use the same PRSever,
+   Note: The previous build and current build mast use the same PRSever,
          otherwise you can't do the upgrade, which means that the previous
          project_1 and the current project_1 must use the same PRSever, please
          refer to the manual on how to setup the PRSever.
+
+   Note: You can only upgrade the same rootfs, for example, upgrade the old
+         glibc-std to new glibc-std, otherwise the upgrade may fail.
 
    Boot the target machine with the new ISO, select "Upgrade Existing Installation"
    rather than "Fresh Installation", then the existed OS will be upgraded.
