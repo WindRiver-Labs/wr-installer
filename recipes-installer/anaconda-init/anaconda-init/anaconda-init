@@ -128,7 +128,7 @@ if [ -f "$blist" ]; then
             if [ $right_choice -eq 1 ]; then
                 break
             else
-                echo "Invalid choice: $choice, it should be one of: " `seq $counter`
+                echo "Invalid choice: $choice, it should be one of: " `seq $lines`
             fi
         done
         prj_name="`sed -n "${choice}p" $blist | awk -F:: '{print $2}'`"
