@@ -352,7 +352,7 @@ _EOF
 wrl_installer_get_count() {
     sum=0
     for i in $*; do
-        let sum=$sum+1
+        sum=$(expr $sum + 1)
     done
     echo $sum
 }
@@ -382,7 +382,7 @@ _EOF
     counter=0
     for target_build in ${INSTALLER_TARGET_BUILD}; do
         echo "Installer Target Build: $target_build"
-        let counter=$counter+1
+        counter=$(expr $counter + 1)
         prj_name="`echo $target_build | sed -e 's#/ *$##g' -e 's#.*/##'`"
 
 	    # Generate .buildstamp
