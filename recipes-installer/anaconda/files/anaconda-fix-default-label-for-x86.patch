@@ -1,0 +1,35 @@
+If we "Use entire drive" to install target, the drive/disk is formatted with gpt
+label even not booted with EFI. Change the default label to msdos for X86.
+
+When do auto partition, bootlader.stage1_drive may not set. Check the value of
+bootloader.drive that could check available disks first and set bootlader.stage1_drive
+at same time.
+
+Upstream-Status: Pending
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+---
+diff -Nru anaconda-16.25/pyanaconda.orig/platform.py anaconda-16.25/pyanaconda/platform.py
+--- anaconda-16.25/pyanaconda.orig/platform.py	2014-07-29 13:42:06.041106654 +0800
++++ anaconda-16.25/pyanaconda/platform.py	2014-07-29 13:42:34.789107437 +0800
+@@ -149,7 +149,7 @@
+                           "mdarray": Platform._boot_raid_description}
+ 
+ 
+-    _disklabel_types = ["gpt", "msdos"]
++    _disklabel_types = ["msdos", "gpt"]
+     # XXX hpfs, if reported by blkid/udev, will end up with a type of None
+     _non_linux_format_types = ["vfat", "ntfs", "hpfs"]
+ 
+diff -Nru anaconda-16.25/pyanaconda.orig/storage/partitioning.py anaconda-16.25/pyanaconda/storage/partitioning.py
+--- anaconda-16.25/pyanaconda.orig/storage/partitioning.py	2014-07-29 13:42:06.033106654 +0800
++++ anaconda-16.25/pyanaconda/storage/partitioning.py	2014-07-29 13:47:04.253114781 +0800
+@@ -480,7 +480,7 @@
+     # make sure that the the boot device has the correct disklabel type if
+     # we're going to completely clear it.
+     for disk in storage.partitioned:
+-        if not bootloader or not bootloader.stage1_drive:
++        if not bootloader or not bootloader.drives or not bootloader.stage1_drive:
+             break
+ 
+         if disk != bootloader.stage1_drive:

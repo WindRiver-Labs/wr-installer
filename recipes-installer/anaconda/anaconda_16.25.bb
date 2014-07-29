@@ -123,6 +123,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-correct-nfs-repo-baseurl.patch \
            file://anaconda-remove-option-add-repo-from-cd.patch \
            file://anaconda-upgrade-fix-tmp.patch \
+           file://anaconda-fix-default-label-for-x86.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
