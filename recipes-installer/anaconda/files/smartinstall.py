@@ -573,6 +573,7 @@ fi
         self.smart_ctrl.saveSysConf()
         self.smart_ctrl.restoreMediaState()
 
+        return rc
 
     def doGroupSetup(self, anaconda):
         log.debug("doGroupSetup ...")
@@ -582,17 +583,20 @@ fi
         #iface.object._progress.windowTitle = "Repository Update"
         #iface.object.showStatus("Updating package feed cache...")
 
+        rc = 0
         argv = []
         if thisrepo:
             argv.append(thisrepo)
 
         try:
-            self.runSmart('update', argv)
+            rc = self.runSmart('update', argv)
         except:
             if fatalerrors:
                 raise
         #finally:
         #    iface.object.hideStatus()
+
+        return rc
 
     def doSackSetup(self, anaconda, thisrepo = None, fatalerrors = True):
         # Do nothing...
@@ -974,7 +978,7 @@ class SmartBackend(AnacondaBackend):
         iutil.resetRpmDb(self.instPath)
 
     def doRepoSetup(self, anaconda, thisrepo = None, fatalerrors = True):
-        self.asmart.doRepoSetup(anaconda, thisrepo, fatalerrors)
+        return self.asmart.doRepoSetup(anaconda, thisrepo, fatalerrors)
 
     def doSackSetup(self, anaconda, thisrepo = None, fatalerrors = True):
         # Do nothing, not needed
