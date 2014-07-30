@@ -15,3 +15,21 @@ Signed-off-by: Kai Kang <kai.kang@windriver.com>
  
      # Given a method string, return the index of the typeComboBox that should
      # be made active in order to match.
+@@ -338,7 +338,7 @@
+         return True
+ 
+     def run(self):
+-        applyFuncs = [ self._applyURL, self._applyMedia, self._applyNfs,
++        applyFuncs = [ self._applyURL, self._applyNfs,
+                        self._applyHd ]
+ 
+         while True:
+@@ -490,7 +490,7 @@
+         return None
+ 
+     def run(self):
+-        applyFuncs = [ self._applyURL, self._applyMedia, self._applyNfs,
++        applyFuncs = [ self._applyURL, self._applyNfs,
+                        self._applyHd ]
+ 
+         while True:
