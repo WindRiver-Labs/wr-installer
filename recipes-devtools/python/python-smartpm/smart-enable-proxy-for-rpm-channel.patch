@@ -132,7 +132,7 @@ diff -Nru smart-1.4.1.orig/smart/fetcher.py smart-1.4.1/smart/fetcher.py
              value = info.get(kind)
              if value:
                  info[kind] = value.lower()
-@@ -1728,6 +1729,13 @@
+@@ -1728,6 +1729,15 @@
                          handle.setopt(pycurl.HTTPHEADER, ["Pragma:"])
                          handle.setopt(pycurl.USERAGENT, "smart/" + VERSION)
                          handle.setopt(pycurl.FAILONERROR, 1)
@@ -143,6 +143,8 @@ diff -Nru smart-1.4.1.orig/smart/fetcher.py smart-1.4.1/smart/fetcher.py
 +                            if username:
 +                                handle.setopt(pycurl.PROXYUSERPWD,
 +                                              '%s:%s' % (username, item.getInfo('proxy_password', '')))
++                        else:
++                            handle.setopt(pycurl.PROXY, '')
  
                          # check if we have a valid local file and use I-M-S
                          if fetcher.validate(item, localpath):
