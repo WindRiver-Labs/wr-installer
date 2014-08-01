@@ -125,6 +125,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-upgrade-fix-tmp.patch \
            file://anaconda-fix-default-label-for-x86.patch \
            file://anaconda-validate-repo.patch \
+           file://anaconda-disable-edit-button-for-local-repo.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
