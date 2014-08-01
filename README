@@ -193,6 +193,11 @@ Building the target installer
              Then target_build1 will use /my/target1.conf and /my/target1.ks,
              target_build2 and target_build3 will work similarly.
 
+       NOTE: You must use ISO level 3 if the ISO size is larger then 4 GB, add
+             the following line into your local.conf
+             (bitbake_build/conf/local.conf) file:
+             MKISOFS_OPTIONS_append = " -iso-level 3"
+
 License
 -------
 Copyright (C) 2013-2014 Wind River Systems, Inc.
