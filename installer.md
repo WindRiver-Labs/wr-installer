@@ -1,154 +1,174 @@
-# Target Installer
+Building the target installer
+-----------------------------
+1. Summary
+   The target installer is enabled by passing "--enable-target-installer=yes"
+   to configure. A second option "--with-installer-target-build=<path>"
+   is used to specify the path to the build directory that will supply RPMs
+   to be installed on the target.  If the path is an .ext2, .ext3, or ext4
+   image file, then the installer will copy this image to the target after
+   the disk has been partitioned and formatted.
 
-Two main use cases, each of them requires two builds, one is for the
-target build, the other one is for the installer itself.
+2. Two main use cases
+   2.1 Installer image with ext2, ext3 or ext4 image from the target
+       build to be copied to local disk.
 
-1) Installer image which contains ext2, ext3 or ext4 image from target
-   build to be copied to local disk.
+   2.2 Installer image with RPMs from the target build to be installed
+       to local disk.
 
-2) Installer image which contains RPMs from target build to be installed
-   to local disk.
+   Note: Each option requires two builds, one is for the target build,
+         the other one is for the installer itself. The build and installer
+         board (BSP) configuration should be the same.
 
-Note: The build and installer board configuration should be the same.
+3. Examples for the use cases
+   3.1 Target installer with the image
+       3.1.1 Create and build the target image in project_1.
+             The output image(ext3) will be used by project_2 to install
+             on the target.
 
-## Use Case 1: Target installer with image
+             Note: The installer-support template is required for project_1.
 
-Create the target build image that will be installed onto the target.
+             $ configure --enable-board=intel-x86-64 \
+                 --enable-kernel=standard \
+                 --enable-rootfs=glibc-std+installer-support \
+                 --enable-bootimage=ext3
+             $ make all
 
-    cd dir1
-    ../wrlinux-x/wrlinux/configure --enable-board=intel-x86-64 \
-    --enable-kernel=standard --enable-rootfs=glibc-std+installer-support \
-    --enable-bootimage=ext3
-    make all
+       3.2.2 Create and build the installer image in project_2.
+             Use the configure option --with-installer-target-build to
+             point to the ext3 image from the previous step:
+             $ configure --enable-board=intel-x86-64 \
+                 --enable-kernel=standard --enable-rootfs=wr-installer \
+                 --enable-target-installer=yes --enable-bootimage=iso \
+                 --with-installer-target-build=\
+                    <project_1>/export/intel-x86-64-glibc-std-standard-dist.ext3
+              $ make all
 
+   3.2 Target installer with RPMs
+       3.2.1 Create and build target RPMs in project_1.
+             The output RPMs will be used by project_2 to install on
+             the target.
 
-Create the installer image and point to ext3 image:
+             Note: The installer-support template is required for project_1.
 
-    cd dir2
-    ../wrlinux-x/wrlinux/configure --enable-board=intel-x86-64 \
-    --enable-kernel=standard --enable-rootfs=wr-installer \
-    --enable-target-installer=yes \
-    --enable-bootimage=iso \
-    --with-installer-target-build=<dir1>/export/intel-x86-64-glibc-std-standard-dist.ext3
-    make all
+             $ configure --enable-board=intel-x86-64 \
+                    --enable-kernel=standard
+                    --enable-rootfs=glibc-std+installer-support
+             $ make all
 
-## Use case 2: Target installer with RPMs
+       3.3.2 Create and build the installer image in project_2.
+             Use the configure option --with-installer-target-build to point to
+             root directory of project_1:
 
-For use case #2, create the target build project that will be installed
-onto the target.
+             $ configure --enable-board=intel-x86-64 \
+					--enable-kernel=standard --enable-rootfs=wr-installer \
+					--enable-target-installer=yes \
+					--enable-bootimage=iso \
+					--with-installer-target-build=<project_1Dir>
+             $ make all
 
-    cd dir1
-    ../wrlinux-x/wrlinux/configure --enable-board=intel-x86-64 \
-    --enable-kernel=standard --enable-rootfs=glibc-std+installer-support \
-    make all
+4. Install
+   4.1 Burn the output ISO to a DVD or dd it to a USB disk, and use it to
+       boot the target board and start the install.
 
-Create the installer image and point to top level of build:
+   4.2 Use qemu for testing
+       Create the qemu disk:
+       $ host-cross/usr/bin/qemu-img create -f qcow hd0.vdisk 5000M
 
-    cd dir2
-    ../wrlinux-x/wrlinux/configure --enable-board=intel-x86-64 \
-    --enable-kernel=standard --enable-rootfs=wr-installer \
-    --enable-target-installer=yes \
-    --enable-bootimage=iso \
-    --with-installer-target-build=<dir1>
-    make all
+       Start qemu with installer image:
+       $ make start-target \
+         TOPTS="-m 2048 -cd export/intel-x86-64-installer-standard-dist.iso \
+         -no-kernel -disk hd0.vdisk -gc" EX_TARGET_QEMU_OPTS="-vga vmware"
 
-## Testing
+       Add "-vnc :4" to EX_TARGET_QEMU_OPTS to start a VNC capable session.
 
-Create the qemu disk:
+5. Use custom installer.conf
+   The second build can use installer.conf to help speed up the build
+   process when package based installs, the user can set WRL_INSTALLER_CONF
+   in the conf file, for example:
 
-    host-cross/usr/bin/qemu-img create -f qcow hd0.vdisk 5000M
+   edit <installer_build_dir>/bitbake_build/conf/local.conf
+   WRL_INSTALLER_CONF = "/my/installer.conf"
 
-Start qemu with installer image:
+   You can customize the contents of installer.conf when needed, for example,
+   add packages that you will like to install, but if you do, you must ensure
+   that the added packages are in the first build (project_1).
 
-    make start-target \
-    TOPTS="-m 2048 -cd export/intel-x86-64-installer-standard-dist.iso \
-    -no-kernel -disk hd0.vdisk -gc" EX_TARGET_QEMU_OPTS="-vga vmware"
-
-Add "-vnc :4" to EX_TARGET_QEMU_OPTS to start a VNC capable session...
-
-## About Grub
-The current installer only supports grub 2.
-
-## Adding custom installer.conf to installer image
-
-The second build can read answers from installer.conf to help speed up the
-build process when package based installs, the user can set WRL_INSTALLER_CONF
-in the conf file, e.g.:
-
-    edit <installer_build_dir>/bitbake_build/conf/local.conf
-    WRL_INSTALLER_CONF = "/my/installer.conf"
-
-You can custom the installer.conf when needed, for example, add packages that
-you will like to install, but please make sure that the added packages are in the
-first build.
-
-## Do the kickstart installation
-   The installer can support the kickstart installs, you can use the ks file
+6. Perform the kickstart installation
+   The installer can support kickstart installs. To do this, use the ks file
    from /root/anaconda-ks.cfg after the installation and edit it for later
-   installs, you can specify the ks file by setting KICKSTART_FILE in the conf
-   file, e.g.:
+   installs. You can specify the ks file by setting KICKSTART_FILE in the conf
+   file, for example:
 
    KICKSTART_FILE = "/my/anaconda-ks.cfg"
 
    Then the second build will take it and start the kickstart installs
    by default when you start the target with installer image.
 
-## Upgrade an existed OS rather than fresh install
+7. About Grub version
+   The current installer only supports grub 2.
+
+8. Upgrade an existed OS rather than fresh install
    Note: Only the installer which contains the RPMs can do the upgrade, you
          can't use the installer which contains the image to upgrade an
          existed OS.
 
-   Note: The previous build and current build mast use the same PRSever,
+   Note: The previous build and current build must use the same PRSever,
          otherwise you can't do the upgrade, which means that the previous
-         project_1 and the current project_1 must use the same PRSever, please
-         refer to the manual on how to setup the PRSever.
+         project_1 and the current project_1 must use the same PRSever.
+         Refer to the Wind River Linux User's Guide on how to setup the PRSever.
 
    Note: You can only upgrade the same rootfs, for example, upgrade the old
          glibc-std to new glibc-std, otherwise the upgrade may fail.
 
-   Boot the target machine with the new ISO, select "Upgrade Existing Installation"
-   rather than "Fresh Installation", then the existed OS will be upgraded.
+   To perform an upgrade, boot the target machine with the new ISO, select
+   "Upgrade Existing Installation" rather than "Fresh Installation", then the
+   existed OS will be upgraded.
 
-## Put multiple target builds into one installer image
-   1) Create and build multiple target build projects, suppose the
-      projects are named as target_build1, target_build2 and target_build3.
+9. Put multiple target builds into one installer image
+   9.1 Create and build multiple target build projects.
+       Refer to section 3.1.1 or 3.2.1 on how to configure and build each
+       target project. In this example, the projects are named target_build1,
+       target_build2 and target_build3.
 
-   2) Use the configure option --with-installer-target-build to point to
+   9.2 Use the configure option --with-installer-target-build to point to
        "<target_build1>,<target_build2>,<target_build3>", the comma(,)
        is the separator:
        $ configure --enable-board=intel-x86-64 \
             --enable-kernel=standard --enable-rootfs=wr-installer \
             --enable-target-installer=yes \
             --enable-bootimage=iso \
-            --with-installer-target-build=<target_build1>,<target_build2>,<target_build3>
+            --with-installer-target-build=\
+            <target_build1>,<target_build2>,<target_build3>
 
-        $ make all
+       $ make all
 
-        Then the installer image will contain target_build1,
-        target_build2 and target_build3, you will get a selection menu when
-        booting the installer image: (target_buildX is the basename of project)
+       Then the installer image will contain all target builds specified,
+       including target_build1, target_build2 and target_build3.
 
-        =============== Found the following products ===============
-        1) DISTRO1    target_build1    DISTRO_NAME1    DISTRO_VERION1
-        2) DISTRO2    target_build2    DISTRO_NAME2    DISTRO_VERION2
-        3) DISTRO3    target_build3    DISTRO_NAME3    DISTRO_VERION3
+       When you boot the installer image, you will get a selection menu:
+       NOTE: target_buildX is the basename of project
 
-        Please enter your choice (0 to quit):
+       =============== Found the following products ===============
+       1) DISTRO1    target_build1    DISTRO_NAME1    DISTRO_VERION1
+       2) DISTRO2    target_build2    DISTRO_NAME2    DISTRO_VERION2
+       3) DISTRO3    target_build3    DISTRO_NAME3    DISTRO_VERION3
 
-        NOTE: You need to use a proper name for the target build project
-              since its basename will be used in the selection menus.
+       Please enter your choice (0 to quit):
 
-        NOTE: The number of the entries in WRL_INSTALLER_CONF or
-              KICKSTART_FILE must be the same as the number of target build
-              projects.
-              For example, if you want to use WRL_INSTALLER_CONF or
-              KICKSTART_FILE for target_build1, target_build2 and
-              target_build3, set each of the three in the conf file.
+       NOTE: You need to use a proper name for the target build project
+             since its basename will be used in the selection menus.
 
-              WRL_INSTALLER_CONF = "/my/target1.conf /my/target2.conf \
-                                     /my/target3.conf"
-              KICKSTART_FILE = "/my/target1.ks /my/target2.ks \
-                                /my/target3.ks"
+       NOTE: The number of the entries in WRL_INSTALLER_CONF or
+             KICKSTART_FILE must be the same as the number of target build
+             projects.
+             For example, if you want to use WRL_INSTALLER_CONF or
+             KICKSTART_FILE for target_build1, target_build2 and
+             target_build3, set each of the three in the conf file.
 
-              Then target_build1 will use /my/target1.conf and /my/target1.ks,
-              target_build2 and target_build3 will work similarly.
+             WRL_INSTALLER_CONF = "/my/target1.conf /my/target2.conf \
+                                    /my/target3.conf"
+             KICKSTART_FILE = "/my/target1.ks /my/target2.ks \
+                               /my/target3.ks"
+
+             Then target_build1 will use /my/target1.conf and /my/target1.ks,
+             target_build2 and target_build3 will work similarly.
