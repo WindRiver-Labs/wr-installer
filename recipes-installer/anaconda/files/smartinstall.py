@@ -642,7 +642,7 @@ class SmartBackend(AnacondaBackend):
         self.anaconda = anaconda
 
         self.task_to_install = None
-        self.required_pkgs = ['base-files', 'base-passwd', 'kernel-image-base', 'grub']
+        self.required_pkgs = ['base-files', 'base-passwd', 'kernel', 'grub']
 
         bl_pkgs = anaconda.bootloader.packages
         if bl_pkgs:
