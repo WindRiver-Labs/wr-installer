@@ -1,7 +1,7 @@
 inherit python-dir
 
 DEPENDS += "python"
-PRINC = "1"
+PR = "r500"
 
 EXTRA_OECONF = "--with-python=${STAGING_DIR_HOST}${exec_prefix} --without-debug --without-legacy --with-catalog --without-docbook --with-c14n --without-lzma --with-fexceptions PYTHON=${PYTHON} baselib=${baselib} \
  PYTHON_SITE_PACKAGES=${PYTHON_SITEPACKAGES_DIR}"
