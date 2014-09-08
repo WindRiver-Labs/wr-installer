@@ -33,7 +33,7 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \
                    module-init-tools \
-                   tigervnc smartpm util-linux efibootmgr"
+                   smartpm util-linux efibootmgr"
 
 # Disabled networkmanager...
 #RDEPENDS_anaconda += "network-manager-applet"
@@ -126,6 +126,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-fix-default-label-for-x86.patch \
            file://anaconda-validate-repo.patch \
            file://anaconda-disable-edit-button-for-local-repo.patch \
+           file://anaconda-fix-unpack.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
@@ -154,7 +155,7 @@ EXTRA_OECONF += "--disable-selinux \
 "
 
 # Enable this if the package uses automake/configure
-inherit autotools gettext pythonnative python-dir
+inherit autotools-brokensep gettext pythonnative pkgconfig
 
 addtask do_setupdistro after do_patch before do_configure
 
