@@ -46,7 +46,7 @@ FILES_${PN}-dev = "${includedir}/dmraid ${base_libdir}/libdmraid.so ${base_libdi
 FILES_${PN}-events = "${mandir}/man8/dmevent_tool* ${mandir}/man8/dm_dso_reg_tool* ${base_sbindir}/dmevent_tool ${base_sbindir}/dm_dso_reg_tool"
 
 
-inherit autotools gettext
+inherit autotools-brokensep gettext
 
 export DESTDIR="${D}"
 EXTRA_OECONF += " --prefix=${D}/${prefix} --sbindir=${D}/${base_sbindir} --libdir=${D}/${base_libdir} --mandir=${D}/${mandir} --includedir=${D}/${includedir}"
