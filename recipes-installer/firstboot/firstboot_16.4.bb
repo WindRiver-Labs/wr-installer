@@ -14,7 +14,12 @@ PR = "r0"
 
 # FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-inherit python-dir pythonnative
+inherit pythonnative
+
+export BUILD_SYS
+export HOST_SYS
+export STAGING_LIBDIR
+export STAGING_INCDIR
 
 SRC_URI = "http://pkgs.fedoraproject.org/lookaside/pkgs/firstboot/firstboot-16.4.tar.bz2/1124c87f126bf7823f2dd04f1c324f9f/firstboot-16.4.tar.bz2 \
            file://Makefile-explicitly-assign-install_data-with-none-fo.patch \
