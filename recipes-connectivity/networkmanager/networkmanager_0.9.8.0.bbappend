@@ -1,4 +1,4 @@
-inherit update-rc.d
+inherit update-rc.d pkgconfig
 
 INITSCRIPT_NAME = "NetworkManager"
 INITSCRIPT_PARAMS = "defaults 20"
@@ -8,6 +8,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 SRC_URI += " \
 	file://NetworkManager.conf \
 	file://NetworkManager.init \
+	file://fix-for-libgcrypt-config.patch \
 	"
 
 # We don't need polkit in wr-installer and drop the recipes,
@@ -23,7 +24,7 @@ PACKAGECONFIG[systemd] = " \
 "
 
 do_install_prepend() {
-	sed -i -e s:log_daemon_msg:log_begin_msg:g ${S}/initscript/Debian/NetworkManager
+	sed -i -e s:log_daemon_msg:log_begin_msg:g ${B}/initscript/Debian/NetworkManager
 }
 
 do_install_append() {

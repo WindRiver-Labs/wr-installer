@@ -1,0 +1,35 @@
+From 76e6596365b421e6ea9e979959a46b95d4a6d387 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Mon, 8 Sep 2014 07:12:23 -0700
+Subject: [PATCH] configure.ac: use PKG_CHECK_MODULES to find libgcrypt
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ configure.ac |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 1b3478a..6daa27a 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -393,13 +393,11 @@ if test x"$ac_crypto" = xnss; then
+   with_nss=yes
+ elif test x"$ac_crypto" = xgnutls; then
+   PKG_CHECK_MODULES(GNUTLS, [gnutls >= 1.2])
+-  AC_PATH_PROG(LIBGCRYPT_CONFIG, libgcrypt-config, no)
+-  if test x"$LIBGCRYPT_CONFIG" = xno; then
++  PKG_CHECK_MODULES(LIBGCRYPT, libgcrypt)
++  if test x"$LIBGCRYPT" = xno; then
+     AC_MSG_ERROR([gnutls explicitly requested but gcrypt not found on system])
+   else
+     AC_DEFINE(HAVE_GNUTLS, 1, [Define if you have libgnutls])
+-    LIBGCRYPT_CFLAGS=`$LIBGCRYPT_CONFIG --cflags`
+-    LIBGCRYPT_LIBS=`$LIBGCRYPT_CONFIG --libs`
+     AC_SUBST(LIBGCRYPT_CFLAGS)
+     AC_SUBST(LIBGCRYPT_LIBS)
+     with_gnutls=yes
+-- 
+1.7.9.5
+
