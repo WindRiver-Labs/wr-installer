@@ -4,9 +4,9 @@
 DESCRIPTION = "Tools for certain user account management tasks"
 HOMEPAGE = "https://fedorahosted.org/usermode/"
 LICENSE = "GPLv2+"
-DEPENDS = "libuser libpam gtk+ desktop-file-utils-native startup-notification"
+DEPENDS = "libuser libpam gtk+ desktop-file-utils-native startup-notification intltool-native"
 
-inherit autotools gettext
+inherit autotools gettext pkgconfig
 
 SRC_URI = "http://pkgs.fedoraproject.org/lookaside/pkgs/usermode/usermode-1.108.tar.xz/bef795b757defb9fd27cfbd48ef79861/usermode-1.108.tar.xz"
 SRC_URI[md5sum] = "bef795b757defb9fd27cfbd48ef79861"
