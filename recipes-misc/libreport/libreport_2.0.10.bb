@@ -24,7 +24,7 @@ SRC_URI += "file://0001-Add-cgroup-information-filename.patch \
 SRC_URI[md5sum] = "84d564e3acf0039eacb0e139cbe1a642"
 SRC_URI[sha256sum] = "ab8f2bb2eeb93719b6a946b8a810527cec653815fd59c3fb03efca88e6e80408"
 
-inherit gettext autotools pythonnative python-dir
+inherit gettext autotools pythonnative pkgconfig
 
 PACKAGES += "${PN}-python"
 FILES_${PN}-dbg += "${PYTHON_SITEPACKAGES_DIR}/*/.debug"
