@@ -1,4 +1,4 @@
-DESCRIPTION = "Enlightened Sound Daemon"
+SUMMARY = "Enlightened Sound Daemon"
 SECTION = "gpe/base"
 LICENSE = "LGPLv2"
 LIC_FILES_CHKSUM = "file://COPYING.LIB;md5=55ca817ccb7d5b5b66355690e9abc605"
@@ -22,7 +22,7 @@ EXTRA_OECONF = " \
     --disable-artstest \
 "
 do_configure_prepend() {
-    sed -i -e 's:/usr/include/mme:${STAGING_INCDIR}/mme:g' configure.ac
+    sed -i -e 's:/usr/include/mme:${STAGING_INCDIR}/mme:g' ${S}/configure.ac
 }
 
 PACKAGES =+ "esddsp esd esd-utils"
