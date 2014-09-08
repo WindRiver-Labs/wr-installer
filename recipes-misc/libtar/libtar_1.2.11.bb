@@ -14,7 +14,7 @@ SRC_URI[sha256sum] = "4a2eefb6b7088f41de57356e5059cbf1f917509b4a810f7c614625a378
 
 PR = "r1"
 
-inherit autotools
+inherit autotools-brokensep
 
 EXTRA_OECONF = "compat_cv_func_makedev_three_args=no"
 EXTRA_OEMAKE = "CFLAGS='${CFLAGS} -DHAVE_STDARG_H'"
