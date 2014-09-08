@@ -1,5 +1,3 @@
-inherit pkgconfig
-EXTRA_OECONF += " --enable-pkgconfig"
 EXTRA_OECONF += " --enable-lvm1_fallback --enable-fsadm --with-pool=internal --with-device-uid=0 --with-device-gid=6 --with-device-mode=0660 --enable-applib --enable-cmdlib --enable-dmeventd --enable-udev_sync --with-udevdir=${nonarch_base_libdir}/udev/rules.d"
 
 PACKAGES += "${PN}-libs device-mapper device-mapper-libs device-mapper-dev device-mapper-event device-mapper-event-libs device-mapper-event-dev device-mapper-event-dbg"
@@ -145,6 +143,3 @@ FILES_device-mapper-event-dev = "${libdir}/libdevmapper-event.so \
 FILES_device-mapper-event-dbg = "${libdir}/device-mapper/.debug"
 
 DEPENDS += "udev"
-
-
-
