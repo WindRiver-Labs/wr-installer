@@ -18,6 +18,3 @@ FILES_${PN}-dev += "${PYTHON_SITEPACKAGES_DIR}/libxml2mod.la"
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 SRC_URI += "file://autoconf_python.patch"
-SRC_URI_append_class-target += "\
-  file://configure.in-fix-invalid-PYTHON_SITE_PACKAGES.patch \
-"
