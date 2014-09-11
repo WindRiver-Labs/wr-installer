@@ -1,4 +1,4 @@
-add fPIC option to COMPILE_FLAGS
+tigervnc: add fPIC option to COMPILE_FLAGS
 
 The static libraries in Xregion/network/rdr/rfb were linked by shared
 library libvnc.so, so we should add fPIC option to COMPILE_FLAGS to fix
@@ -7,6 +7,7 @@ relocation issue.
 Upstream-Status: Pending
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+Signed-off-by: Chong Lu <Chong.Lu@windriver.com>
 ---
  common/Xregion/CMakeLists.txt | 1 +
  common/network/CMakeLists.txt | 1 +
@@ -15,6 +16,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  4 files changed, 4 insertions(+)
 
 diff --git a/common/Xregion/CMakeLists.txt b/common/Xregion/CMakeLists.txt
+index 40ca97e..9411328 100644
 --- a/common/Xregion/CMakeLists.txt
 +++ b/common/Xregion/CMakeLists.txt
 @@ -3,4 +3,5 @@ add_library(Xregion STATIC
@@ -24,6 +26,7 @@ diff --git a/common/Xregion/CMakeLists.txt b/common/Xregion/CMakeLists.txt
 +  set_target_properties(Xregion PROPERTIES COMPILE_FLAGS -fPIC)
  endif()
 diff --git a/common/network/CMakeLists.txt b/common/network/CMakeLists.txt
+index ddde574..0eff5e1 100644
 --- a/common/network/CMakeLists.txt
 +++ b/common/network/CMakeLists.txt
 @@ -5,4 +5,5 @@ add_library(network STATIC
@@ -33,6 +36,7 @@ diff --git a/common/network/CMakeLists.txt b/common/network/CMakeLists.txt
 +  set_target_properties(network PROPERTIES COMPILE_FLAGS -fPIC)
  endif()
 diff --git a/common/rdr/CMakeLists.txt b/common/rdr/CMakeLists.txt
+index ee71a9b..3965717 100644
 --- a/common/rdr/CMakeLists.txt
 +++ b/common/rdr/CMakeLists.txt
 @@ -26,4 +26,5 @@ target_link_libraries(rdr ${RDR_LIBRARIES})
@@ -42,14 +46,15 @@ diff --git a/common/rdr/CMakeLists.txt b/common/rdr/CMakeLists.txt
 +  set_target_properties(rdr PROPERTIES COMPILE_FLAGS -fPIC)
  endif()
 diff --git a/common/rfb/CMakeLists.txt b/common/rfb/CMakeLists.txt
+index 6cd321e..4f2abed 100644
 --- a/common/rfb/CMakeLists.txt
 +++ b/common/rfb/CMakeLists.txt
-@@ -98,4 +98,5 @@ target_link_libraries(rfb ${RFB_LIBRARIES})
+@@ -93,4 +93,5 @@ target_link_libraries(rfb ${RFB_LIBRARIES})
  
  if(UNIX)
    libtool_create_control_file(rfb)
 +  set_target_properties(rfb PROPERTIES COMPILE_FLAGS -fPIC)
  endif()
 -- 
-1.8.1.2
+1.9.1
 

@@ -6,25 +6,26 @@ HOMEPAGE = "http://www.tigervnc.com/"
 LICENSE = "GPLv2+"
 SECTION = "x11/utils"
 # DEPENDS = "virtual/libx11 libxext"
-DEPENDS = "xserver-xorg gnutls"
+DEPENDS = "xserver-xorg gnutls jpeg"
 RDEPENDS_${PN} = "chkconfig coreutils hicolor-icon-theme"
 
 LIC_FILES_CHKSUM = "file://LICENCE.TXT;md5=75b02c2872421380bbd47781d2bd75d3"
 
-S = "${WORKDIR}/tigervnc-1.2.80-20130314svn5065"
+S = "${WORKDIR}/git"
 
 PR = "r0"
 
 inherit autotools cmake
+B = "${S}"
 
-SRC_URI = "http://pkgs.fedoraproject.org/repo/pkgs/tigervnc/tigervnc-1.2.80-20130314svn5065.tar.bz2/4522c6f107dbe778f197b2294c0eb867/tigervnc-1.2.80-20130314svn5065.tar.bz2 \
+SRCREV = "9e3dcea7883c8fa13f300bb203ecfe1c6ce5bbba"
+PV = "1.3.1+git${SRCPV}"
+SRC_URI = "git://github.com/TigerVNC/tigervnc.git \
            file://disable_vncviewer.patch \
            file://remove_includedir.patch \
            file://add-fPIC-option-to-COMPILE_FLAGS.patch \
+           file://xserver115.patch \
 "
-
-SRC_URI[md5sum] = "4522c6f107dbe778f197b2294c0eb867"
-SRC_URI[sha256sum] = "bdb1b4ded129ca45e0ad9b9616851ae6f86ffed83e961991dc04bfef767a3b68"
 
 EXTRA_OECONF = "--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \
         --disable-xwin --disable-xephyr --disable-kdrive --with-pic \
@@ -40,7 +41,8 @@ EXTRA_OECONF = "--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \
         --without-dtrace \
         --disable-unit-tests \
         --disable-devel-docs \
-        --disable-selective-werror"
+        --disable-selective-werror \
+        --disable-xshmfence"
 #        --with-default-font-path="catalogue:%{_sysconfdir}/X11/fontpath.d,built-ins"
 
 do_configure_append () {
@@ -61,7 +63,13 @@ do_configure_append () {
     rm -f aclocal.m4
 
     export ACLOCALDIR="${S}/unix/xserver/aclocal-copy"
-    autotools_copy_aclocal
+    mkdir -p ${ACLOCALDIR}/
+    if [ -d ${STAGING_DATADIR_NATIVE}/aclocal ]; then
+        cp-noerror ${STAGING_DATADIR_NATIVE}/aclocal/ ${ACLOCALDIR}/
+    fi
+    if [ -d ${STAGING_DATADIR}/aclocal -a "${STAGING_DATADIR_NATIVE}/aclocal" != "${STAGING_DATADIR}/aclocal" ]; then
+        cp-noerror ${STAGING_DATADIR}/aclocal/ ${ACLOCALDIR}/
+    fi
     ACLOCAL="aclocal --system-acdir=${ACLOCALDIR}/" autoreconf -Wcross --verbose --install --force ${EXTRA_AUTORECONF} $acpaths || bbfatal "autoreconf execution failed."
     chmod +x ./configure
     ${CACHED_CONFIGUREVARS} ./configure ${CONFIGUREOPTS} ${EXTRA_OECONF}
