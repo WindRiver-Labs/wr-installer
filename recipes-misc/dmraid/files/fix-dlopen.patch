@@ -1,0 +1,33 @@
+From 1890c846fd27386a6f83f82cfd10647a49d4ba13 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Mon, 15 Sep 2014 01:34:11 -0700
+Subject: [PATCH] make.tmpl.in: add -ldl
+
+Fixed:
+| ../lib/libdmraid.so: undefined reference to `dlopen'
+| ../lib/libdmraid.so: undefined reference to `dlclose'
+| ../lib/libdmraid.so: undefined reference to `dlerror'
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ make.tmpl.in |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/make.tmpl.in b/make.tmpl.in
+index 48e5a99..9721ae1 100644
+--- a/make.tmpl.in
++++ b/make.tmpl.in
+@@ -135,7 +135,7 @@ $(TARGETS): $(OBJECTS)
+ %.so: $(OBJECTS) .export.sym
+ 
+ %.so: $(OBJECTS)
+-	$(CC) -shared -Wl,-soname,$(notdir $@).$(DMRAID_LIB_VERSION) \
++	$(CC) -shared -Wl,-soname,$(notdir $@).$(DMRAID_LIB_VERSION) -ldl \
+ 	-Wl,--version-script,.export.sym $(OBJECTS) -o $@ -ldevmapper-event
+ 
+ $(LIB_STATIC): $(OBJECTS)
+-- 
+1.7.9.5
+

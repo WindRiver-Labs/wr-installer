@@ -29,7 +29,9 @@ SRC_URI = "http://people.redhat.com/heinzm/sw/dmraid/src/dmraid-1.0.0.rc16-3.tar
 	   file://bz626417_19-enabling_registration_degraded_volume.patch \
 	   file://bz626417_20-cleanup_some_compilation_warning.patch \
 	   file://bz626417_21-add_option_that_postpones_any_metadata_updates.patch \
-           file://klibc.m4"
+	   file://klibc.m4 \
+	   file://fix-dlopen.patch \
+	"
 
 SRC_URI[md5sum] = "507252c1b68d745c2ecbda2ceac8feea"
 SRC_URI[sha256sum] = "4022560e84b42a4b026c2a9f3d92e19f7bb4cb575f435dfa4ca30743e86a7161"
