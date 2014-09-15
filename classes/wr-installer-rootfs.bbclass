@@ -17,40 +17,9 @@ KICKSTART_FILE ?= ""
 WRL_INSTALLER_CONF ?= ""
 
 # Code below is copied and adapted from package_rpm.bbclass implementation
-# ARG1 should be the MULTILIB_PREFIX_LIST
-wrl_installer_setup_local_multilibs() {
-    MULTILIB="$1"
-
-    installer_target_archs=""
-    installer_default_arch=""
-    for i in $MULTILIB ; do
-        old_IFS="$IFS"
-        IFS=":"
-        set $i
-        IFS="$old_IFS"
-        if [ "$1" = "default" ]; then
-            installer_default_arch="$2"
-        fi
-        shift # remove mlib
-        while [ -n "$1" ]; do
-            installer_target_archs="$installer_target_archs $1"
-            shift
-        done
-    done
-    installer_target_archs=`echo "$installer_target_archs" | tr - _`
-    export installer_default_arch
-    export installer_target_archs
-}
-
 wrl_installer_setup_local_smart() {
 
-    vars="target_build prj_name MULTILIB"
-    for i in $vars; do
-        eval $i="\"$1\""
-        shift
-    done
-
-    wrl_installer_setup_local_multilibs "$MULTILIB"
+    target_build=$1
 
     # Need to configure RPM/Smart so we can get a full pkglist from the distro
     rm -rf ${WORKDIR}/distro-tmp
@@ -59,7 +28,7 @@ wrl_installer_setup_local_smart() {
     mkdir -p ${WORKDIR}/distro-tmp/etc/rpm
     echo "$installer_default_arch""${TARGET_VENDOR}-${TARGET_OS}" > ${WORKDIR}/distro-tmp/etc/rpm/platform
     mkdir -p ${WORKDIR}/distro-tmp/var/lib/smart
-    for arch in $archs; do
+    for arch in $installer_target_archs; do
         if [ -d "$target_build/bitbake_build/tmp/deploy/rpm/"$arch ] ; then
             echo "$arch""-.*-linux.*" >> ${WORKDIR}/distro-tmp/etc/rpm/platform
         fi
@@ -92,39 +61,21 @@ wrl_installer_setup_local_smart() {
 
 wrl_installer_translate_oe_to_smart() {
 
-    vars="target_build prj_name MULTILIB"
-    for i in $vars; do
-        eval $i="\"$1\""
-        shift
-    done
-
-    wrl_installer_setup_local_smart $target_build $prj_name "$MULTILIB"
+    target_build=$1
+    shift
 
     # Start the package translation...
-    default_archs=""
-
     pkgs_to_install=""
     not_found=""
     for pkg in "$@" ; do
         new_pkg="$pkg"
-        for i in $MULTILIB ; do
-            old_IFS="$IFS"
-            IFS=":"
+        for i in $installer_target_archs; do
             set $i
-            IFS="$old_IFS"
-            mlib="$1"
             shift
-            if [ "$mlib" = "default" ]; then
-                if [ -z "$default_archs" ]; then
-                    default_archs=$@
-                fi
-                continue
-            fi
-            subst=${pkg#${mlib}-}
+            subst=${pkg#${MULTILIB_VARIANTS}-}
             if [ "$subst" != "$pkg" ]; then
                 while [ -n "$1" ]; do
                     arch="$1"
-                    arch=`echo "$arch" | tr - _`
                     shift
                     if grep -q '^'$subst'-[^-]*-[^-]*@'$arch'$' ${WORKDIR}/distro-tmp/tmp/fullpkglist.query ; then
                         new_pkg="$subst@$arch"
@@ -141,8 +92,7 @@ wrl_installer_translate_oe_to_smart() {
         done
         # Apparently not a multilib package...
         if [ "$pkg" = "$new_pkg" ]; then
-            default_archs_fixed=`echo "$default_archs" | tr - _`
-            for arch in $default_archs_fixed ; do
+            for arch in $installer_default_archs; do
                 if grep -q '^'$pkg'-[^-]*-[^-]*@'$arch'$' ${WORKDIR}/distro-tmp/tmp/fullpkglist.query ; then
                     new_pkg="$pkg@$arch"
                     # First found is best match
@@ -171,20 +121,10 @@ wrl_installer_translate_oe_to_smart() {
             #echo "Skipping $pkg -> $prov, already in install set" >&2
             continue
         fi
-        for i in $MULTILIB ; do
-            old_IFS="$IFS"
-            IFS=":"
+        for i in $installer_target_archs; do
             set $i
-            IFS="$old_IFS"
-            mlib="$1"
             shift
-            if [ "$mlib" = "default" ]; then
-                if [ -z "$default_archs" ]; then
-                    default_archs=$@
-                fi
-                continue
-            fi
-            subst=${pkg#${mlib}-}
+            subst=${pkg#${MULTILIB_VARIANTS}-}
             if [ "$subst" != "$pkg" ]; then
                 feeds=$@
                 smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart query --provides=$subst --output ${WORKDIR}/distro-tmp/tmp/provide.query
@@ -202,15 +142,14 @@ wrl_installer_translate_oe_to_smart() {
                 done
                 if [ "$pkg" = "$new_pkg" ]; then
                     # Failed to translate, package not found!
-                    #echo "$pkg not found in the $mlib feeds ($feeds)." >&2
+                    echo "$pkg not found in the $mlib feeds ($feeds)." >&2
                     continue
                 fi
             fi
         done
         # Apparently not a multilib package...
         if [ "$pkg" = "$new_pkg" ]; then
-            default_archs_fixed=`echo "$default_archs" | tr - _`
-            for arch in $default_archs_fixed ; do
+            for arch in $installer_default_archs; do
                 # Select first found, we don't know if one is better then another...
                 prov=`grep '^[^@ ]*@'$arch'$' ${WORKDIR}/distro-tmp/tmp/provide.query.list | head -n 1`
                 if [ -n "$prov" ]; then
@@ -220,7 +159,7 @@ wrl_installer_translate_oe_to_smart() {
             done
             if [ "$pkg" = "$new_pkg" ]; then
                 # Failed to translate, package not found!
-                #echo "$pkg not found in the base feeds ($default_archs)." >&2
+                echo "$pkg not found in the base feeds ($installer_default_archs)." >&2
                 really_not_found="$really_not_found $pkg"
                 continue
             fi
@@ -273,20 +212,20 @@ wrl_installer_copy_pkgs() {
         installer_conf=""
     fi
 
+        common_grep="-e '^ALL_MULTILIB_PACKAGE_ARCHS=.*' \
+            -e '^MULTILIB_VARIANTS=.*' -e '^PACKAGE_ARCHS=.*'\
+            -e '^PACKAGE_ARCH=.*' -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' \
+            -e '^DISTRO=.*' -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
+            "
     if [ -f "$installer_conf" ]; then
-        eval `grep -e "^MULTILIB_PREFIX_LIST=" -e "^PACKAGE_INSTALL=.*" \
-                   -e "^PACKAGE_INSTALL_ATTEMPTONLY=" $installer_conf \
-                   -e "^DISTRO=.*" -e "^DISTRO_NAME=.*" -e "^DISTRO_VERSION=.*" \
-                    | sed -e 's/=/="/' -e 's/$/"/'`
+        eval `grep -e "^PACKAGE_INSTALL=.*" $common_grep $installer_conf \
+            | sed -e 's/=/="/' -e 's/$/"/'`
         if [ $? -ne 0 ]; then
             bbfatal "Something is wrong in $installer_conf, please correct it"
         fi
-        if [ -z "$MULTILIB_PREFIX_LIST" -o -z "$PACKAGE_INSTALL" ]; then
-            bbfatal "MULTILIB_PREFIX_LIST or PACKAGE_INSTALL is null, please check $installer_conf"
+        if [ -z "$PACKAGE_ARCHS" -o -z "$PACKAGE_INSTALL" ]; then
+            bbfatal "PACKAGE_ARCHS or PACKAGE_INSTALL is null, please check $installer_conf"
         fi
-
-        wrl_installer_translate_oe_to_smart $target_build $prj_name "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL
-        wrl_installer_translate_oe_to_smart $target_build $prj_name "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL_ATTEMPTONLY
     else
         # Find the DEFAULT_IMAGE....
         PSEUDO_UNLOAD=1 make -C $target_build bbc \
@@ -298,13 +237,34 @@ wrl_installer_copy_pkgs() {
         echo "DISTRO[unexport] = ''" > ${WORKDIR}/export-distro.conf
         PSEUDO_UNLOAD=1 make -C $target_build bbc \
         BBCMD="bitbake -R ${WORKDIR}/export-distro.conf -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | \
-            grep -e '^DISTRO=.*' -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
-            -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' \
-            -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' \
-            -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' \
-            -e '^MULTILIB_PREFIX_LIST=.*' > ${BB_LOGFILE}.distro_vals"
+            grep $common_grep -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' \
+            -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' > ${BB_LOGFILE}.distro_vals"
 
         eval `cat ${BB_LOGFILE}.distro_vals`
+
+        export installer_default_arch="$PACKAGE_ARCH"
+        # Reverse it for priority
+        export installer_default_archs="`for arch in $PACKAGE_ARCHS; do echo $arch; done | tac | tr - _`"
+        installer_target_archs="$installer_default_archs"
+        if [ -n "$MULTILIB_VARIANTS" ]; then
+            export MULTILIB_VARIANTS
+            mlarchs_reversed="`for mlarch in $ALL_MULTILIB_PACKAGE_ARCHS; do echo $mlarch; \
+                done | tac | tr - _`"
+            for arch in $mlarchs_reversed; do
+                if [ "$arch" != "noarch" -a "$arch" != "all" -a "$arch" != "any" ]; then
+                    installer_target_archs="$installer_target_archs lib32_$arch"
+                fi
+            done
+        fi
+        export installer_target_archs
+    fi
+    wrl_installer_setup_local_smart $target_build
+    wrl_installer_translate_oe_to_smart $target_build $PACKAGE_INSTALL
+    install="$pkgs_to_install"
+    wrl_installer_translate_oe_to_smart $target_build $PACKAGE_INSTALL_ATTEMPTONLY
+    install_attemptonly="$pkgs_to_install"
+    # Save the vars to .buildstamp when no installer_conf
+    if [ ! -f "$installer_conf" ]; then
         cat >> ${IMAGE_ROOTFS}/.buildstamp.$prj_name <<_EOF
 DISTRO=$DISTRO
 DISTRO_NAME=$DISTRO_NAME
@@ -316,14 +276,14 @@ LIST=$DEFAULT_IMAGE
 [$DEFAULT_IMAGE]
 SUMMARY=$SUMMARY
 DESCRIPTION=$DESCRIPTION
+
+PACKAGE_INSTALL=$install
+PACKAGE_INSTALL_ATTEMPTONLY=$install_attemptonly
+ALL_MULTILIB_PACKAGE_ARCHS=$ALL_MULTILIB_PACKAGE_ARCHS
+MULTILIB_VARIANTS=$MULTILIB_VARIANTS
+PACKAGE_ARCHS=$PACKAGE_ARCHS
+PACKAGE_ARCH=$PACKAGE_ARCH
 _EOF
-        wrl_installer_translate_oe_to_smart $target_build $prj_name "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL
-        echo "PACKAGE_INSTALL=$pkgs_to_install" >> ${IMAGE_ROOTFS}/.buildstamp.$prj_name
-        wrl_installer_translate_oe_to_smart $target_build $prj_name "$MULTILIB_PREFIX_LIST" $PACKAGE_INSTALL_ATTEMPTONLY
-        echo "PACKAGE_INSTALL_ATTEMPTONLY=$pkgs_to_install" >> ${IMAGE_ROOTFS}/.buildstamp.$prj_name
-        # The MULTILIB_PREFIX_LIST in .buildstamp is only used for
-        # wrl_installer_copy_pkgs() reads it.
-        echo "MULTILIB_PREFIX_LIST=$MULTILIB_PREFIX_LIST" >> ${IMAGE_ROOTFS}/.buildstamp.$prj_name
     fi
 
     if [ -d "$target_build/bitbake_build/tmp/deploy/rpm" ]; then
