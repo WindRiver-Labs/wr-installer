@@ -1,0 +1,35 @@
+From dc689beff712b34e49ad0f0315b1debf71f9eb6f Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Mon, 15 Sep 2014 06:34:01 -0700
+Subject: [PATCH] bootloader.py: fix device.map
+
+Don't write something like (hd1,1) in device.map, it would cause errors
+in current grub2.
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/bootloader.py |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index 4f4146f..6bd883d 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -1497,8 +1497,10 @@ class GRUB2(GRUB):
+             devices.append(self.stage2_device)
+ 
+         for drive in devices:
+-            dev_map.write("%s      %s\n" % (self.grub_device_name(drive),
+-                                            drive.path))
++            hd = self.grub_device_name(drive)
++            # Don't write something like (hd1,1) in device.map
++            if ',' not in hd:
++                dev_map.write("%s      %s\n" % (hd, drive.path))
+         dev_map.close()
+ 
+     def write_defaults(self, install_root=""):
+-- 
+1.7.9.5
+
