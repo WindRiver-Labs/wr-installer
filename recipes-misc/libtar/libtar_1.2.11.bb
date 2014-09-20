@@ -16,6 +16,9 @@ PR = "r1"
 
 inherit autotools-brokensep
 
+PACKAGECONFIG ??= "zlib"
+PACKAGECONFIG[zlib] = "--with-zlib,--without-zlib,zlib"
+
 EXTRA_OECONF = "compat_cv_func_makedev_three_args=no"
 EXTRA_OEMAKE = "CFLAGS='${CFLAGS} -DHAVE_STDARG_H'"
 
