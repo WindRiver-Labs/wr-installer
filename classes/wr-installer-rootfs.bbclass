@@ -341,6 +341,7 @@ _EOF
     : > ${IMAGE_ROOTFS}/.target_build_list
     counter=0
     for target_build in ${INSTALLER_TARGET_BUILD}; do
+        target_build="`readlink -f $target_build`"
         echo "Installer Target Build: $target_build"
         counter=$(expr $counter + 1)
         prj_name="`echo $target_build | sed -e 's#/ *$##g' -e 's#.*/##'`"
