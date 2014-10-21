@@ -25,15 +25,17 @@ IMAGE_INSTALL = "\
     "
 IMAGE_LINGUAS = "en-us"
 
-ROOTFS_POSTPROCESS_COMMAND += "installer_image_pp ; "
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES','systemd', '', 'installer_image_pp;',d)} "
 
 installer_image_pp () {
-    bbnote "INSTALLER - modifying default runlevel"
-    sed -i -e "s/^id:.:/id:5:/" ${IMAGE_ROOTFS}/etc/inittab
+    if [ -e ${IMAGE_ROOTFS}/etc/inittab ]; then
+        bbnote "INSTALLER - modifying default runlevel"
+        sed -i -e "s/^id:.:/id:5:/" ${IMAGE_ROOTFS}/etc/inittab
 
-    # Turn off the console getty as it conflicts with the text installer
-    bbnote "INSTALLER - Turn off console mingetty"
-    sed -i -e "s~^S:12345:respawn:/sbin/mingetty console~#S:12345:respawn:/sbin/mingetty console~" ${IMAGE_ROOTFS}/etc/inittab
+        # Turn off the console getty as it conflicts with the text installer
+        bbnote "INSTALLER - Turn off console mingetty"
+        sed -i -e "s~^S:12345:respawn:/sbin/mingetty console~#S:12345:respawn:/sbin/mingetty console~" ${IMAGE_ROOTFS}/etc/inittab
+    fi
 
     if [ -e ${IMAGE_ROOTFS}/etc/udev/rules.d/local.rules ] ; then
         bbnote "INSTALLER - turning off block device mounts"
