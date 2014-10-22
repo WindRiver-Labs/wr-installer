@@ -129,6 +129,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-fix-unpack.patch \
            file://anaconda-kernel-image.patch \
            file://anaconda-device-map.patch \
+           file://pyanaconda-pyudev.py-find-udev-lib-while-systemd-ena.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
