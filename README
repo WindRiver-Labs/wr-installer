@@ -97,9 +97,13 @@ Building the target installer
        Start qemu with installer image:
        $ make start-target \
          TOPTS="-m 2048 -cd export/intel-x86-64-installer-standard-dist.iso \
-         -no-kernel -disk hd0.vdisk -gc" EX_TARGET_QEMU_OPTS="-vga vmware"
+         -no-kernel -disk hd0.vdisk -gc" EX_TARGET_QEMU_OPTS="-vga vmware \
+         -show-cursor -usb"
 
        Add "-vnc :4" to EX_TARGET_QEMU_OPTS to start a VNC capable session.
+       Add "-usbdevice wacom-tablet" to EX_TARGET_QEMU_OPTS to correct mouse
+       pointer position, it works with the Linux 3.14, but does not work with
+       Linux 3.17.
 
 5. Use custom installer.conf
    The second build can use installer.conf to help speed up the build
