@@ -9,6 +9,9 @@ inherit gnomebase gtk-doc
 
 ORBIT_IDL_SRC = "${STAGING_BINDIR_NATIVE}/orbit-idl-2"
 
+PACKAGES =+ "${PN}-bin"
+RDEPENDS_${PN}-bin = "${PN} perl"
+FILES_${PN}-bin = "${bindir}/* ${sbindir}/*"
 FILES_${PN} += "${libdir}/orbit-2.0/*.so ${libdir}/bonobo/monikers/*.so"
 FILES_${PN}-dbg += "${libdir}/bonobo/monikers/.debug \
     ${libdir}/bonobo-2.0/samples/.debug ${libdir}/orbit-2.0/.debug"
