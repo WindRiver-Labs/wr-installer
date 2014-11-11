@@ -21,7 +21,7 @@ information on submitting changes.
 Building the target installer
 -----------------------------
 1. Summary
-   The target installer is enabled by passing "--enable-target-installer=yes"
+   The target installer is enabled by passing "--enable-rootfs=wr-installer"
    to configure. A second option "--with-installer-target-build=<path>"
    is used to specify the path to the build directory that will supply RPMs
    to be installed on the target.  If the path is an .ext2, .ext3, or ext4
@@ -58,8 +58,7 @@ Building the target installer
              point to the ext3 image from the previous step:
              $ configure --enable-board=intel-x86-64 \
                  --enable-kernel=standard --enable-rootfs=wr-installer \
-                 --enable-target-installer=yes --enable-bootimage=iso \
-                 --with-installer-target-build=\
+                 --enable-bootimage=iso --with-installer-target-build=\
                     <project_1>/export/intel-x86-64-glibc-std-standard-dist.ext3
               $ make all
 
@@ -81,9 +80,7 @@ Building the target installer
 
              $ configure --enable-board=intel-x86-64 \
 					--enable-kernel=standard --enable-rootfs=wr-installer \
-					--enable-target-installer=yes \
-					--enable-bootimage=iso \
-					--with-installer-target-build=<project_1Dir>
+					--enable-bootimage=iso --with-installer-target-build=<project_1Dir>
              $ make all
 
 4. Install
@@ -159,7 +156,6 @@ Building the target installer
        is the separator:
        $ configure --enable-board=intel-x86-64 \
             --enable-kernel=standard --enable-rootfs=wr-installer \
-            --enable-target-installer=yes \
             --enable-bootimage=iso \
             --with-installer-target-build=\
             <target_build1>,<target_build2>,<target_build3>
