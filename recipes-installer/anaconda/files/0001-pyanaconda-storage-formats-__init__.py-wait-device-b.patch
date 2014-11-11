@@ -1,0 +1,41 @@
+From 251d8c0348d09ae1a136e5caa2aef7b1fe494973 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 11 Nov 2014 14:15:45 +0800
+Subject: [PATCH] pyanaconda/storage/formats/__init__.py: wait device before
+ formating
+
+Partition was created and formated, there is occasionally failure that
+device is not available before formating while you created multiple
+(such as 9) partitions.
+
+Try to wait several seconds while device is not available before
+formating could workaround this issue.
+
+Upstream-Status: inappropriate (WR specific)
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/storage/formats/__init__.py | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/pyanaconda/storage/formats/__init__.py b/pyanaconda/storage/formats/__init__.py
+index dc3ac70..f99e925 100644
+--- a/pyanaconda/storage/formats/__init__.py
++++ b/pyanaconda/storage/formats/__init__.py
+@@ -292,6 +292,13 @@ class DeviceFormat(object):
+         if device:
+             self.device = device
+ 
++        import time
++        i = 0
++        while not os.path.exists(self.device) and i < 3:
++            i = 1 + i
++            log.warning("device %s not available, wait 1 second" % self.device)
++            time.sleep(1)
++
+         if not os.path.exists(self.device):
+             raise FormatCreateError("invalid device specification", self.device)
+ 
+-- 
+1.9.1
+
