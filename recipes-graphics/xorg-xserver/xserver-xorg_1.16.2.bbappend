@@ -15,7 +15,7 @@ do_install_append () {
 
     sources="hw/xquartz/bundle/cpprules.in man/Xserver.man doc/smartsched \
              hw/dmx/doxygen/doxygen.conf.in xserver.ent.in xkb/README.compiled \
-             hw/xfree86/xorgconf.cpp"
+             hw/xfree86/xorgconf.cpp hw/xfree86/Xorg.sh.in"
     for i in ${sources}; do \
     install -m 0644 ${S}/$i ${D}${XSERVER_SOURCE_DIR}/$i; done
 
