@@ -1,0 +1,65 @@
+default to msdos disk labels (#816701)
+
+It appears that Lenovo systems aren't the only ones that have problems
+booting from GPT labeled disks. This patch does the following:
+ * default to msdos labeled disks
+ * remove the GPT blacklist
+ * remove nogpt cmdline argument
+ * add gpt cmdline argument to force use of GPT disklabel
+
+--- a/pyanaconda/flags.py
++++ b/pyanacodna/flags.py
+@@ -101,6 +101,8 @@ class Flags:
+         # device is
+         self.__dict__['flags']['virtpconsole'] = None
+ 
++        self.__dict__['flags']['gpt'] = False
++
+         for x in ['selinux']:
+             if self.__dict__['flags']['cmdline'].has_key(x):
+                 if self.__dict__['flags']['cmdline'][x]:
+@@ -118,7 +120,7 @@ class Flags:
+ 
+         self.__dict__['flags']['selinux'] = 0
+ 
+-        self.__dict__['flags']['nogpt'] = self.__dict__['flags']['cmdline'].has_key("nogpt")
++        self.__dict__['flags']['gpt'] = self.__dict__['flags']['cmdline'].has_key("gpt")
+ 
+ global flags
+ flags = Flags()
+--- a/pyanaconda/platform.py
++++ b/pyanaconda/platform.py
+@@ -66,9 +66,8 @@ class Platform(object):
+            all the methods in this class."""
+         self.anaconda = anaconda
+ 
+-        if flags.nogpt and "gpt" in self._disklabel_types and \
+-           len(self._disklabel_types) > 1:
+-            self._disklabel_types.remove("gpt")
++        if flags.gpt and "gpt" in self._disklabel_types:
++            self._disklabel_types = ["gpt"]
+ 
+     @property
+     def diskLabelTypes(self):
+@@ -155,7 +154,6 @@ class X86(Platform):
+ 
+     def __init__(self, anaconda):
+         super(X86, self).__init__(anaconda)
+-        self.blackListGPT()
+ 
+     def setDefaultPartitioning(self):
+         """Return the default platform-specific partitioning information."""
+@@ -174,13 +172,6 @@ class X86(Platform):
+         else:
+             return 0
+ 
+-    def blackListGPT(self):
+-        buf = iutil.execWithCapture("dmidecode",
+-                                    ["-s", "chassis-manufacturer"],
+-                                    stderr="/dev/tty5")
+-        if "LENOVO" in buf.splitlines() and "gpt" in self._disklabel_types:
+-            self._disklabel_types.remove("gpt")
+-
+ class EFI(Platform):
+     _bootloaderClass = bootloader.EFIGRUB
+ 
