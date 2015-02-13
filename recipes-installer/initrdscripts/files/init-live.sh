@@ -7,6 +7,7 @@ ROOT_IMAGE="rootfs.img"
 MOUNT="/bin/mount"
 UMOUNT="/bin/umount"
 ISOLINUX=""
+init_bin="/sbin/init"
 
 ROOT_DISK=""
 
@@ -114,6 +115,16 @@ early_setup
 [ -z "$CONSOLE" ] && CONSOLE="/dev/console"
 
 read_args
+
+case $label in
+    initrd-install)
+    # Watches the udev event queue, and exits if all current events are handled
+    udevadm settle --timeout=3 --quiet
+    killall "${_UDEV_DAEMON##*/}" 2>/dev/null
+	echo "init_bin ${init_bin}"
+	[ -x ${init_bin} ] && exec ${init_bin}
+	;;
+esac
 
 echo "Waiting for removable media..."
 C=0
