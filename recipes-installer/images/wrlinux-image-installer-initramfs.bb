@@ -14,6 +14,13 @@ IMAGE_INSTALL = "\
     device-mapper \
     wr-init \
     kernel-modules \
+    windriver-gnome-theme \
+    windriver-logos \
+    anaconda \
+    anaconda-init \
+    ${@['', 'packagegroup-installer-x11-anaconda'][bool(d.getVar('XSERVER', True))]} \
+    packagegroup-wr-boot \
+    packagegroup-core-ssh-openssh \
 "
 
 # Do not pollute the initrd image with rootfs features
