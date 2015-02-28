@@ -92,6 +92,9 @@ class AnacondaProgress(Progress):
             #log.debug("progressWindow(%s)" % (percent))
             self.progressWindow.set(percent)
         else:
+            #log.debug("progressWindow(%s)" % (percent))
+            self.progressWindow.set(percent)
+
             # Topic changes, so clear the window
             if self.progressSubWindow and self.subTitle != topic and self.subTopic != subtopic:
                 self._closeSubProgressWindow()
@@ -103,7 +106,6 @@ class AnacondaProgress(Progress):
                 self.subTopic = subtopic
 
             #log.debug("sub-progressWindow(%s)" % (subpercent))
-            self.progressWindow.set(percent)
             self.progressSubWindow.set(subpercent)
 
     def setDone(self):
