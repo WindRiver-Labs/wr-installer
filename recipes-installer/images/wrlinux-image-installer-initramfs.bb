@@ -23,9 +23,6 @@ IMAGE_INSTALL = "\
     packagegroup-core-ssh-openssh \
 "
 
-# Do not pollute the initrd image with rootfs features
-IMAGE_FEATURES = ""
-
 export IMAGE_BASENAME = "wrlinux-image-installer-initramfs"
 IMAGE_LINGUAS = "en-us"
 
