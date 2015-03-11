@@ -138,6 +138,8 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://0001-pyanaconda-storage-formats-__init__.py-wait-device-b.patch \
            file://0001-pyanaconda-timezone.py-fix-set-timezone-failed.patch \
            file://anaconda-16.25-default-to-msdos-disk-labels.patch \
+           file://anaconda-kickstart-allow-use-existing.patch \
+           file://anaconda-skip-cleardiskssel-with-part-or-logvol.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
