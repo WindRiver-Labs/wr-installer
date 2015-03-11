@@ -33,6 +33,10 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \
                    module-init-tools smartpm util-linux efibootmgr tigervnc \
+                   ca-certificates xfsprogs-fsck xfsprogs-mkfs \
+                   btrfs-tools ntfs-3g iproute2 mdadm shadow chkconfig \
+                   util-linux-swaponoff util-linux-uuidgen \
+                   xrandr glibc-charmaps glibc-localedatas \
                 "
 
 # Disabled networkmanager...
