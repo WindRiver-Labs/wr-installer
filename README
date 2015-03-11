@@ -198,6 +198,47 @@ Building the target installer
              (bitbake_build/conf/local.conf) file:
              MKISOFS_OPTIONS_append = " -iso-level 3"
 
+10. PXE
+    10.1 Preparation
+         Refer "Wind River Linux USER GUIDE 6"
+         - About Configuring PXE, P422
+         - Configuring PXE, P424
+         - Configuring DHCP, P427
+         - Configuring DHCP for PXE, P428
+         - Configuring NFS, P430
+         - Configuring TFTP, P431
+
+         The PXELinux Boot Loader File pxelinux.0 located in syslinux package,
+         you could directly copy it to the tftp download dir.
+
+         Copy kernel (bzImage) to tftp download dir. In ISO, it named vmlinuz.
+
+    10.2 initrd boot
+         We support initrd boot by default, please copy initramfs
+         (wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz) to tftp
+         download dir. In ISO, it named initrd.
+
+         We must add param "LABEL=initrd-install" to PXE config file.
+         There is an example in examples/pxe/pxelinux.cfg/default.initramfs
+
+    10.3 initrd boot with kickstart
+         Based on 10.2 initrd boot, we should prepare a kickstart file on
+         web server, and add param "ks=http://webserver_ip/anaconda-ks.cfg"
+         to PXE config file.
+         There is an example in examples/pxe/pxelinux.cfg/default.initramfs_ks
+
+    10.4 boot from desired NIC
+         Based on 10.3 initrd boot with kickstart, while multiple NICs, if you
+         download ks file from the NIC that running PXE, you should add param
+         "bootifonly=1" to append and add "ipappend 2".
+         About PXE config file, there is an example in
+         examples/pxe/pxelinux.cfg/default.nm
+
+    10.5 nfs boot
+         About PXE config file, there is an example in
+         examples/pxe/pxelinux.cfg/default.nfs
+
+
 License
 -------
 Copyright (C) 2013-2014 Wind River Systems, Inc.
