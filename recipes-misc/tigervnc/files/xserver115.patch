@@ -1,14 +1,21 @@
-tigervnc: remove unneeded lines about wayland in this patch
+tigervnc: tweak xserver115.patch
 
+1) tigervnc: remove unneeded lines about wayland in this patch
 Upstream-Status: Pending
-
 Signed-off-by: Chong Lu <Chong.Lu@windriver.com>
+
+2) Missing cast break compilation when base code used for third party
+   applications, like tigervnc. Usage of -fpermissive solves compilation
+   issue but can mask the problem.
+   Red Hat bug https://bugzilla.redhat.com/show_bug.cgi?id=1177687
+Signed-off-by: Helio Chissini de Castro <helio at kde.org>
+Backport from: http://lists.x.org/archives/xorg-devel/2015-January/045070.html
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
- unix/xserver115.patch | 8 --------
- 1 file changed, 8 deletions(-)
+ unix/xserver115.patch | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
 
 diff --git a/unix/xserver115.patch b/unix/xserver115.patch
-index 82b02c1..479039d 100644
 --- a/unix/xserver115.patch
 +++ b/unix/xserver115.patch
 @@ -9,14 +9,6 @@ diff -up xserver/configure.ac.vnc xserver/configure.ac
@@ -26,6 +33,22 @@ index 82b02c1..479039d 100644
  @@ -1573,6 +1573,10 @@ if test "x$XVFB" = xyes; then
   	AC_SUBST([XVFB_SYS_LIBS])
   fi
+@@ -143,3 +135,15 @@ diff -up xserver/os/WaitFor.c.vnc xserver/os/WaitFor.c
+          if (i <= 0) {           /* An error or timeout occurred */
+              if (dispatchException)
+                  return 0;
++diff --git a/include/regionstr.h b/include/regionstr.h
++--- a/include/regionstr.h
+++++ b/include/regionstr.h
++@@ -144,7 +144,7 @@ RegionInit(RegionPtr _pReg, BoxPtr _rect, int _size)
++         size_t rgnSize;
++         (_pReg)->extents = RegionEmptyBox;
++         if (((_size) > 1) && ((rgnSize = RegionSizeof(_size)) > 0) &&
++-            (((_pReg)->data = malloc(rgnSize)) != NULL)) {
+++            (((_pReg)->data = (RegDataPtr) malloc(rgnSize)) != NULL)) {
++             (_pReg)->data->size = (_size);
++             (_pReg)->data->numRects = 0;
++         }
 -- 
 1.9.1
 
