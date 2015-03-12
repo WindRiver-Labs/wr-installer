@@ -80,7 +80,7 @@ read_args() {
 
 boot_live_root() {
     # Watches the udev event queue, and exits if all current events are handled
-    udevadm settle --timeout=3 --quiet
+    udevadm settle --timeout=3
     killall "${_UDEV_DAEMON##*/}" 2>/dev/null
 
     # Allow for identification of the real root even after boot
@@ -100,7 +100,7 @@ boot_live_root() {
     cd $ROOT_MOUNT
 
     # busybox switch_root supports -c option
-    exec switch_root -c /dev/console $ROOT_MOUNT /sbin/init $CMDLINE ||
+    exec switch_root $ROOT_MOUNT /sbin/init $CMDLINE ||
         fatal "Couldn't switch_root, dropping to shell"
 }
 
@@ -119,7 +119,7 @@ read_args
 case $label in
     initrd-install)
     # Watches the udev event queue, and exits if all current events are handled
-    udevadm settle --timeout=3 --quiet
+    udevadm settle --timeout=3
     killall "${_UDEV_DAEMON##*/}" 2>/dev/null
 	echo "init_bin ${init_bin}"
 	[ -x ${init_bin} ] && exec ${init_bin}
