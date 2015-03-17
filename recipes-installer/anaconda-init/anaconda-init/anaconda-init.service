@@ -1,0 +1,10 @@
+[Unit]
+Description=Anaconda Installer Daemon
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=@SBINDIR@/anaconda-init start
+
+[Install]
+WantedBy=multi-user.target
