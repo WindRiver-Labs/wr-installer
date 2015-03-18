@@ -11,6 +11,7 @@ RDEPENDS_${PN} = "python"
 SRC_URI = "http://mirror.itc.virginia.edu/fedora/releases/16/Everything/source/SRPMS//pykickstart-1.99.4-1.fc16.src.rpm;extract=pykickstart-1.99.4.tar.gz \
            file://pykickstart-read-ks-for-liveimg.patch \
            file://pykickstart-import-liveimg.patch \
+           file://parser.py-retry-to-invoke-urlread-with-timeout.patch \
            "
 SRC_URI[md5sum] = "5d3d07425bc2e6a3e7016d22354a48f8"
 SRC_URI[sha256sum] = "96007ad2cf65597dd92868abf48c3be01463fc2c9d381d8aba4a87f6d17c3060"
