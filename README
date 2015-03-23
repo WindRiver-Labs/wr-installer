@@ -231,6 +231,12 @@ Building the target installer
          About PXE config file, there is an example in
          examples/pxe/pxelinux.cfg/default.nfs
 
+11. How to create Large Disk (>2TB)
+    Add 'gpt' to boot parameters (separated by space which you can check in
+    '/proc/cmdline'). The anaconda create msdos disklabels by default which
+    works well on small disk (<=2TB); if larger than that, we need to create
+    gpt partitioned disk, but it has risks on some targets (Such as Lenovo
+    systems).
 
 License
 -------
