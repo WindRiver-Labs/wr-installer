@@ -76,37 +76,24 @@ class AnacondaProgress(Progress):
     def __init__(self, intf):
         self.intf = intf
         self.progressWindow = None
-        self.progressSubWindow = None
         self.windowTitle = "smart Package Manager"
-        self.subTitle = None
         self.subTopic = None
         Progress.__init__(self)
 
     def expose(self, topic, percent, subkey, subtopic, subpercent, data, done):
         #log.debug("called smartinstall.AnacondaProgress.expose(%s, %s, subkey, %s, %s, data)" % (topic, percent, subtopic, subpercent))
-        if not subtopic:
-            self._closeSubProgressWindow()
-            if not self.progressWindow:
-                #log.debug("new progressWindow(%s, %s, 100)" % (self.windowTitle, topic))
-                self.progressWindow = self.intf.progressWindow (self.windowTitle, topic, 100)
-            #log.debug("progressWindow(%s)" % (percent))
-            self.progressWindow.set(percent)
-        else:
-            #log.debug("progressWindow(%s)" % (percent))
-            self.progressWindow.set(percent)
 
-            # Topic changes, so clear the window
-            if self.progressSubWindow and self.subTitle != topic and self.subTopic != subtopic:
-                self._closeSubProgressWindow()
+        if not self.progressWindow:
+            #log.debug("new progressWindow(%s, %s, 100)" % (self.windowTitle, topic))
+            self.progressWindow = self.intf.progressWindow (self.windowTitle, topic, 100)
 
-            if not self.progressSubWindow:
-                #log.debug("new sub-progressWindow(%s, %s, 100)" % (topic, subtopic))
-                self.progressSubWindow = self.intf.progressWindow (self.windowTitle, "%s %s%%\n%s" % (topic,percent,subtopic), 100)
-                self.subTitle = topic
-                self.subTopic = subtopic
+        if subtopic:
+            self.subTopic = "%s (%s%%)" % (subtopic, subpercent)
 
-            #log.debug("sub-progressWindow(%s)" % (subpercent))
-            self.progressSubWindow.set(subpercent)
+        self.progressWindow.set(percent,
+                                topic=topic,
+                                subtopic=self.subTopic,
+                                percent="Total %s%%" % (percent))
 
     def setDone(self):
         #log.debug("called smartinstall.AnacondaProgress.setDone")
@@ -120,7 +107,6 @@ class AnacondaProgress(Progress):
 
     def stop(self):
         #log.debug("called smartinstall.AnacondaProgress.stop")
-        self._closeSubProgressWindow()
         self._closeProgressWindow()
         Progress.stop(self)
 
@@ -128,13 +114,6 @@ class AnacondaProgress(Progress):
         if self.progressWindow:
             self.progressWindow.pop()
             self.progressWindow = None
-
-    def _closeSubProgressWindow(self):
-        if self.progressSubWindow:
-            self.progressSubWindow.pop()
-            self.progressSubWindow = None
-            self.subTopic = None
-            self.subTitle = None
 
 class AnacondaInterface(Interface):
     def __init__(self, ctrl, anaconda):
