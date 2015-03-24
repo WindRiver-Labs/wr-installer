@@ -141,6 +141,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-kickstart-allow-use-existing.patch \
            file://anaconda-skip-cleardiskssel-with-part-or-logvol.patch \
            file://text.py-add-textbox-to-ProgressWindow.patch \
+           file://gui.py-add-labels-to-ProgressWindow.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
