@@ -326,7 +326,7 @@ FOE
        if [ -n "$noinstall" ]; then
            echo "Bypassing installer..."
        else
-           su -l -c "/usr/sbin/anaconda $anaconda_opts" $username
+           su -l -c "/usr/sbin/anaconda $anaconda_opts 2>&1" $username
            if [ "$stoponfail" != 1 ] ; then
                echo "Rebooting system..."
                /sbin/reboot -f
