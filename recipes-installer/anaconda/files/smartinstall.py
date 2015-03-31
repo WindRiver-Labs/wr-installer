@@ -230,7 +230,7 @@ class SmartRepo:
 
     # needed to store nfs: repo url that yum doesn't know
     def _getAnacondaBaseURLs(self):
-        return self._anacondaBaseURLs
+        return self._anacondaBaseURLs or self.baseurl or [self.mirrorlist]
 
     def _setAnacondaBaseURLs(self, value):
         log.debug("AnacondaSmartRepo(%s):_setAnacondaBaseURLs = %s" % (self.id, value))
@@ -265,9 +265,9 @@ class AnacondaSmartRepo(SmartRepo):
             # MGH need to add in type, name, baseurl, components, enabled, and cost
             repo = SmartRepo(channel)
             repo.enabled = True
-            repo.name = channels[channel]["name"]
-            repo.baseurl = [channels[channel]["baseurl"]]
-            repo.cost = channels[channel]["priority"]
+            repo.name = channels[channel].get("name")
+            repo.baseurl = [channels[channel].get("baseurl")]
+            repo.cost = channels[channel].get("priority")
 
             item_list.append((reponame, repo))
 
@@ -983,6 +983,38 @@ class SmartBackend(AnacondaBackend):
         # FIXME: using rpm here is a little lame, but otherwise, we'd
         # be pulling in filelists
         return packages.rpmKernelVersionList(rootPath)
+
+    def writeKS(self, f):
+        for reponame, repo in self.asmart.repos.items():
+            # Do not write local repo to ks
+            if repo.name is None or repo.name.startswith("Install Media feed for"):
+                continue
+
+            line = "repo --name=\"%s\" " % (repo.name or repo.repoid)
+
+            if repo.baseurl:
+                line += " --baseurl=%s" % repo.anacondaBaseURLs[0]
+            else:
+                line += " --mirrorlist=%s" % repo.mirrorlist
+
+            if repo.proxy:
+                line += " --proxy=\"%s\"" % repo.proxy
+
+            if repo.cost:
+                line += " --cost=%s" % repo.cost
+
+            # if repo.includepkgs:
+            #     line += " --includepkgs=\"%s\"" % ",".join(repo.includepkgs)
+
+            # if repo.exclude:
+            #     line += " --excludepkgs=\"%s\"" % ",".join(repo.exclude)
+
+            # if not repo.sslverify:
+            #    line += " --noverifyssl"
+
+            line += "\n"
+
+            f.write(line)
 
     def writePackagesKS(self, f, anaconda):
         log.debug("called smartinstall.SmartBackend.writePackageKS")
