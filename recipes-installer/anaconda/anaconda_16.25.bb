@@ -63,11 +63,9 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-install-repo.patch \
            file://anaconda_reboot.patch \
            file://basic-storage-devices-only.patch \
-           file://disable-lvm.patch \
            file://lsb-release.patch \
            file://multilib_policy_best.patch \
            file://disable_upgrade_support.patch \
-           file://hide-lvm-crypt-checkboxes.patch \
            file://ignore-missing-hack.patch \
            file://disable_customize.patch \
            file://dont_disable_enabled_repos.patch \
@@ -105,9 +103,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-mount-run-as-tmpfs.patch \
            file://anaconda-save-log-root.patch \
            file://anaconda-remove-un-verified-options.patch \
-           file://anaconda-only-support-standard-partition.patch \
            file://anaconda-disable-the-partition-encrypt.patch \
-           file://anaconda-disable-lvm-and-raid.patch \
            file://tweak-write-debian-style-net-config-files.patch \
            file://anaconda-livecd.py-remove-symlink.patch \
            file://anaconda-umount-before-mount.patch \
