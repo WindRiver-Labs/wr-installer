@@ -138,6 +138,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://text.py-add-textbox-to-ProgressWindow.patch \
            file://gui.py-add-labels-to-ProgressWindow.patch \
            file://fix-incorrect-bestDiskLabelType.patch \
+           file://build-initrd-for-lvm.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
