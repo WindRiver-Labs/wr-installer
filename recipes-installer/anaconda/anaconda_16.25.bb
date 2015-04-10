@@ -67,7 +67,6 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://multilib_policy_best.patch \
            file://disable_upgrade_support.patch \
            file://ignore-missing-hack.patch \
-           file://disable_customize.patch \
            file://dont_disable_enabled_repos.patch \
            file://remove_g_type_init.patch \
            file://serial_and_vga_always.patch \
