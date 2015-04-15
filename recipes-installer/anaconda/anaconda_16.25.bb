@@ -140,6 +140,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://build-initrd-for-lvm.patch \
            file://0001-Don-t-use-the-rpmdb-to-figure-out-upgrade-target-arc.patch \
            file://hide-luks-crypt-checkboxes.patch \
+           file://support-authentication-for-kickstart.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
