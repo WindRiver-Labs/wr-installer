@@ -248,6 +248,16 @@ Building the target installer
          existing biosboot partition, adding a "part biosboot" option is
          unnecessary.
 
+12. How to authenticate while downloading kickstart from web server
+    12.1 We add boot options 'ksuser' and 'kspasswd'(listed in /proc/cmdline)
+         to support authentication while downloading kickstart from web server.
+
+    12.2 If authentication failed, it populates a prompt page to give
+         customer another chance to input username/password.
+
+    12.3 Currently, we support basic/digest authentication, which decided by
+         your web server.
+
 License
 -------
 Copyright (C) 2013-2014 Wind River Systems, Inc.
