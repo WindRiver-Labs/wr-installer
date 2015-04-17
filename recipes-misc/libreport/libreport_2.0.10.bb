@@ -3,7 +3,7 @@ to different bug targets like Bugzilla, ftp, trac, etc..."
 HOMEPAGE = "https://fedorahosted.org/abrt/"
 LICENSE = "GPLv2+"
 DEPENDS = "automake flex xmlrpc-c \
-        libgnome-keyring json-c libtar libnewt gtk+ nss libproxy"
+        libgnome-keyring json-c libtar libnewt gtk+ nss libproxy rpm"
 
 RDEPENDS_${PN} = "libproxy"
 
@@ -19,7 +19,9 @@ SRC_URI += "file://0001-Add-cgroup-information-filename.patch \
             file://configure.patch \
             file://Makefile.am-remove-doc.patch \
             file://configure.ac-remove-prog-test-of-xmlto-and-asciidoc.patch \
-            file://without-build-plugins.patch"
+            file://without-build-plugins.patch \
+            file://libreport-configure.ac-json-json-c.patch \
+            "
 
 SRC_URI[md5sum] = "84d564e3acf0039eacb0e139cbe1a642"
 SRC_URI[sha256sum] = "ab8f2bb2eeb93719b6a946b8a810527cec653815fd59c3fb03efca88e6e80408"
