@@ -51,6 +51,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 # searched in the local 'download' directories.
 SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everything/source/SRPMS/anaconda-16.25-1.fc16.src.rpm;extract=anaconda-16.25.tar.bz2 \
            file://smartinstall.py \
+           file://smartquery.py \
            file://wrlinux.py \
            file://rpmextract_header.patch \
            file://driverdisk_header.patch \
@@ -141,6 +142,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://0001-Don-t-use-the-rpmdb-to-figure-out-upgrade-target-arc.patch \
            file://hide-luks-crypt-checkboxes.patch \
            file://support-authentication-for-kickstart.patch \
+           file://support-package-selection-1.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
@@ -177,7 +179,8 @@ do_setupdistro() {
 	rm -f ${S}/pyanaconda/installclasses/*.py
 	rm -f ${S}/pyanaconda/yuminstall.py
 	cp ${WORKDIR}/wrlinux.py ${S}/pyanaconda/installclasses/.
-        cp ${WORKDIR}/smartinstall.py ${S}/pyanaconda/.
+	cp ${WORKDIR}/smartinstall.py ${S}/pyanaconda/.
+	cp ${WORKDIR}/smartquery.py ${S}/pyanaconda/.
 }
 
 # You must populate the install rule

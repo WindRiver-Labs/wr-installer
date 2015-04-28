@@ -59,6 +59,7 @@ from image import *
 from compssort import *
 import packages
 #from pyanaconda import network
+from smartquery import *
 
 import gettext
 _ = lambda x: gettext.ldgettext("anaconda", x)
@@ -677,6 +678,21 @@ fi
                 globs.append(glob)
         return ' '.join(globs)
 
+    def PackagesObj(self):
+        log.debug("called smartinstall.SmartBackend.PackagesObj")
+
+        import StringIO
+
+        ## Create a obj contian all available packagegroups with infos
+        stdout = sys.stdout
+        sys.stdout = myout = StringIO.StringIO()
+        self.runSmart("query", ["--show-all",
+                                "--show-format=$name $version $description\n"])
+        sys.stdout = stdout
+        iface.object.hideStatus()
+        myout.seek(0)
+        return ParseSmartQuery(myout)
+
 
 class SmartBackend(AnacondaBackend):
     def __init__ (self, anaconda):
@@ -786,6 +802,10 @@ class SmartBackend(AnacondaBackend):
     def deselectGroup(self, group, *args):
         log.debug("called smartinstall.SmartBackend.deselectGroup")
         self.grps_to_install.remove(group)
+
+    def resetGroup(self):
+        log.debug("called smartinstall.SmartBackend.resetGroup")
+        self.grps_to_install = []
 
     def getDefaultGroups(self, anaconda):
         log.debug("called smartinstall.SmartBackend.getDefaultGroups")
