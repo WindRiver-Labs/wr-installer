@@ -144,6 +144,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://support-authentication-for-kickstart.patch \
            file://support-package-selection-1.patch \
            file://support-package-selection-2.patch \
+           file://support-package-selection-3.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
