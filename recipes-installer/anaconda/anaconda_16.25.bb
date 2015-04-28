@@ -143,6 +143,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://hide-luks-crypt-checkboxes.patch \
            file://support-authentication-for-kickstart.patch \
            file://support-package-selection-1.patch \
+           file://support-package-selection-2.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
