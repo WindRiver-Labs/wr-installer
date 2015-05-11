@@ -11,6 +11,7 @@ RDEPENDS_${PN} = "gnome-icon-theme"
 EXTRA_OECONF += "--enable-all-themes \
     --with-iconmap=${STAGING_LIBDIR_NATIVE}/icon-naming-utils/icon-name-mapping \
 "
+EXTRA_OECONF_remove = "--disable-schemas-install"
 
 inherit gnome perlnative
 
