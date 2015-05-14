@@ -29,23 +29,26 @@ SRC_URI = "git://github.com/TigerVNC/tigervnc.git \
 EXTRA_OECONF = "--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \
         --disable-xwin --disable-xephyr --disable-kdrive --with-pic \
         --disable-static --disable-xinerama \
-        --with-fontdir=${datadir}/X11/fonts \
         --with-xkb-output=${localstatedir}/lib/xkb \
         --enable-install-libxf86config \
-        --enable-glx --disable-dri --enable-dri2 \
-        --disable-config-dbus \
+        --disable-glx --disable-dri --disable-dri2 \
         --disable-config-hal \
         --disable-config-udev \
-        --with-dri-driver-path=${libdir}/dri \
         --without-dtrace \
         --disable-unit-tests \
         --disable-devel-docs \
         --disable-selective-werror \
-        --disable-xshmfence"
-#        --with-default-font-path="catalogue:%{_sysconfdir}/X11/fontpath.d,built-ins"
-
+        --disable-xshmfence \
+        --disable-config-udev \
+        --disable-dri3 \
+        --disable-libunwind \
+        --without-xmlto \
+        --enable-systemd-logind=no \
+        --disable-xinerama \
+" 
 do_configure_append () {
     cp -r ${STAGING_DATADIR}/${MLPREFIX}xserver-xorg-source/* unix/xserver
+    sed -i "s:malloc(rgnSize)):(pixman_region16_data_t*)malloc(rgnSize)):g" unix/xserver/include/regionstr.h
 
     olddir=`pwd`
     cd unix/xserver
