@@ -265,7 +265,10 @@ class AnacondaSmartRepo(SmartRepo):
 
             # MGH need to add in type, name, baseurl, components, enabled, and cost
             repo = SmartRepo(channel)
-            repo.enabled = True
+            if channels[channel].get("disabled") == "yes":
+                repo.enabled = False
+            else:
+                repo.enabled = True
             repo.name = channels[channel].get("name")
             repo.baseurl = [channels[channel].get("baseurl")]
             repo.cost = channels[channel].get("priority")
@@ -316,7 +319,7 @@ class AnacondaSmartRepo(SmartRepo):
                 config = ConfigParser.ConfigParser()
                 config.read('/tmp/%s' % repoobj.id)
                 for reponame in config.sections():
-                    newrepoobj = AnacondaSmartRepo(reponame.replace(' ', ''), repoobj.anaconda)
+                    newrepoobj = SmartRepo(reponame.replace(' ', ''))
                     if config.has_option(reponame, 'type'):
                         newrepoobj.type = config.get(reponame, 'type')
                     if config.has_option(reponame, 'priority'):
@@ -333,8 +336,9 @@ class AnacondaSmartRepo(SmartRepo):
                     repoobj.mirrorrepos.append(newrepoobj)
 
                 return None
-            except:
-                raise ValueError("Invalid repository mirror list %s" % repoobj.id)
+            except Exception as e:
+                log.info("exception: %s" % e)
+                raise ValueError("Invalid repository mirror list %s:\n%s" % (repoobj.id, e))
 
         if not repoobj.baseurl:
             raise ValueError("Repository %s does not have the baseurl set" % (repoobj.id))
