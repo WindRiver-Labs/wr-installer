@@ -1,0 +1,331 @@
+From fff664e7107185581c51d4cedc463f33d06efe26 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 15 May 2015 11:24:39 +0800
+Subject: [PATCH 2/2] task_text.py: add text page to configure repository
+
+The newly added page support:
+
+- Add HTTP/FTP repository;
+  *) Mirror list is supported
+  *) Proxy is supported
+
+- Add NFS repository
+
+- Delete selected repository
+
+- Disable/Enable selected repository
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/textw/task_text.py | 286 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 286 insertions(+)
+
+diff --git a/pyanaconda/textw/task_text.py b/pyanaconda/textw/task_text.py
+index bee83c4..7724b6e 100644
+--- a/pyanaconda/textw/task_text.py
++++ b/pyanaconda/textw/task_text.py
+@@ -17,13 +17,299 @@
+ # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ #
+ 
++from snack import *
+ from constants_text import *
+ from pyanaconda.constants import *
++from pyanaconda.smartinstall import SmartRepo
++from pyanaconda import isys
++
++import logging
++log = logging.getLogger("anaconda")
++
++def setupRepo(anaconda, repoid = None):
++    try:
++        anaconda.backend.doRepoSetup(anaconda, thisrepo=repoid, fatalerrors=False)
++        log.info("Upate repository %s" % [repoid, ""][repoid is None])
++    except (IOError, ValueError) as e:
++        msg = "Unable to read package metadata from repository. This may be due to a missing repodata directory. Please ensure that your repository has been correctly generated.\n\n%s" % str(e)
++        raise ValueError(msg)
++
++    return True
++
++class AddHttpRepoWindow:
++    def __init__(self, screen):
++        self.screen = screen
++        self.finished = False
++
++        self.id = ""
++        self.name = ""
++        self.url = ""
++        self.mirrorlist = False
++        self.proxy = ""
++        self.proxy_username = ""
++        self.proxy_password = ""
++
++
++        name_entry = Entry(50)
++        url_entry = Entry(50)
++        cb_mirrorlist = Checkbox("URL is a mirror list")
++        bb_proxy = ButtonBar(self.screen,
++                            [("Configure Proxy", "proxy")],
++                            compact = 1)
++        bb = ButtonBar(self.screen, [("Ok", "ok"), ("Cancel", "cancel")])
++
++        rentry_grid = Grid(2, 2)
++        rentry_grid.setField(Label("Repo name:"), 0, 0, (0, 0, 1, 0),
++                             anchorLeft=1)
++        rentry_grid.setField(Label("Repo URL:"), 0, 1, (0, 0, 1, 0),
++                             anchorLeft=1)
++        rentry_grid.setField(name_entry, 1, 0)
++        rentry_grid.setField(url_entry, 1, 1)
++
++        g = GridForm(self.screen, "Add HTTP/FTP Repository", 1, 4)
++        g.add(rentry_grid, 0, 0, (0, 0, 0, 1))
++        g.add(cb_mirrorlist, 0, 1, anchorLeft=1)
++        g.add(bb_proxy, 0, 2, anchorLeft=1)
++        g.add(bb, 0, 3, growx = 1)
++
++        while True:
++            result = g.run()
++
++            rc = bb_proxy.buttonPressed(result) or bb.buttonPressed(result)
++            if rc == "proxy":
++                self._ConfigProxyWindow()
++
++            elif rc == "ok":
++                url = url_entry.value()
++                if not self._validURL(url):
++                    txt = "You must provide an HTTP, HTTPS, or FTP URL."
++                    ButtonChoiceWindow(self.screen, "Invalid URL",
++                                       txt, ["Continue"])
++                    url_entry.set("")
++                    continue
++
++                self.name = name_entry.value()
++                self.id = "NET_" + self.name.replace(" ", "")
++                self.url = url
++                self.mirrorlist = cb_mirrorlist.value()
++                self.finished = True
++
++                break
++
++            elif rc == "cancel":
++                break
++
++        self.screen.popWindow()
++
++    def _ConfigProxyWindow(self):
++        url_entry = Entry(40, self.proxy)
++        name_entry = Entry(40, self.proxy_username)
++        pwd_entry = Entry(40, self.proxy_password, password=1)
++        bb = ButtonBar(self.screen, [("Ok", "ok"), ("Cancel", "cancel")])
++
++        pentry_grid = Grid(2, 3)
++        pentry_grid.setField(Label("Proxy URL (host:port)"), 0, 0, (0, 0, 1, 0),
++                             anchorLeft=1)
++        pentry_grid.setField(Label("Proxy username"), 0, 1, (0, 0, 1, 0),
++                             anchorLeft=1)
++        pentry_grid.setField(Label("Proxy password"), 0, 2, (0, 0, 1, 0),
++                             anchorLeft=1)
++
++        pentry_grid.setField(url_entry, 1, 0)
++        pentry_grid.setField(name_entry, 1, 1)
++        pentry_grid.setField(pwd_entry, 1, 2)
++
++        g = GridForm(self.screen, "Configure Proxy", 1, 2)
++        g.add(pentry_grid, 0, 0, (0, 0, 0, 1))
++        g.add(bb, 0, 1, growx = 1)
++
++        result = g.runOnce()
++
++        rc = bb.buttonPressed(result)
++        if rc == "ok":
++            proxy = url_entry.value()
++            if not self._validURL(proxy):
++                txt = "You must provide an HTTP, HTTPS, or FTP URL to a proxy."
++                ButtonChoiceWindow(self.screen, "Invalid Proxy",
++                                   txt, ["Continue"])
++
++                return
++
++            self.proxy = proxy
++            self.proxy_username = name_entry.value()
++            self.proxy_password = pwd_entry.value()
++
++    def _validURL(self, url):
++        return len(url) > 0 and (url.startswith("http://") or
++                                 url.startswith("https://") or
++                                 url.startswith("ftp://"))
++
++    def completed(self):
++        return self.finished
++
++
++class AddNfsRepoWindow:
++    def __init__(self, screen):
++        self.screen = screen
++        self.finished = False
++
++        self.id = ""
++        self.name = ""
++        self.server = ""
++        self.path = ""
++        self.options = ""
++        result = EntryWindow(self.screen,
++                             'Add NFS Repository',
++                             '',
++                             ['Repo name','Server','Path','Options'],
++                             entryWidth = 40)
++        rc, (self.name, self.server, self.path, self.options) = result
++        if rc == "ok":
++            if not self.name:
++                txt = "Please enter an Repository Name."
++                ButtonChoiceWindow(self.screen, "Invalid Input",
++                                   txt, ["Continue"])
++                return
++
++            if not self.server or not self.path:
++                txt = "Please enter an NFS server and path."
++                ButtonChoiceWindow(self.screen, "Invalid Input",
++                                   txt, ["Continue"])
++
++                return
++
++            self.finished = True
++            self.id = "NFS_" + self.name.replace(" ", "")
++
++    def completed(self):
++        return self.finished
++
+ 
+ class TaskWindow:
+     def __call__(self, screen, anaconda):
+         anaconda.backend.resetPackageSelections()
+         anaconda.backend.task_to_install = anaconda.instClass.tasks[0]
+         anaconda.instClass.setGroupSelection(anaconda)
++        self.repos = anaconda.backend.asmart.repos
++
++        t = TextboxReflowed(64,
++               "Please select any additional repositories that you want to use for software installation.")
++        bb_repo = ButtonBar(screen,
++                            [("Add HTTP/FTP Repo", "http_repo"),
++                             ("Add NFS Repo", "nfs_repo"),
++                             ("Delete Repo", "del_repo")],
++                            compact = 1)
++        bb = ButtonBar(screen, [("Ok", "ok"), ("Back", "back")])
++
++        while True:
++            ct = CheckboxTree(5, scroll = 1, width = 60)
++            for (reponame, repo) in self.repos.items():
++                ct.append(repo.name, item = reponame, selected = repo.isEnabled())
++
++            g = GridForm(screen, "Configure Repositery", 1, 4)
++            g.add(t, 0, 0)
++            g.add(ct, 0, 1, (0, 0, 0, 1), anchorLeft = 1)
++            g.add(bb_repo, 0, 2, anchorLeft = 1)
++            g.add(bb, 0, 3, growx = 1)
++            result = g.runOnce()
++
++            rc = bb_repo.buttonPressed(result) or bb.buttonPressed(result)
++            if rc == "back":
++                return INSTALL_BACK
++            elif rc == "ok":
++                for (reponame, repo) in self.repos.items():
++                    if reponame in ct.getSelection() and not repo.isEnabled():
++                       self.repos.enable(reponame)
++                    elif reponame not in ct.getSelection() and repo.isEnabled():
++                       self.repos.disable(reponame)
++
++                try:
++                    # Smart update
++                    setupRepo(anaconda)
++                except ValueError as e_txt:
++                    ButtonChoiceWindow(screen, "Smart update Failed",
++                                       e_txt[0], ["Continue"])
++                    continue
++
++                break
++            elif rc == "http_repo":
++                addhttpw = AddHttpRepoWindow(screen)
++                if addhttpw.completed():
++                    # Add HTTP/FTP Repo
++                    repo = self._translate_httpw_to_smart(addhttpw)
++                    try:
++                        self.repos.add(repo)
++
++                        # Smart update
++                        setupRepo(anaconda, repoid = [None, repo.id][repo.mirrorlist is None])
++                    except ValueError as e_txt:
++                        ButtonChoiceWindow(screen, "Add HTTP/FTP  Repository Failed",
++                                           e_txt[0], ["Continue"])
++
++            elif rc == "nfs_repo":
++                addnfsw = AddNfsRepoWindow(screen)
++                if addnfsw.completed():
++                    # Add NFS Repo
++                    repo = self._translate_nfsw_to_smart(addnfsw)
++                    if not repo:
++                        continue
++
++                    try:
++                        self.repos.add(repo)
++
++                        # Smart update
++                        setupRepo(anaconda, repoid = repo.id)
++                    except ValueError as e_txt:
++                        ButtonChoiceWindow(screen, "Add NFS Repository Failed",
++                                           e_txt[0], ["Continue"])
++
++
++            elif rc == "del_repo":
++                for (reponame, repo) in self.repos.items():
++                    if reponame in ct.getSelection():
++                       self.repos.delete(reponame)
+ 
+         return INSTALL_OK
++
++
++    def _translate_httpw_to_smart(self, addhttpw):
++        repo = SmartRepo(addhttpw.id)
++        repo.name = addhttpw.name
++
++        if addhttpw.mirrorlist:
++            repo.baseurl = []
++            repo.mirrorlist = addhttpw.url
++        else:
++            repo.baseurl = [addhttpw.url]
++            repo.mirrorlist = None
++
++        if addhttpw.proxy:
++            repo.proxy = addhttpw.proxy
++            # with empty string yum would create invalid proxy string
++            repo.proxy_username = addhttpw.proxy_username or None
++            repo.proxy_password = addhttpw.proxy_password or None
++
++        repo.anacondaBaseURLs = repo.baseurl
++
++        return repo
++
++    def _translate_nfsw_to_smart(self, addnfsw):
++        repo = SmartRepo(addnfsw.id)
++        repo.name = addnfsw.name
++
++        import tempfile
++        dest = tempfile.mkdtemp("", repo.name.replace(" ", ""), "/mnt")
++
++        try:
++            isys.mount("%s:%s" % (addnfsw.server, addnfsw.path), dest, "nfs", options=addnfsw.options)
++        except Exception as e:
++            e_txt = "The following error occurred while setting up the repository:\n%s" % e
++            ButtonChoiceWindow(screen, "Mounting NFS failed",
++                               e_txt, ["Continue"])
++            return False
++
++        repo.baseurl = ["file://%s" % dest]
++        repo.anacondaBaseURLs = ["nfs:%s:%s:%s" % (addnfsw.options, addnfsw.server, addnfsw.path)]
++
++        return repo
++
+-- 
+1.9.1
+
