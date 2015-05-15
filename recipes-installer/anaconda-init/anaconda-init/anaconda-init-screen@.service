@@ -7,8 +7,7 @@ After=anaconda-init.target anaconda-init.service
 Type=idle
 WorkingDirectory=/root
 Environment=LANG=en_US.UTF-8
-ExecStartPre=/bin/echo -e \033%G
-ExecStart=/usr/bin/tmux -u attach -t anaconda
+ExecStart=/usr/bin/screen -x anaconda-init
 StandardInput=tty
 StandardOutput=tty
 TTYPath=/dev/%I

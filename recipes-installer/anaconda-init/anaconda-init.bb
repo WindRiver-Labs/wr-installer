@@ -4,9 +4,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe"
 
 SRC_URI = "file://anaconda-init \
            file://anaconda-init.service \
-           file://anaconda-init-tmux@.service \
+           file://anaconda-init-screen@.service \
            file://anaconda-init.target \
-           file://tmux.conf \
            file://Xusername \
            file://COPYING"
 
@@ -20,15 +19,15 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 # For mount -oloop=/dev/loopX, busybox's mount doesn't support this.
 RDEPENDS_${PN} = "util-linux"
 
-# While systemd, we need tmux to control anaconda-init first boot
+# While systemd, we need screen to control anaconda-init first boot
 RDEPENDS_${PN} += " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'tmux', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'screen', '', d)} \
 "
 
 inherit systemd
 
 SYSTEMD_SERVICE_${PN} = "anaconda-init.service \
-                         anaconda-init-tmux@.service \
+                         anaconda-init-screen@.service \
                          anaconda-init.target \
 "
 
@@ -40,7 +39,7 @@ do_install() {
     ln -sf ${sbindir}/anaconda-init ${D}/${sysconfdir}/init.d/anaconda-init
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/anaconda-init.service \
-                    ${WORKDIR}/anaconda-init-tmux@.service \
+                    ${WORKDIR}/anaconda-init-screen@.service \
                     ${WORKDIR}/anaconda-init.target \
                ${D}${systemd_unitdir}/system
 
@@ -50,9 +49,6 @@ do_install() {
         install -d ${D}/etc/X11
         install Xusername ${D}/etc/X11
     fi
-
-    install -d ${D}/${datadir}/anaconda
-    install -m 0755 ${WORKDIR}/tmux.conf ${D}${datadir}/anaconda/tmux.conf
 }
 
 inherit update-rc.d useradd
@@ -67,4 +63,3 @@ USERADD_PARAM_${PN} = "--create-home \
                        --groups video,tty,audio \
                        --user-group xuser"
 
-FILES_${PN} += "${datadir}/anaconda/*"
