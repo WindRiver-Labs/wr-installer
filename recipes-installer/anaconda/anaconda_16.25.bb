@@ -147,6 +147,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://support-package-selection-3.patch \
            file://fix-exception-while-invoking-_anyRepoEnabled.patch \
            file://task_text.py-add-text-page-to-configure-repository.patch \
+           file://anaconda-delete-environment-TERMCAP.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
