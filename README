@@ -258,6 +258,28 @@ Building the target installer
     12.3 Currently, we support basic/digest authentication, which decided by
          your web server.
 
+13. How to add the http repository mirror list
+    1. Create the mirror list file, the format is the same as the output of
+    invoking "smart channel --show", you should make sure the channels/
+    repositories listed in the file are correct:
+    ...
+    [qemux86_64]
+    type = rpm-md
+    priority = 55
+    baseurl = http://10.0.2.2/feeds/rpm/qemux86_64
+
+    [x86_64]
+    type = rpm-md
+    priority = 50
+    baseurl = http://10.0.2.2/feeds/rpm/x86_64
+    ...
+
+    2. Next, place the mirror list file on the web server.
+
+    3. When starting anaconda, choose to add an http repository, input the URL
+       of the mirror list, be sure to select the 'URL is a mirror list' checkbox.
+       Then click the 'ok' button to add the mirror list.
+
 License
 -------
 Copyright (C) 2013-2014 Wind River Systems, Inc.
