@@ -102,6 +102,53 @@ Building the target installer
        pointer position, it works with the Linux 3.14, but does not work with
        Linux 3.17.
 
+   4.3 Use virtualbox for testing
+       4.3.1 Prepare virtualbox
+             Take Ubuntu 14.04 for example, the virtualbox is 4.3.10
+             sudo apt-get install virtualbox
+
+       4.3.2 Create virtual machine
+             'New'-> Name:***
+                     Type:Linux
+                     Version:Linux 2.6/3.x(64 bit)
+             'Next'-> Memory size
+             'Next'-> Hard drive:create a virtual hard drive now
+             'Create'-> VDI(Virtualbox Disk Image)
+             'Next'-> Dynamically allocated
+             'Next'-> File location and size
+
+       4.3.3 Add ISO storage to virtual machine
+             Select newly created virtual machine
+             'Setting'-> 'Storage'-> 'Controller:IDE'->
+             'Empty'->'CD/DVD Drive: IDE Primary Master'->
+             'Choose a virtual CD/DVD disk file'->
+             'export/intel-x86-64-installer-standard-dist.iso'
+
+       4.3.4 Config net for virtual machine
+             Select newly created virtual machine
+             'Setting'-> 'Network'-> Attached to: Bridged Adapter
+                                     Name: eth0
+
+       4.3.5 Add serial port to virtual machine
+             Select newly created virtual machine
+             'Setting'-> 'Serial Ports'-> 'Port 1'->
+             'Enable Serial Port'-> Port Number: COM1
+                                    Port Mode: Host Pipe
+                                    Create Pipe
+                                    Port/File Path: /tmp/pipe
+
+       4.3.6 Use minicom to connect virtual machine's serial port
+             sudo minicom -s
+             'Serial port setup'->
+             'A -    Serial Device      : unix#/tmp/pipe'->
+             'Exit'
+
+       4.3.7 Start virtual machine
+             Select newly created virtual machine-> 'Start'
+
+             After the installation finished, delete ISO storage and
+             start virtual machine again to check the installed target.
+
 5. Use custom installer.conf
    The second build can use installer.conf to help speed up the build
    process when package based installs, the user can set WRL_INSTALLER_CONF
