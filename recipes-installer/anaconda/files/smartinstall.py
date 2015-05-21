@@ -710,6 +710,9 @@ class SmartBackend(AnacondaBackend):
         self.task_to_install = None
         self.required_pkgs = ['base-files', 'base-passwd', 'kernel-image', 'grub']
 
+        # The extra packages make sure lvm initramfs generation
+        self.required_pkgs += ['ldd', 'gzip', 'iputils']
+
         bl_pkgs = anaconda.bootloader.packages
         if bl_pkgs:
             log.debug("smartinstall.SmartBackend: added %s to required_pkgs" % ' '.join(bl_pkgs))
