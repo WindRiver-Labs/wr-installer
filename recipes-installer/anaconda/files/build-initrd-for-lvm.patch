@@ -1,4 +1,4 @@
-From a69c849b8fb0d450a44f26ec42adc127ea1fccda Mon Sep 17 00:00:00 2001
+From 6f6ee716397548775af040b73e41cbb6d78bf774 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Tue, 7 Apr 2015 16:08:37 +0800
 Subject: [PATCH] build initrd for lvm
@@ -13,8 +13,8 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
  pyanaconda/dispatch.py         |  2 ++
  pyanaconda/installclass.py     |  1 +
- pyanaconda/storage/__init__.py | 14 ++++++++++++++
- 3 files changed, 17 insertions(+)
+ pyanaconda/storage/__init__.py | 11 +++++++++++
+ 3 files changed, 14 insertions(+)
 
 diff --git a/pyanaconda/dispatch.py b/pyanaconda/dispatch.py
 index 5d47828..466e262 100644
@@ -49,10 +49,10 @@ index 90a6710..3a577e1 100644
                   "dopostaction",
                   "postscripts",
 diff --git a/pyanaconda/storage/__init__.py b/pyanaconda/storage/__init__.py
-index 3c936a2..a193643 100644
+index 9b9e3cc..1543835 100644
 --- a/pyanaconda/storage/__init__.py
 +++ b/pyanaconda/storage/__init__.py
-@@ -64,6 +64,20 @@ _ = lambda x: gettext.ldgettext("anaconda", x)
+@@ -64,6 +64,17 @@ _ = lambda x: gettext.ldgettext("anaconda", x)
  import logging
  log = logging.getLogger("storage")
  
@@ -60,11 +60,8 @@ index 3c936a2..a193643 100644
 +    from glob import glob
 +    storage = anaconda.storage
 +    log.info('/ is %s type' % anaconda.storage.mountpoints['/'].type)
-+    if anaconda.storage.mountpoints['/'].type != 'lvmlv':
-+        return
-+
-+    for f in glob("/boot/bzImage-*"):
-+        initrd = "/boot/initrd-" + f.replace("/boot/bzImage-", "")
++    for f in glob(anaconda.rootPath + "/boot/bzImage-*"):
++        initrd = "/boot/initrd-" + f.replace(anaconda.rootPath + "/boot/bzImage-", "")
 +        log.info("build_lvm_initramfs.sh %s" % initrd)
 +        iutil.execWithRedirect("build_lvm_initramfs.sh", [initrd],
 +                               stdout = "/dev/tty5", stderr="/dev/tty5",
