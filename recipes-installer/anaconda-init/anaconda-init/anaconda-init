@@ -347,6 +347,7 @@ FOE
         echo "Stopping Anaconda"
         killall anaconda
         killall Xorg
+        killall Xvnc
   ;;
 
   restart)
