@@ -1,0 +1,90 @@
+From 0edf951571d317cf2685b8d945f8482675685c45 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 28 May 2015 16:18:06 +0800
+Subject: [PATCH] list all ipaddr while start vnc
+
+While doing text mode installation and select to start vnc,
+the ipaddr which serial port shows is '127.0.0.1'.
+...
+|08:16:34 Please manually connect your vnc client to 127.0.0.1:1
+to begin the install.
+|08:16:34 Starting graphical installation.
+...
+
+It is not helpful for the user to start vncview to connect vnc server.
+We list all ipaddr while start vnc
+
+The net implements refers:
+http://code.activestate.com/recipes/439093-get-names-of-all-up-network-interfaces-linux-only
+
+Upstream-Status: Inappropriate [WRLinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/isys/__init__.py | 27 +++++++++++++++++++++++++++
+ pyanaconda/vnc.py           |  4 ++++
+ 2 files changed, 31 insertions(+)
+
+diff --git a/pyanaconda/isys/__init__.py b/pyanaconda/isys/__init__.py
+index 062b5d7..8ee48e8 100755
+--- a/pyanaconda/isys/__init__.py
++++ b/pyanaconda/isys/__init__.py
+@@ -42,6 +42,9 @@ import resource
+ import re
+ import struct
+ import dbus
++import fcntl
++import array
++
+ 
+ import logging
+ log = logging.getLogger("anaconda")
+@@ -393,6 +396,30 @@ def getNetDevDesc(dev):
+ def isWirelessDevice(dev):
+     return _isys.isWirelessDevice(dev)
+ 
++# List all interfaces name and its ipv4 addrress, such as
++# [('lo', '127.0.0.1'), ('eth0', '128.224.162.194')]
++def listAllinterfaces():
++    is_64bits = sys.maxsize > 2**32
++    struct_size = 40 if is_64bits else 32
++    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
++    max_possible = 8 # initial value
++    while True:
++        bytes = max_possible * struct_size
++        names = array.array('B', '\0' * bytes)
++        outbytes = struct.unpack('iL', fcntl.ioctl(
++            s.fileno(),
++            0x8912,  # SIOCGIFCONF
++            struct.pack('iL', bytes, names.buffer_info()[0])
++        ))[0]
++        if outbytes == bytes:
++            max_possible *= 2
++        else:
++            break
++    namestr = names.tostring()
++    return [(namestr[i:i+16].split('\0', 1)[0],
++             socket.inet_ntoa(namestr[i+20:i+24]))
++            for i in range(0, outbytes, struct_size)]
++
+ # Get IP addresses for a network device.
+ # Returns list of ipv4 or ipv6 addresses, depending
+ # on version parameter. ipv4 is default.
+diff --git a/pyanaconda/vnc.py b/pyanaconda/vnc.py
+index be6fc67..a796649 100644
+--- a/pyanaconda/vnc.py
++++ b/pyanaconda/vnc.py
+@@ -126,6 +126,10 @@ class VncServer:
+             self.connxinfo = "%s:%s (%s)" % (socket.getfqdn(name=self.name), self.display, ipstr,)
+         elif ipstr is not None:
+             self.connxinfo = "%s:%s" % (ipstr, self.display,)
++            for ifname, ip in isys.listAllinterfaces():
++                if ifname == "lo":
++                    continue
++                self.connxinfo +=", %s:%s" % (ip, self.display)
+         else:
+             self.connxinfo = None
+ 
+-- 
+1.9.1
+

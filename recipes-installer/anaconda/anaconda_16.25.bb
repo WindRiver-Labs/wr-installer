@@ -151,6 +151,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://task_text.py-check-the-existance-of-repository.patch \
            file://support-vncquestion-while-text-display.patch \
            file://execute-sync-explicitly-after-installation-completed.patch \
+           file://list-all-ipaddr-while-start-vnc.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
