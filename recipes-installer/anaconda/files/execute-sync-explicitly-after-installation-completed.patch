@@ -1,0 +1,49 @@
+From 8d5ce42413f5932621a265bc012d0a5649f411e3 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 28 May 2015 14:59:49 +0800
+Subject: [PATCH] execute sync explicitly after installation completed
+
+While power off after installation completed without
+clicking 'reboot' button, which the filesystem may not
+be synced. It has the potential risk to damage the storage
+disk.
+
+So explicitly execute 'sync' after installation completed.
+Select the invoking place which is shared by gui, text and
+kickstart.
+
+Upstream-Status: Inappropriate [WRLinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/installmethod.py | 1 +
+ pyanaconda/isys/__init__.py | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/pyanaconda/installmethod.py b/pyanaconda/installmethod.py
+index e96c54d..2c263fb 100644
+--- a/pyanaconda/installmethod.py
++++ b/pyanaconda/installmethod.py
+@@ -42,6 +42,7 @@ def doMethodComplete(anaconda):
+             return anaconda.storage.devicetree.getDeviceByName(dev)
+ 
+     anaconda.backend.complete(anaconda)
++    isys.sync()
+     dev = _ejectDevice()
+     if dev:
+         dev.eject()
+diff --git a/pyanaconda/isys/__init__.py b/pyanaconda/isys/__init__.py
+index 2a30d9e..062b5d7 100755
+--- a/pyanaconda/isys/__init__.py
++++ b/pyanaconda/isys/__init__.py
+@@ -291,6 +291,7 @@ def isPseudoTTY (fd):
+ 
+ ## Flush filesystem buffers.
+ def sync ():
++    log.info("Flush filesystem buffers")
+     return _isys.sync ()
+ 
+ ## Determine if a file is an ISO image or not.
+-- 
+1.9.1
+
