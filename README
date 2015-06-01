@@ -149,6 +149,10 @@ Building the target installer
              After the installation finished, delete ISO storage and
              start virtual machine again to check the installed target.
 
+   4.4 Need 1G memory size at least
+       While starting qemu/virtualbox/vmware for testing, please make
+       sure virtual machine has 1G memory at least.
+
 5. Use custom installer.conf
    The second build can use installer.conf to help speed up the build
    process when package based installs, the user can set WRL_INSTALLER_CONF
