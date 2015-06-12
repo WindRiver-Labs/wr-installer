@@ -1,0 +1,39 @@
+From 774d09f4f08f971fc29c57ada6649277459220ab Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Sun, 10 Apr 2016 04:25:56 -0400
+Subject: [PATCH] tweak native language support
+
+Only support en_GB.
+
+Upstream-Status: Inappropriate[wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ Makefile.am | 2 +-
+ po/LINGUAS  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index f45d246..01816a1 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -62,7 +62,7 @@ po-pull:
+ po-empty:
+ 	for lingua in $$(grep -v '^#' $(srcdir)/po/LINGUAS) ; do \
+ 		[ -f $(srcdir)/po/$$lingua.po ] || \
+-		msginit -i $(srcdir)/po/$(PACKAGE_NAME).pot -o $(srcdir)/po/$$lingua.po --no-translator || \
++		msginit -i $(srcdir)/po/$(PACKAGE_NAME).pot -o $(srcdir)/po/$$lingua.po -l $$lingua --no-translator || \
+ 		exit 1 ; \
+ 	done
+ 
+diff --git a/po/LINGUAS b/po/LINGUAS
+index fe6a91f..277f3d1 100644
+--- a/po/LINGUAS
++++ b/po/LINGUAS
+@@ -1,2 +1,2 @@
+ # Set of available languages.
+-af am ar as ast be bg bn bn_IN bs ca cs cy da de de_CH el en_GB es et eu fa fi fr gl gu hi hr hu ia id ilo is it ja ka kk kn ko lt lv mai mk ml mr ms nb ne nl nso or pa pl pt pt_BR ro ru si sk sl sq sr sr@latin sv ta te tg th tr uk ur vi zh_CN zh_TW zu
++en_GB
+-- 
+1.9.1
+
