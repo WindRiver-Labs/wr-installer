@@ -418,6 +418,20 @@ Building the target installer
 
     4. Restart dhcpd and go start PXE UEFI installation.
 
+15 Download file from http/ftp server to target image
+    Add key in kickstart to support downloading file from http/ftp
+    server to target image:
+    'download --dest=[file://dir/filename|/dir/filename] --src=[http url| ftp url]'
+
+    Here is the example in kickstart file:
+    ---start---
+    download --dest=/etc/rpm/keys/0x100001 --src=http://128.224.162.159/testkey
+    download --dest=file://etc/rpm/keys/0x100002 --src=http://128.224.162.159/testkey2
+    ---end---
+
+    The file be download to target image (/mnt/image/****). For host image,
+    we could make use of "%pre" section with invoking shell to do that)
+
 License
 -------
 Copyright (C) 2013-2014 Wind River Systems, Inc.
