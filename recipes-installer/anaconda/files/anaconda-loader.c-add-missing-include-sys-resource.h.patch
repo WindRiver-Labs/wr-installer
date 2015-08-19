@@ -1,0 +1,29 @@
+From ced9d93cc05a092792056a7030af966db84e198a Mon Sep 17 00:00:00 2001
+From: Jackie Huang <jackie.huang@windriver.com>
+Date: Wed, 19 Aug 2015 02:40:11 -0400
+Subject: [PATCH] loader.c: add missing include sys/resource.h
+
+Upstream-Status: Inappropriate [1]
+
+[1] loader/* has been completely removed in newer version
+
+Signed-off-by: Jackie Huang <jackie.huang@windriver.com>
+---
+ loader/loader.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/loader/loader.c b/loader/loader.c
+index cb8b7ab..1b95acd 100644
+--- a/loader/loader.c
++++ b/loader/loader.c
+@@ -50,6 +50,7 @@
+ #include <sys/stat.h>
+ #include <sys/wait.h>
+ #include <sys/utsname.h>
++#include <sys/resource.h>
+ 
+ #include <linux/fb.h>
+ #include <linux/serial.h>
+-- 
+1.9.1
+

@@ -133,6 +133,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://0001-anaconda-use-tty7-to-instead-tty6-as-console.patch \
            file://0001-pyanaconda-storage-formats-__init__.py-wait-device-b.patch \
            file://0001-pyanaconda-timezone.py-fix-set-timezone-failed.patch \
+           file://anaconda-loader.c-add-missing-include-sys-resource.h.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
