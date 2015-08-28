@@ -15,6 +15,8 @@ RRECOMMENDS_${PN} = "gnome-vfs-plugin-file shared-mime-info"
 # it is deprecated.
 PR = "r3"
 
+GNOME_COMPRESS_TYPE = "bz2"
+
 inherit gnome
 
 # This is to provide compatibility with the gnome-vfs DBus fork
