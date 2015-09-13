@@ -27,7 +27,7 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    system-config-date pykickstart libnewt-python dmraid lvm2 \
                    python-cryptsetup firstboot python-iniparse libnl1\
                    dmidecode python-meh libuser-python libuser \
-                   libreport-python localedef device-mapper device-mapper-multipath \
+                   localedef device-mapper device-mapper-multipath \
                    python-pygobject python-rpm pyparted python-urlgrabber\
                    gnome-python libgnomecanvas grub usermode \
                    gtk-engine-clearlooks gtk-theme-clearlooks \
@@ -36,6 +36,8 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \
                    module-init-tools smartpm util-linux efibootmgr \
                 "
+
+# libreport-python  --removed from RDEPENDS due to: LIN8-850
 
 # Disabled networkmanager...
 #RDEPENDS_anaconda += "network-manager-applet"
