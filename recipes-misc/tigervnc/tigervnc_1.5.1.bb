@@ -13,13 +13,10 @@ LIC_FILES_CHKSUM = "file://LICENCE.TXT;md5=75b02c2872421380bbd47781d2bd75d3"
 
 S = "${WORKDIR}/git"
 
-PR = "r0"
+inherit cmake autotools-brokensep
 
-inherit autotools cmake
-B = "${S}"
+SRCREV = "242fdf0c5a5483910537419a4833c3f725889095"
 
-SRCREV = "9e3dcea7883c8fa13f300bb203ecfe1c6ce5bbba"
-PV = "1.3.1+git${SRCPV}"
 SRC_URI = "git://github.com/TigerVNC/tigervnc.git \
            file://disable_vncviewer.patch \
            file://remove_includedir.patch \
