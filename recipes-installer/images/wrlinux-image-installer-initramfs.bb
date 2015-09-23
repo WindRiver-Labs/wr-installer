@@ -9,7 +9,8 @@ IMAGE_INSTALL = "\
     initramfs-live-install-efi \
     busybox udev \
     initscripts \
-    sysvinit sysvinit-inittab \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'sysvinit', '', d)} \
+    sysvinit-inittab \
     base-passwd \
     device-mapper \
     wr-init \
