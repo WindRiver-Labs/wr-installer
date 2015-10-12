@@ -29,6 +29,7 @@ SRC_URI = "http://www.open-iscsi.org/bits/${UPSTREAM_name}-${PV}.tar.gz \
 	   file://iscsi-initiator-utils-uio-handle-different-iface_rec.patch \
 	   file://iscsi-initiator-utils-brcm-man.patch \
 	   file://iscsi-initiator-utils-sync-uio-0.7.0.14.patch \
+	   file://replace-inline-with-static-inline-for-gcc-5.x.patch \
 	   file://04-iscsi \
 	   file://iscsidevs.init \
 	   file://iscsid.init \
