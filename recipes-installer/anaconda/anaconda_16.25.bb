@@ -155,6 +155,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://execute-sync-explicitly-after-installation-completed.patch \
            file://list-all-ipaddr-while-start-vnc.patch \
            file://download-file-from-http-ftp-server-to-tar.patch \
+           file://replace-inline-with-static-inline.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,

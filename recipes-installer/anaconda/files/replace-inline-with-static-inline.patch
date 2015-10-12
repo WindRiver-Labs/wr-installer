@@ -1,0 +1,65 @@
+From f35c1354c620aa58920c47f0dcc7dc384c15bed0 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Mon, 12 Oct 2015 03:53:56 -0400
+Subject: [PATCH] loader/modules.c: replace 'inline' with 'static inline' for
+ gcc 5.x
+
+gcc 5.x defaults to -std=gnu11 instead of -std=gnu89 which causes
+semantics for inline functions changes.
+
+The standalone 'inline' causes error with gcc 5 such as:
+
+git/testcases/kernel/syscalls/kill/kill10.c:355: undefined reference to `k_sigaction'
+
+Replace inline with static inline to be compatible with both gcc 4 and 5.
+
+Upstream-Status: Backport [From https://github.com/linux-test-project/ltp/commit/40a2457cb8ec42a05a2f96b0810057efdb2a55f5]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ loader/modules.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/loader/modules.c b/loader/modules.c
+index a48ccc9..23e307e 100644
+--- a/loader/modules.c
++++ b/loader/modules.c
+@@ -344,7 +344,7 @@ gboolean mlRemoveBlacklist(gchar *module) {
+     return TRUE;
+ }
+ 
+-inline gint gcmp(gconstpointer a, gconstpointer b, gpointer userptr)
++static inline gint gcmp(gconstpointer a, gconstpointer b, gpointer userptr)
+ {
+     return g_strcmp0(a, b);
+ }
+@@ -384,7 +384,7 @@ int processModuleLines(int (*f)(gchar**, void*), void *data)
+     return count;
+ }
+ 
+-inline int cb_savestate(gchar** parts, void *data0)
++static inline int cb_savestate(gchar** parts, void *data0)
+ {
+     GTree *data = data0;
+     logMessage(DEBUGLVL, "Saving module %s", parts[0]);
+@@ -405,7 +405,7 @@ GTree* mlSaveModuleState()
+     return state;
+ }
+ 
+-inline int cb_restorestate(gchar** parts, void *data0)
++static inline int cb_restorestate(gchar** parts, void *data0)
+ {
+     GTree *data = data0;
+     pid_t pid;
+@@ -465,7 +465,7 @@ void mlFreeModuleState(GTree *state)
+     g_tree_destroy(state);
+ }
+ 
+-inline int cb_saveversions(gchar** parts, void *data0)
++static inline int cb_saveversions(gchar** parts, void *data0)
+ {
+     GHashTable *ht = data0;
+     gchar *module = g_strdup(parts[0]);
+-- 
+1.9.1
+
