@@ -8,11 +8,9 @@ SECTION = "devel"
 LIC_FILES_CHKSUM = "file://COPYING;md5=8ca43cbc842c2336e835926c2166c28b"
 
 DEPENDS = "e2fsprogs gettext intltool libarchive virtual/libx11 libnl1 \
-           pango python rpm slang zlib dbus audit \
+           pango python rpm slang zlib dbus iscsi-initiator-utils audit \
            isomd5sum lvm2 system-config-keyboard-native libuser util-linux \
            libnewt libxcomposite gtk+ curl libarchive"
-
-# LIN8-849:  iscsi-initiator-utils is broken, try to remove it here...
 
 # Disabled networkmanager...
 DEPENDS += "networkmanager"
