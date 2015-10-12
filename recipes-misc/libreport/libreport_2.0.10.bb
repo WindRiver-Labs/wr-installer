@@ -21,6 +21,7 @@ SRC_URI += "file://0001-Add-cgroup-information-filename.patch \
             file://configure.ac-remove-prog-test-of-xmlto-and-asciidoc.patch \
             file://without-build-plugins.patch \
             file://libreport-configure.ac-json-json-c.patch \
+            file://fix-compile-failure.patch \
             "
 
 SRC_URI[md5sum] = "84d564e3acf0039eacb0e139cbe1a642"
