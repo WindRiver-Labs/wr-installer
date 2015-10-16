@@ -68,12 +68,14 @@ read_args() {
                 else
                     console_params="$console_params $arg"
                 fi ;;
-            debugshell*)
+            shelltimeout*)
                 if [ -z "$optarg" ]; then
                         shelltimeout=30
                 else
                         shelltimeout=$optarg
-                fi 
+                fi ;;
+            debugshell)
+                debugshell=y
         esac
     done
 }
@@ -115,6 +117,11 @@ early_setup
 [ -z "$CONSOLE" ] && CONSOLE="/dev/console"
 
 read_args
+
+if test $debugshell = y ; then
+        echo "Entering debug shell..."
+        exec /bin/sh
+fi
 
 case $label in
     initrd-install)
