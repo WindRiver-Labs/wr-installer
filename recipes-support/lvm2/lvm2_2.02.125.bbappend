@@ -52,6 +52,9 @@ FILES_${PN} = "${sbindir}/fsadm \
         ${sbindir}/vgsplit \
         ${sbindir}/lvmconf \
         ${sbindir}/build_lvm_initramfs.sh \
+        ${sbindir}/blkdeactivate \
+        ${sbindir}/lvmconfig \
+        ${sbindir}/lvmetad \
         ${mandir}/man5/lvm.conf.5.gz \
         ${mandir}/man8/fsadm.8.gz \
         ${mandir}/man8/lvchange.8.gz \
@@ -101,7 +104,7 @@ FILES_${PN} = "${sbindir}/fsadm \
         ${mandir}/man8/vgscan.8.gz \
         ${mandir}/man8/vgsplit.8.gz \
         ${nonarch_base_libdir}/udev/rules.d/11-dm-lvm.rules \
-        ${sysconfdir}/lvm/lvm.conf"
+        ${sysconfdir}/lvm/*"
 
 FILES_${PN}-dev = "${libdir}/liblvm2app.so \
         ${libdir}/liblvm2cmd.so \
@@ -123,6 +126,7 @@ FILES_device-mapper = "${sbindir}/dmsetup \
         ${mandir}/man8/dmsetup.8.gz \
         ${nonarch_base_libdir}/udev/rules.d/10-dm.rules \
         ${nonarch_base_libdir}/udev/rules.d/13-dm-disk.rules \
+        ${nonarch_base_libdir}/udev/rules.d/69-dm-lvm-metad.rules \
         ${nonarch_base_libdir}/udev/rules.d/95-dm-notify.rules"
 
 FILES_device-mapper-libs = "${libdir}/libdevmapper.so.1.02"
@@ -138,12 +142,15 @@ FILES_device-mapper-event-libs = "${libdir}/libdevmapper-event.so.*"
 
 FILES_device-mapper-event-dev = "${libdir}/libdevmapper-event.so \
         ${libdir}/libdevmapper-event-lvm2raid.so \
+        ${libdir}/libdevmapper-event-lvm2thin.so \
+        ${libdir}/device-mapper/libdevmapper-event-lvm2thin.so \
         ${includedir}/libdevmapper-event.h \
         ${libdir}/pkgconfig/devmapper-event.pc"
 
 FILES_device-mapper-event-dbg = "${libdir}/device-mapper/.debug"
 
 DEPENDS += "udev"
+RDEPENDS_${PN} += "ldd"
 
 SYSTEMD_AUTO_ENABLE = "disable"
 
