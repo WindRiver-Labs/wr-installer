@@ -17,6 +17,8 @@ PR = "r0"
 
 inherit distutils
 
-SRC_URI = "http://pkgs.fedoraproject.org/repo/pkgs/python-cryptsetup/python-cryptsetup-0.1.4.tar.gz/9455d264032342e322bbcce7ce5697d9/python-cryptsetup-0.1.4.tar.gz"
+SRC_URI = "http://pkgs.fedoraproject.org/repo/pkgs/python-cryptsetup/python-cryptsetup-0.1.4.tar.gz/9455d264032342e322bbcce7ce5697d9/python-cryptsetup-0.1.4.tar.gz \
+           file://Makefile-support-clean.patch \
+"
 SRC_URI[md5sum] = "9455d264032342e322bbcce7ce5697d9"
 SRC_URI[sha256sum] = "b07935f5b06f927b584172382710b47253c445bd1ecb32ff375fa8d2cbdefaa6"
