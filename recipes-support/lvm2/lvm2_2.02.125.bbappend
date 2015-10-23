@@ -51,6 +51,7 @@ FILES_${PN} = "${sbindir}/fsadm \
         ${sbindir}/vgscan \
         ${sbindir}/vgsplit \
         ${sbindir}/lvmconf \
+        ${sbindir}/build_lvm_initramfs.sh \
         ${mandir}/man5/lvm.conf.5.gz \
         ${mandir}/man8/fsadm.8.gz \
         ${mandir}/man8/lvchange.8.gz \
@@ -143,3 +144,6 @@ FILES_device-mapper-event-dev = "${libdir}/libdevmapper-event.so \
 FILES_device-mapper-event-dbg = "${libdir}/device-mapper/.debug"
 
 DEPENDS += "udev"
+
+SYSTEMD_AUTO_ENABLE = "disable"
+

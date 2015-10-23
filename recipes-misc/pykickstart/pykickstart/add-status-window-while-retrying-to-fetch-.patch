@@ -1,0 +1,88 @@
+From ee0c29b5d72fc3388b6852c3fb24ee1fdb90c625 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Mon, 30 Mar 2015 18:59:06 +0800
+Subject: [PATCH] parser.py: add status window while retrying to fetch
+ kickstart
+
+While the retry occurs the user might think the system has hung.
+So we add a status window that indicates the system is trying to
+connect to the network and retrieve the kickstart file.
+
+Upstream-Status: inappropriate [wr-installer specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pykickstart/parser.py | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/pykickstart/parser.py b/pykickstart/parser.py
+index e200317..a54bf3b 100644
+--- a/pykickstart/parser.py
++++ b/pykickstart/parser.py
+@@ -41,6 +41,7 @@ from copy import copy
+ from optparse import *
+ from urlgrabber import urlread
+ import urlgrabber.grabber as grabber
++from snack import *
+ 
+ import constants
+ from errors import KickstartError, KickstartParseError, KickstartValueError, formatErrorMsg
+@@ -695,11 +696,13 @@ class KickstartParser:
+             cd = os.path.abspath(cd)
+         self.currentdir[self._includeDepth] = cd
+ 
++        wait_wind = WaitWindow("Downloading %s" % f, "Please wait...")
+         # Retry 45 times, wait 45s~135s
+         i = 0
+         while i < 45:
+             try:
+                 s = urlread(f, timeout=2)
++                wait_wind.pop()
+                 break
+             except grabber.URLGrabError, e:
+                 # Continue while timeout or couldn't connect
+@@ -707,12 +710,15 @@ class KickstartParser:
+                   (e.errno == 14 and e.code == 7):
+                     # Continue the loop
+                     i+=1
++                    wait_wind.refresh("Retry %s of 45" % i)
+                     sleep(1)
+                 # Break if other failure
+                 else:
++                    wait_wind.pop()
+                     raise KickstartError, formatErrorMsg(0, msg=_("Unable to open input kickstart file: %s") % e.strerror)
+                     break
+         else:
++            wait_wind.pop()
+             raise KickstartError, formatErrorMsg(0, msg=_("Unable to open input kickstart file: %s") % e.strerror)
+ 
+         self.readKickstartFromString(s, reset=False)
+@@ -729,3 +735,25 @@ class KickstartParser:
+         self.registerSection(PostScriptSection(self.handler, dataObj=Script))
+         self.registerSection(TracebackScriptSection(self.handler, dataObj=Script))
+         self.registerSection(PackageSection(self.handler))
++
++class WaitWindow:
++    def pop(self):
++        self.screen.popWindow()
++        self.screen.finish()
++
++    def refresh(self, text):
++        self.t.setText(text)
++        self.screen.refresh()
++
++    def __init__(self, title, text):
++        width = 40
++        if (len(text) < width): width = len(text)
++
++        self.t = TextboxReflowed(width, text)
++
++        self.screen = SnackScreen()
++        g = GridForm(self.screen, title, 1, 1)
++        g.add(self.t, 0, 0)
++        g.draw()
++
++        self.screen.refresh()
+-- 
+1.9.1
+

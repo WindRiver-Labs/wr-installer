@@ -1,0 +1,8 @@
+default netboot
+prompt 1 
+display 
+pxeboot.msg 
+timeout 1
+label netboot 
+	kernel bzImage
+	append root=/dev/ram0 LABEL=initrd-install initrd=wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz ks=http://webserver_ip/anaconda-ks.cfg

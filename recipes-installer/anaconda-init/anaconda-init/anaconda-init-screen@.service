@@ -1,0 +1,22 @@
+[Unit]
+Description=Anaconda Text Console
+Requires=anaconda-init.service
+After=anaconda-init.target anaconda-init.service
+
+[Service]
+Type=idle
+WorkingDirectory=/root
+Environment=LANG=en_US.UTF-8
+ExecStart=/usr/bin/screen -x anaconda-init
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/%I
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+Restart=always
+RestartSec=0
+
+[Install]
+WantedBy=getty.target
+DefaultInstance=tty1

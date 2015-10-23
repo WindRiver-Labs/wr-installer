@@ -4,7 +4,7 @@
 # Image generation functions to setup the installer components
 #
 
-RPM_POSTPROCESS_COMMANDS_append = "${@['wrl_installer; ', '']['initramfs' in '${BPN}']}"
+RPM_POSTPROCESS_COMMANDS_append = "wrl_installer; "
 
 INSTPRODUCT ?= "${DISTRO_NAME}"
 INSTVER     ?= "${DISTRO_VERSION}"
@@ -201,6 +201,29 @@ wrl_installer_hardlinktree() {
     cp -rvf $hdlink $1 $2
 }
 
+wrl_installer_copy_local_repos() {
+    if [ -d "$target_build/bitbake_build/tmp/deploy/rpm" ]; then
+        echo "Copy rpms from target build to installer image."
+        mkdir -p ${IMAGE_ROOTFS}/Packages.$prj_name
+
+        # Determine the max channel priority
+        channel_priority=5
+        for pt in $installer_target_archs ; do
+            channel_priority=$(expr $channel_priority + 5)
+        done
+
+        : > ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
+        for arch in $installer_target_archs; do
+            if [ -d "$target_build/bitbake_build/tmp/deploy/rpm/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages.$prj_name/"$arch ]; then
+                channel_priority=$(expr $channel_priority - 5)
+                echo "$channel_priority $arch" >> ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
+                wrl_installer_hardlinktree "$target_build/bitbake_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
+                createrepo --update -q ${IMAGE_ROOTFS}/Packages.$prj_name/$arch
+            fi
+        done
+    fi
+}
+
 # Update .buildstamp and copy rpm packages to IMAGE_ROOTFS
 wrl_installer_copy_pkgs() {
 
@@ -287,24 +310,11 @@ _EOF
     fi
 
     if [ -d "$target_build/bitbake_build/tmp/deploy/rpm" ]; then
-        echo "Copy rpms from target build to installer image."
-        mkdir -p ${IMAGE_ROOTFS}/Packages.$prj_name
-
-        # Determine the max channel priority
-        channel_priority=5
-        for pt in $installer_target_archs ; do
-            channel_priority=$(expr $channel_priority + 5)
-        done
-
-        : > ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
-        for arch in $installer_target_archs; do
-            if [ -d "$target_build/bitbake_build/tmp/deploy/rpm/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages.$prj_name/"$arch ]; then
-                channel_priority=$(expr $channel_priority - 5)
-                echo "$channel_priority $arch" >> ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
-                wrl_installer_hardlinktree "$target_build/bitbake_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
-                createrepo --update -q ${IMAGE_ROOTFS}/Packages.$prj_name/$arch
-            fi
-        done
+        # Copy local repos while the image is not initramfs
+        bpn=${BPN}
+        if [ "${bpn##*initramfs}" = "${bpn%%initramfs*}" ]; then
+            wrl_installer_copy_local_repos
+        fi
         echo "$DISTRO::$prj_name::$DISTRO_NAME::$DISTRO_VERSION" >> ${IMAGE_ROOTFS}/.target_build_list
     fi
 }

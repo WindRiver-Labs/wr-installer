@@ -1,0 +1,60 @@
+From d96af2f1a4adb18989e38d62cafb11d7a48b9362 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 19 Mar 2015 11:23:17 +0800
+Subject: [PATCH] parser.py:retry to invoke urlread with timeout
+
+While networkless, use urlread to fetch kickstart file from
+network, it failed and wait 300s to break, we should retry
+to invoke urlread with timeout explicitly. So if it the
+network is up, the fetch works.
+
+Upstream-Status: inappropriate [wr-installer specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pykickstart/parser.py | 22 +++++++++++++++++++---
+ 1 file changed, 19 insertions(+), 3 deletions(-)
+
+diff --git a/pykickstart/parser.py b/pykickstart/parser.py
+index aa50fbc..e200317 100644
+--- a/pykickstart/parser.py
++++ b/pykickstart/parser.py
+@@ -35,6 +35,7 @@ from collections import Iterator
+ import os
+ import shlex
+ import sys
++from time import sleep
+ import tempfile
+ from copy import copy
+ from optparse import *
+@@ -694,9 +695,24 @@ class KickstartParser:
+             cd = os.path.abspath(cd)
+         self.currentdir[self._includeDepth] = cd
+ 
+-        try:
+-            s = urlread(f)
+-        except grabber.URLGrabError, e:
++        # Retry 45 times, wait 45s~135s
++        i = 0
++        while i < 45:
++            try:
++                s = urlread(f, timeout=2)
++                break
++            except grabber.URLGrabError, e:
++                # Continue while timeout or couldn't connect
++                if e.errno == 12 or \
++                  (e.errno == 14 and e.code == 7):
++                    # Continue the loop
++                    i+=1
++                    sleep(1)
++                # Break if other failure
++                else:
++                    raise KickstartError, formatErrorMsg(0, msg=_("Unable to open input kickstart file: %s") % e.strerror)
++                    break
++        else:
+             raise KickstartError, formatErrorMsg(0, msg=_("Unable to open input kickstart file: %s") % e.strerror)
+ 
+         self.readKickstartFromString(s, reset=False)
+-- 
+1.9.1
+

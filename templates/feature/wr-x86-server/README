@@ -1,0 +1,9 @@
+This template adds the windshare network repositories to the installer,
+so that the installer will add the windshare network repositories to
+the system by default after it has been installed successfully, or if
+do upgrading using this installer, it will add those network repositories
+to the installer's network repo.
+
+For using this template, please add the following configure option:
+
+    --with-template=feature/wr-x86-server ...

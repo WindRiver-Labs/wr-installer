@@ -22,7 +22,6 @@ IMAGE_INSTALL = "\
     windriver-gnome-theme \
     windriver-logos \
     dhcp-client \
-    init-ifupdown \
     "
 IMAGE_LINGUAS = "en-us"
 

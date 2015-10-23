@@ -58,6 +58,8 @@ from constants import *
 from image import *
 from compssort import *
 import packages
+#from pyanaconda import network
+from smartquery import *
 
 import gettext
 _ = lambda x: gettext.ldgettext("anaconda", x)
@@ -75,35 +77,24 @@ class AnacondaProgress(Progress):
     def __init__(self, intf):
         self.intf = intf
         self.progressWindow = None
-        self.progressSubWindow = None
         self.windowTitle = "smart Package Manager"
-        self.subTitle = None
         self.subTopic = None
         Progress.__init__(self)
 
     def expose(self, topic, percent, subkey, subtopic, subpercent, data, done):
         #log.debug("called smartinstall.AnacondaProgress.expose(%s, %s, subkey, %s, %s, data)" % (topic, percent, subtopic, subpercent))
-        if not subtopic:
-            self._closeSubProgressWindow()
-            if not self.progressWindow:
-                #log.debug("new progressWindow(%s, %s, 100)" % (self.windowTitle, topic))
-                self.progressWindow = self.intf.progressWindow (self.windowTitle, topic, 100)
-            #log.debug("progressWindow(%s)" % (percent))
-            self.progressWindow.set(percent)
-        else:
-            # Topic changes, so clear the window
-            if self.progressSubWindow and self.subTitle != topic and self.subTopic != subtopic:
-                self._closeSubProgressWindow()
 
-            if not self.progressSubWindow:
-                #log.debug("new sub-progressWindow(%s, %s, 100)" % (topic, subtopic))
-                self.progressSubWindow = self.intf.progressWindow (self.windowTitle, "%s %s%%\n%s" % (topic,percent,subtopic), 100)
-                self.subTitle = topic
-                self.subTopic = subtopic
+        if not self.progressWindow:
+            #log.debug("new progressWindow(%s, %s, 100)" % (self.windowTitle, topic))
+            self.progressWindow = self.intf.progressWindow (self.windowTitle, topic, 100)
 
-            #log.debug("sub-progressWindow(%s)" % (subpercent))
-            self.progressWindow.set(percent)
-            self.progressSubWindow.set(subpercent)
+        if subtopic:
+            self.subTopic = "%s (%s%%)" % (subtopic, subpercent)
+
+        self.progressWindow.set(percent,
+                                topic=topic,
+                                subtopic=self.subTopic,
+                                percent="Total %s%%" % (percent))
 
     def setDone(self):
         #log.debug("called smartinstall.AnacondaProgress.setDone")
@@ -117,7 +108,6 @@ class AnacondaProgress(Progress):
 
     def stop(self):
         #log.debug("called smartinstall.AnacondaProgress.stop")
-        self._closeSubProgressWindow()
         self._closeProgressWindow()
         Progress.stop(self)
 
@@ -125,13 +115,6 @@ class AnacondaProgress(Progress):
         if self.progressWindow:
             self.progressWindow.pop()
             self.progressWindow = None
-
-    def _closeSubProgressWindow(self):
-        if self.progressSubWindow:
-            self.progressSubWindow.pop()
-            self.progressSubWindow = None
-            self.subTopic = None
-            self.subTitle = None
 
 class AnacondaInterface(Interface):
     def __init__(self, ctrl, anaconda):
@@ -248,7 +231,7 @@ class SmartRepo:
 
     # needed to store nfs: repo url that yum doesn't know
     def _getAnacondaBaseURLs(self):
-        return self._anacondaBaseURLs
+        return self._anacondaBaseURLs or self.baseurl or [self.mirrorlist]
 
     def _setAnacondaBaseURLs(self, value):
         log.debug("AnacondaSmartRepo(%s):_setAnacondaBaseURLs = %s" % (self.id, value))
@@ -282,10 +265,13 @@ class AnacondaSmartRepo(SmartRepo):
 
             # MGH need to add in type, name, baseurl, components, enabled, and cost
             repo = SmartRepo(channel)
-            repo.enabled = True
-            repo.name = channels[channel]["name"]
-            repo.baseurl = [channels[channel]["baseurl"]]
-            repo.cost = channels[channel]["priority"]
+            if channels[channel].get("disabled") == "yes":
+                repo.enabled = False
+            else:
+                repo.enabled = True
+            repo.name = channels[channel].get("name")
+            repo.baseurl = [channels[channel].get("baseurl")]
+            repo.cost = channels[channel].get("priority")
 
             item_list.append((reponame, repo))
 
@@ -333,7 +319,7 @@ class AnacondaSmartRepo(SmartRepo):
                 config = ConfigParser.ConfigParser()
                 config.read('/tmp/%s' % repoobj.id)
                 for reponame in config.sections():
-                    newrepoobj = AnacondaSmartRepo(reponame.replace(' ', ''), repoobj.anaconda)
+                    newrepoobj = SmartRepo(reponame.replace(' ', ''))
                     if config.has_option(reponame, 'type'):
                         newrepoobj.type = config.get(reponame, 'type')
                     if config.has_option(reponame, 'priority'):
@@ -350,8 +336,9 @@ class AnacondaSmartRepo(SmartRepo):
                     repoobj.mirrorrepos.append(newrepoobj)
 
                 return None
-            except:
-                raise ValueError("Invalid repository mirror list %s" % repoobj.id)
+            except Exception as e:
+                log.info("exception: %s" % e)
+                raise ValueError("Invalid repository mirror list %s:\n%s" % (repoobj.id, e))
 
         if not repoobj.baseurl:
             raise ValueError("Repository %s does not have the baseurl set" % (repoobj.id))
@@ -560,6 +547,70 @@ fi
                         self.repos.add(repo)
                 f.close()
 
+        if self.anaconda.ksdata:
+            for ksrepo in self.anaconda.ksdata.repo.repoList:
+                # If no location was given, this must be a repo pre-configured
+                # repo that we just want to enable.
+                if not ksrepo.baseurl and not ksrepo.mirrorlist:
+                    self.repos.enable(ksrepo.name)
+                    continue
+
+                anacondaBaseURLs = [ksrepo.baseurl]
+
+                # smart doesn't understand nfs:// and doesn't want to. We need
+                # to first do the mount, then translate it into a file:// that
+                # smart does understand.
+                # "nfs:" and "nfs://" prefixes are accepted in ks_repo --baseurl
+                if ksrepo.baseurl and ksrepo.baseurl.startswith("nfs:"):
+                    #if not network.hasActiveNetDev() and not self.anaconda.intf.enableNetwork():
+                    #    self.anaconda.intf.messageWindow(_("No Network Available"),
+                    #        _("Some of your software repositories require "
+                    #          "networking, but there was an error enabling the "
+                    #          "network on your system."),
+                    #        type="custom", custom_icon="error",
+                    #        custom_buttons=[_("_Exit installer")])
+                    #    sys.exit(1)
+
+                    dest = tempfile.mkdtemp("", ksrepo.name.replace(" ", ""), "/mnt")
+
+                    # handle "nfs://" prefix
+                    if ksrepo.baseurl[4:6] == '//':
+                        ksrepo.baseurl = ksrepo.baseurl.replace('//', '', 1)
+                        anacondaBaseURLs = [ksrepo.baseurl]
+                    try:
+                        isys.mount(ksrepo.baseurl[4:], dest, "nfs")
+                    except Exception as e:
+                        log.error("error mounting NFS repo: %s" % e)
+
+                    ksrepo.baseurl = "file://%s" % dest
+
+                repo = SmartRepo(ksrepo.name)
+                repo.mirrorlist = ksrepo.mirrorlist
+                repo.name = ksrepo.name
+
+                if not ksrepo.baseurl:
+                    repo.baseurl = []
+                else:
+                    repo.baseurl = [ ksrepo.baseurl ]
+                repo.anacondaBaseURLs = anacondaBaseURLs
+
+                if ksrepo.cost:
+                    repo.cost = ksrepo.cost
+
+                if ksrepo.excludepkgs:
+                    repo.exclude = ksrepo.excludepkgs
+
+                if ksrepo.includepkgs:
+                    repo.includepkgs = ksrepo.includepkgs
+
+                if ksrepo.noverifyssl:
+                    repo.sslverify = False
+
+                if ksrepo.proxy:
+                    self.setProxy(ksrepo, repo)
+
+                self.repos.add(repo)
+
         self.smart_ctrl.saveSysConf()
         self.smart_ctrl.restoreMediaState()
         self.doRepoSetup(self.anaconda)
@@ -631,6 +682,21 @@ fi
                 globs.append(glob)
         return ' '.join(globs)
 
+    def PackagesObj(self):
+        log.debug("called smartinstall.SmartBackend.PackagesObj")
+
+        import StringIO
+
+        ## Create a obj contian all available packagegroups with infos
+        stdout = sys.stdout
+        sys.stdout = myout = StringIO.StringIO()
+        self.runSmart("query", ["--show-all",
+                                "--show-format=$name $version $description\n"])
+        sys.stdout = stdout
+        iface.object.hideStatus()
+        myout.seek(0)
+        return ParseSmartQuery(myout)
+
 
 class SmartBackend(AnacondaBackend):
     def __init__ (self, anaconda):
@@ -643,6 +709,9 @@ class SmartBackend(AnacondaBackend):
 
         self.task_to_install = None
         self.required_pkgs = ['base-files', 'base-passwd', 'kernel-image', 'grub']
+
+        # The extra packages make sure lvm initramfs generation
+        self.required_pkgs += ['ldd', 'gzip', 'iputils']
 
         bl_pkgs = anaconda.bootloader.packages
         if bl_pkgs:
@@ -740,6 +809,10 @@ class SmartBackend(AnacondaBackend):
     def deselectGroup(self, group, *args):
         log.debug("called smartinstall.SmartBackend.deselectGroup")
         self.grps_to_install.remove(group)
+
+    def resetGroup(self):
+        log.debug("called smartinstall.SmartBackend.resetGroup")
+        self.grps_to_install = []
 
     def getDefaultGroups(self, anaconda):
         log.debug("called smartinstall.SmartBackend.getDefaultGroups")
@@ -937,6 +1010,38 @@ class SmartBackend(AnacondaBackend):
         # FIXME: using rpm here is a little lame, but otherwise, we'd
         # be pulling in filelists
         return packages.rpmKernelVersionList(rootPath)
+
+    def writeKS(self, f):
+        for reponame, repo in self.asmart.repos.items():
+            # Do not write local repo to ks
+            if repo.name is None or repo.name.startswith("Install Media feed for"):
+                continue
+
+            line = "repo --name=\"%s\" " % (repo.name or repo.repoid)
+
+            if repo.baseurl:
+                line += " --baseurl=%s" % repo.anacondaBaseURLs[0]
+            else:
+                line += " --mirrorlist=%s" % repo.mirrorlist
+
+            if repo.proxy:
+                line += " --proxy=\"%s\"" % repo.proxy
+
+            if repo.cost:
+                line += " --cost=%s" % repo.cost
+
+            # if repo.includepkgs:
+            #     line += " --includepkgs=\"%s\"" % ",".join(repo.includepkgs)
+
+            # if repo.exclude:
+            #     line += " --excludepkgs=\"%s\"" % ",".join(repo.exclude)
+
+            # if not repo.sslverify:
+            #    line += " --noverifyssl"
+
+            line += "\n"
+
+            f.write(line)
 
     def writePackagesKS(self, f, anaconda):
         log.debug("called smartinstall.SmartBackend.writePackageKS")

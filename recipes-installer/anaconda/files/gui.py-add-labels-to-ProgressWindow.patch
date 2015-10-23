@@ -1,0 +1,81 @@
+From c9dcf70b6ba4fceb13999b230e18d993edc67af7 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 24 Mar 2015 18:23:50 +0800
+Subject: [PATCH] gui.py: add labels to ProgressWindow
+
+Add two labels to ProgressWindow, there are totally three,
+the first one is used to display topic, the second one to
+display subtopic and subpercent, the laster one to display
+percent.
+
+Drop invoking frequence control which was done by smart
+
+Upstream-Status: inappropriate [WR specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/gui.py | 37 ++++++++++++++++++++++++-------------
+ 1 file changed, 24 insertions(+), 13 deletions(-)
+
+diff --git a/pyanaconda/gui.py b/pyanaconda/gui.py
+index 24ad152..1d8a05c 100644
+--- a/pyanaconda/gui.py
++++ b/pyanaconda/gui.py
+@@ -406,9 +406,21 @@ class ProgressWindow:
+         box = gtk.VBox (False, 5)
+         box.set_border_width (10)
+ 
+-        label = WrappingLabel (text)
+-        label.set_alignment (0.0, 0.5)
+-        box.pack_start (label, False)
++        self.l_topic = WrappingLabel (text)
++        self.l_topic.set_alignment (0.0, 0.5)
++        self.l_topic.set_width_chars(75)
++        box.pack_start (self.l_topic, False)
++
++        self.l_subtopic = WrappingLabel (" ")
++        self.l_subtopic.set_alignment (0.0, 0.5)
++        self.l_subtopic.set_width_chars(75)
++        box.pack_start (self.l_subtopic, False)
++
++        self.l_percent = WrappingLabel (" ")
++        self.l_percent.set_alignment (0.0, 0.5)
++        self.l_percent.set_width_chars(75)
++        box.pack_start (self.l_percent, False)
++
+ 
+         self.total = total
+         self.updpct = updpct
+@@ -442,20 +454,19 @@ class ProgressWindow:
+             processEvents()
+             delta -= 0.05
+ 
+-    def set (self, amount):
++    def set(self, amount, topic = None, subtopic = None, percent = None):
+         amount = min(amount, self.total)
+ 
+-        # only update widget if we've changed by 5% or our timeout has
+-        # expired
+-        curval = self.progress.get_fraction()
+         newval = float (amount) / self.total
+-        then = self.lastUpdate
+-        now = time.time()
+-        if newval < 0.998:
+-            if ((newval - curval) < self.updpct and (now-then) < self.updsecs):
+-                return
+-        self.lastUpdate = now
+         self.progress.set_fraction (newval)
++
++        if topic:
++            self.l_topic.set_text(topic)
++        if subtopic:
++            self.l_subtopic.set_text(subtopic)
++        if percent:
++            self.l_percent.set_text(percent)
++
+         processEvents ()
+ 
+     def pop(self):
+-- 
+1.9.1
+

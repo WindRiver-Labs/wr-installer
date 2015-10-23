@@ -21,6 +21,7 @@ SRC_URI = "git://github.com/TigerVNC/tigervnc.git \
            file://disable_vncviewer.patch \
            file://remove_includedir.patch \
            file://add-fPIC-option-to-COMPILE_FLAGS.patch \
+           file://tigervnc-the-string-I-in-path-name-is-replaced-wrongly.patch \
 "
 
 EXTRA_OECONF = "--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \

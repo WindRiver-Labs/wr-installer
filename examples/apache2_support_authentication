@@ -1,0 +1,80 @@
+Description: How to configure digest/basic authentication on apache2
+Environment: Apache/2.4.7 on On ubuntu 14 04
+Steps:
+1. Create a directory to protect in our document root. Let's
+say our document root is /var/www/html. We'll create a directory
+called protected in the document root - /var/www/html/protected,
+and copy kickstart file to the dir.
+...
+sudo mkdir /var/www/html/protected
+sudo cp anaconda-ks.cfg /var/www/html/protected
+...
+
+2. For basic authentication
+2.1 Create a password file with users, we will use the htpasswd
+utility provided in the core Apache package.
+
+In this example, we create user 'user1' with password '123456'
+...
+sudo mkdir /etc/htpasswd/
+sudo htpasswd -cb /etc/htpasswd/.htpasswd user1 123456
+...
+
+2.2 Configure apache2
+vim /etc/apache2/apache2.conf
+...
+<Directory "/var/www/html/protected">
+  AuthType Basic
+  AuthName "Authentication Required"
+  AuthUserFile "/etc/htpasswd/.htpasswd"
+  Require valid-user
+  Order allow,deny
+  Allow from all
+</Directory>
+...
+
+2.3 Restart apache2
+sudo /etc/init.d/apache2 restart
+
+The reference site:
+https://wiki.apache.org/httpd/PasswordBasicAuth
+
+3. For digest authentication
+3.1 Create a password file with users, we will use the htdigest
+utility provided in the core Apache package.
+In this example, we create user 'user3' with password '123456'
+and realm is 'myrealm' (the realm must be the same with
+AuthName in apache config)
+...
+$sudo mkdir /etc/htdigest/
+$sudo htdigest -c /etc/htdigest/.htdigest myrealm user3
+New password:
+Re-type new password:
+...
+
+3.2 Configure apache2
+vim /etc/apache2/apache2.conf
+...
+<Directory "/var/www/html/protected">
+  AuthType Digest
+  AuthName "myrealm"
+  AuthDigestDomain http://128.224.162.194/protected
+  AuthDigestProvider file
+  AuthUserFile "/etc/htdigest/.htdigest"
+  Require valid-user
+  Order allow,deny
+  Allow from all
+</Directory>
+...
+
+
+3.3 Enable digest module and restart apache2
+...
+sudo a2enmod auth_digest
+sudo /etc/init.d/apache2 restart
+...
+
+The reference site:
+http://www.googlux.com/basic-digest-auth.html
+http://www.paulpepper.com/blog/2009/07/enabling-apache-digest-user/
+

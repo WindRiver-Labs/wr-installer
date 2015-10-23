@@ -102,6 +102,57 @@ Building the target installer
        pointer position, it works with the Linux 3.14, but does not work with
        Linux 3.17.
 
+   4.3 Use virtualbox for testing
+       4.3.1 Prepare virtualbox
+             Take Ubuntu 14.04 for example, the virtualbox is 4.3.10
+             sudo apt-get install virtualbox
+
+       4.3.2 Create virtual machine
+             'New'-> Name:***
+                     Type:Linux
+                     Version:Linux 2.6/3.x(64 bit)
+             'Next'-> Memory size
+             'Next'-> Hard drive:create a virtual hard drive now
+             'Create'-> VDI(Virtualbox Disk Image)
+             'Next'-> Dynamically allocated
+             'Next'-> File location and size
+
+       4.3.3 Add ISO storage to virtual machine
+             Select newly created virtual machine
+             'Setting'-> 'Storage'-> 'Controller:IDE'->
+             'Empty'->'CD/DVD Drive: IDE Primary Master'->
+             'Choose a virtual CD/DVD disk file'->
+             'export/intel-x86-64-installer-standard-dist.iso'
+
+       4.3.4 Config net for virtual machine
+             Select newly created virtual machine
+             'Setting'-> 'Network'-> Attached to: Bridged Adapter
+                                     Name: eth0
+
+       4.3.5 Add serial port to virtual machine
+             Select newly created virtual machine
+             'Setting'-> 'Serial Ports'-> 'Port 1'->
+             'Enable Serial Port'-> Port Number: COM1
+                                    Port Mode: Host Pipe
+                                    Create Pipe
+                                    Port/File Path: /tmp/pipe
+
+       4.3.6 Use minicom to connect virtual machine's serial port
+             sudo minicom -s
+             'Serial port setup'->
+             'A -    Serial Device      : unix#/tmp/pipe'->
+             'Exit'
+
+       4.3.7 Start virtual machine
+             Select newly created virtual machine-> 'Start'
+
+             After the installation finished, delete ISO storage and
+             start virtual machine again to check the installed target.
+
+   4.4 Need 1G memory size at least
+       While starting qemu/virtualbox/vmware for testing, please make
+       sure virtual machine has 1G memory at least.
+
 5. Use custom installer.conf
    The second build can use installer.conf to help speed up the build
    process when package based installs, the user can set WRL_INSTALLER_CONF
@@ -197,6 +248,189 @@ Building the target installer
              the following line into your local.conf
              (bitbake_build/conf/local.conf) file:
              MKISOFS_OPTIONS_append = " -iso-level 3"
+
+10. PXE
+    10.1 Preparation
+         Refer "Wind River Linux USER GUIDE 6"
+         - About Configuring PXE, P422
+         - Configuring PXE, P424
+         - Configuring DHCP, P427
+         - Configuring DHCP for PXE, P428
+         - Configuring NFS, P430
+         - Configuring TFTP, P431
+
+         The PXELinux Boot Loader File pxelinux.0 located in syslinux package,
+         you could directly copy it to the tftp download dir.
+
+         Copy kernel (bzImage) to tftp download dir. In ISO, it named vmlinuz.
+
+    10.2 initrd boot
+         We support initrd boot by default, please copy initramfs
+         (wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz) to tftp
+         download dir. In ISO, it named initrd.
+
+         We must add param "LABEL=initrd-install" to PXE config file.
+         There is an example in examples/pxe/pxelinux.cfg/default.initramfs
+
+    10.3 initrd boot with kickstart
+         Based on 10.2 initrd boot, we should prepare a kickstart file on
+         web server, and add param "ks=http://webserver_ip/anaconda-ks.cfg"
+         to PXE config file.
+         There is an example in examples/pxe/pxelinux.cfg/default.initramfs_ks
+
+    10.4 nfs boot
+         About PXE config file, there is an example in
+         examples/pxe/pxelinux.cfg/default.nfs
+
+11. How to create Large Disk (>2TB) on X86 platform
+    11.1 On X86 platform, for small disk(<2TB), anaconda create msdos
+         partitioned disk by default; if larger than that, it automatically
+         creates GPT partitioned disk; but it has risks on some hosts(Such as
+         Lenovo systems), if you do not want to create GPT disklabels on
+         large disk(>2TB), it provides a boot option 'nogpt', but only 2TB
+         used.
+
+    11.2 While you use kickstart to do the installation on large disk, as there
+         must be a biosboot partition for the bootloader to be installed
+         successfully onto a disk that contains a GPT/GUID partition table,
+         which includes disks initialized by anaconda. This partition may be
+         created with the kickstart option 'part biosboot --fstype=biosboot
+         --size=1 --ondisk=sda'. However, in the case that a disk has an
+         existing biosboot partition, adding a "part biosboot" option is
+         unnecessary.
+
+12. How to authenticate while downloading kickstart from web server
+    12.1 We add boot options 'ksuser' and 'kspasswd'(listed in /proc/cmdline)
+         to support authentication while downloading kickstart from web server.
+
+    12.2 If authentication failed, it populates a prompt page to give
+         customer another chance to input username/password.
+
+    12.3 Currently, we support basic/digest authentication, which decided by
+         your web server.
+
+13. How to add the http repository mirror list
+    1. Create the mirror list file, the format is the same as the output of
+    invoking "smart channel --show", you should make sure the channels/
+    repositories listed in the file are correct:
+    ...
+    [qemux86_64]
+    type = rpm-md
+    priority = 55
+    baseurl = http://10.0.2.2/feeds/rpm/qemux86_64
+
+    [x86_64]
+    type = rpm-md
+    priority = 50
+    baseurl = http://10.0.2.2/feeds/rpm/x86_64
+    ...
+
+    2. Next, place the mirror list file on the web server.
+
+    3. When starting anaconda, choose to add an http repository, input the URL
+       of the mirror list, be sure to select the 'URL is a mirror list' checkbox.
+       Then click the 'ok' button to add the mirror list.
+
+14 PXE with UEFI
+    The main difference between UEFI and non-UEFI on PXE is for
+    non-UEFI we use pxelinux.0 which provided by syslinux package
+    as the PXELinux Boot Loader File; but for UEFI, we have to
+    invoke script grub-mkstandalone which provided by grub-efi
+    to generate the PXELinux Boot Loader File. The following
+    introduces how to generate:
+
+    1. Generate in tftp download dir
+    1.1 Copy kernel and initramfs to tftp download dir
+    $ cp export/images/bzImage /srv/tftpboot
+    $ cp export/images/wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz /srv/tftpboot
+
+    1.2 Creation of a netboot grub config file
+    $ cd /srv/tftpboot
+    $ mkdir -p boot/grub
+    $ vi boot/grub/grub.cfg
+    ----start----
+    menuentry 'boot serial console'{
+        linux /bzImage LABEL=initrd-install ks=http://128.224.162.194/anaconda-ks.cfg console=ttyS0,115200
+        initrd /wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz
+    }
+    ----end----
+
+    1.3 Create a standalone (static) efi image which containing an embedded
+        configuration file, required modules, kernel, initramfs. The
+        grub-mkstandalone and image modules were provided by grub-2.00 which
+        located in bitbake_build/tmp/work/core2-64-wrs-linux/grub-efi/2.00-r2.fix0/grub-2.00/
+
+    $ cd /srv/tftpboot
+
+    $ PATH_TO_PROJECT/bitbake_build/tmp/work/core2-64-wrs-linux/grub-efi/2.00-r2.fix0/grub-2.00/grub-mkstandalone \
+         -d PATH_TO_PROJECT/bitbake_build/tmp/work/core2-64-wrs-linux/grub-efi/2.00-r2.fix0/grub-2.00/grub-core/ \
+         --modules="boot linux ext2 fat serial part_msdos part_gpt normal efi_gop iso9660 search tftp net http" \
+         -O x86_64-efi --output=boot/bootx64-pxe.efi \
+          boot/grub/grub.cfg bzImage wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz
+
+    The 'bootx64-pxe.efi' in /srv/tftpboot/boot is the standalone (static) efi image.
+
+    2. Generate in host (2nd) build project dir
+    2.1 Config PXE_UEFI_GRUB_CONF to add customer's grub config file
+    $ cd PATH_TO_PROJECT
+    $ vim local.conf
+    ----start----
+    PXE_UEFI_GRUB_CONF = "/srv/tftpboot/boot/grub/grub.cfg"
+    ----end----
+    If not edit PXE_UEFI_GRUB_CONF, there is a default grub.cfg
+    in wr-installer/recipes-bsp/grub/files/
+
+    2.2 Execute grub-efi's mkpxeimage task
+    $ make grub-efi.mkpxeimage
+    We should invoke the task after all image built(make fs/all)
+
+    2.3 Copy generated bootx64-pxe.efi to tftp download dir
+    $ cp PATH_TO_PROJECT/export/images/bootx64-pxe.efi /srv/tftpboot/boot
+
+    3. Update the DHCP server config
+    $ vi /etc/dhcp/dhcpd.conf
+    ----start----
+    option space PXE;
+    option PXE.mtftp-ip    code 1 = ip-address;
+    option PXE.mtftp-cport code 2 = unsigned integer 16;
+    option PXE.mtftp-sport code 3 = unsigned integer 16;
+    option PXE.mtftp-tmout code 4 = unsigned integer 8;
+    option PXE.mtftp-delay code 5 = unsigned integer 8;
+    option arch code 93 = unsigned integer 16; # RFC4578
+
+    subnet 128.224.162.0 netmask 255.255.255.0 {
+        range 128.224.162.195 128.224.162.200;
+        option routers 128.224.162.194;
+
+        class "pxeclients" {
+            match if substring (option vendor-class-identifier, 0, 9) = "PXEClient";
+            next-server 128.224.162.194;
+            if option arch = 00:06 {
+                filename "bootia32.efi";
+            } else if option arch = 00:07 {
+                filename "boot/bootx64-pxe.efi";
+            } else {
+                filename "pxelinux.0";
+            }
+        }
+    }
+    ----end----
+
+    4. Restart dhcpd and go start PXE UEFI installation.
+
+15 Download file from http/ftp server to target image
+    Add key in kickstart to support downloading file from http/ftp
+    server to target image:
+    'download --dest=[file://dir/filename|/dir/filename] --src=[http url| ftp url]'
+
+    Here is the example in kickstart file:
+    ---start---
+    download --dest=/etc/rpm/keys/0x100001 --src=http://128.224.162.159/testkey
+    download --dest=file://etc/rpm/keys/0x100002 --src=http://128.224.162.159/testkey2
+    ---end---
+
+    The file be download to target image (/mnt/image/****). For host image,
+    we could make use of "%pre" section with invoking shell to do that)
 
 License
 -------

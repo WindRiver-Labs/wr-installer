@@ -34,7 +34,11 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \
-                   module-init-tools smartpm util-linux efibootmgr \
+                   module-init-tools smartpm util-linux efibootmgr tigervnc \
+                   ca-certificates xfsprogs-fsck xfsprogs-mkfs \
+                   btrfs-tools ntfs-3g iproute2 mdadm shadow chkconfig \
+                   util-linux-swaponoff util-linux-uuidgen \
+                   xrandr glibc-charmaps glibc-localedatas \
                 "
 
 # libreport-python  --removed from RDEPENDS due to: LIN8-850
@@ -42,7 +46,7 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
 # Disabled networkmanager...
 #RDEPENDS_anaconda += "network-manager-applet"
 
-PR = "r1"
+PR = "r2"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
@@ -51,6 +55,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 # searched in the local 'download' directories.
 SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everything/source/SRPMS/anaconda-16.25-1.fc16.src.rpm;extract=anaconda-16.25.tar.bz2 \
            file://smartinstall.py \
+           file://smartquery.py \
            file://wrlinux.py \
            file://rpmextract_header.patch \
            file://driverdisk_header.patch \
@@ -63,13 +68,10 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-install-repo.patch \
            file://anaconda_reboot.patch \
            file://basic-storage-devices-only.patch \
-           file://disable-lvm.patch \
            file://lsb-release.patch \
            file://multilib_policy_best.patch \
            file://disable_upgrade_support.patch \
-           file://hide-lvm-crypt-checkboxes.patch \
            file://ignore-missing-hack.patch \
-           file://disable_customize.patch \
            file://dont_disable_enabled_repos.patch \
            file://remove_g_type_init.patch \
            file://serial_and_vga_always.patch \
@@ -105,9 +107,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://anaconda-mount-run-as-tmpfs.patch \
            file://anaconda-save-log-root.patch \
            file://anaconda-remove-un-verified-options.patch \
-           file://anaconda-only-support-standard-partition.patch \
            file://anaconda-disable-the-partition-encrypt.patch \
-           file://anaconda-disable-lvm-and-raid.patch \
            file://tweak-write-debian-style-net-config-files.patch \
            file://anaconda-livecd.py-remove-symlink.patch \
            file://anaconda-umount-before-mount.patch \
@@ -138,6 +138,25 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://0001-pyanaconda-storage-formats-__init__.py-wait-device-b.patch \
            file://0001-pyanaconda-timezone.py-fix-set-timezone-failed.patch \
            file://anaconda-loader.c-add-missing-include-sys-resource.h.patch \
+           file://anaconda-kickstart-allow-use-existing.patch \
+           file://anaconda-skip-cleardiskssel-with-part-or-logvol.patch \
+           file://text.py-add-textbox-to-ProgressWindow.patch \
+           file://gui.py-add-labels-to-ProgressWindow.patch \
+           file://fix-incorrect-bestDiskLabelType.patch \
+           file://build-initrd-for-lvm.patch \
+           file://0001-Don-t-use-the-rpmdb-to-figure-out-upgrade-target-arc.patch \
+           file://hide-luks-crypt-checkboxes.patch \
+           file://support-authentication-for-kickstart.patch \
+           file://support-package-selection-1.patch \
+           file://support-package-selection-2.patch \
+           file://fix-exception-while-invoking-_anyRepoEnabled.patch \
+           file://task_text.py-add-text-page-to-configure-repository.patch \
+           file://anaconda-delete-environment-TERMCAP.patch \
+           file://task_text.py-check-the-existance-of-repository.patch \
+           file://support-vncquestion-while-text-display.patch \
+           file://execute-sync-explicitly-after-installation-completed.patch \
+           file://list-all-ipaddr-while-start-vnc.patch \
+           file://download-file-from-http-ftp-server-to-tar.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
@@ -174,7 +193,8 @@ do_setupdistro() {
 	rm -f ${S}/pyanaconda/installclasses/*.py
 	rm -f ${S}/pyanaconda/yuminstall.py
 	cp ${WORKDIR}/wrlinux.py ${S}/pyanaconda/installclasses/.
-        cp ${WORKDIR}/smartinstall.py ${S}/pyanaconda/.
+	cp ${WORKDIR}/smartinstall.py ${S}/pyanaconda/.
+	cp ${WORKDIR}/smartquery.py ${S}/pyanaconda/.
 }
 
 # You must populate the install rule
