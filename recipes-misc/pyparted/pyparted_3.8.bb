@@ -22,3 +22,5 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=8ca43cbc842c2336e835926c2166c28b"
 SRC_URI = "https://fedorahosted.org/releases/p/y/pyparted/pyparted-${PV}.tar.gz"
 SRC_URI[md5sum] = "e9cd0c94c71ac17755f71a8e1561eac2"
 SRC_URI[sha256sum] = "c9978380e18fe284dd5b74a5043d259ef8512323fa3c85d08c7a5f3bb9563326"
+
+CLEANBROKEN = "1"
