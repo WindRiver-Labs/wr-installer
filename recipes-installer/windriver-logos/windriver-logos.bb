@@ -6,7 +6,6 @@ SRC_URI = "file://syslinux-splash.png \
            file://splash.png \
            file://anaconda_header.png \
            file://progress_first.png \
-           file://progress_first-lowres.png \
            file://COPYING"
 
 S = "${WORKDIR}"
@@ -22,5 +21,4 @@ do_install() {
     install -m 0755 splash.png ${D}${datadir}/anaconda/pixmaps
     install -m 0755 anaconda_header.png ${D}${datadir}/anaconda/pixmaps
     install -m 0755 progress_first.png ${D}${datadir}/anaconda/pixmaps
-    install -m 0755 progress_first-lowres.png ${D}${datadir}/anaconda/pixmaps
 }
