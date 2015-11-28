@@ -154,6 +154,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://list-all-ipaddr-while-start-vnc.patch \
            file://download-file-from-http-ftp-server-to-tar.patch \
            file://replace-inline-with-static-inline.patch \
+           file://fix-rpmKernelVersionList-failed-since-oe-core-update.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
