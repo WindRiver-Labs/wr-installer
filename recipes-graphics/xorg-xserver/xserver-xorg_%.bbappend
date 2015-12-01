@@ -27,4 +27,6 @@ do_install_append () {
     xargs tar cf - | (cd ${D}${XSERVER_SOURCE_DIR} && tar xf -)
     # SLEDGEHAMMER
     find ${D}${XSERVER_SOURCE_DIR}/hw/xfree86 -name \*.c -delete
+
+    chown -R root:root ${D}${XSERVER_SOURCE_DIR}
 }
