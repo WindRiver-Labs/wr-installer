@@ -47,7 +47,7 @@ DEPENDS += "openssl flex-native bison-native python-distribute-native python-nat
 PACKAGES =+ "${PN}-tests ${PN}-python ${PN}-python-dbg"
 
 FILES_${PN}-tests = "/opt/${PN}-tests/*"
-RDEPENDS_${PN}-tests = "perl"
+RDEPENDS_${PN}-tests = "perl bash"
 RDEPENDS_${PN}-python = "python"
 
 inherit update-rc.d python-dir
@@ -140,6 +140,7 @@ do_install () {
 		${S}/utils/open-isns/tests/server.conf \
 		${D}/opt/${PN}-tests/isns-tests/
 	cp -a ${S}/utils/open-isns/tests/data ${D}/opt/${PN}-tests/isns-tests/
+	chown -R root:root ${D}/opt/${PN}-tests/isns-tests/
 }
 
 pkg_postinst_${PN}() {
