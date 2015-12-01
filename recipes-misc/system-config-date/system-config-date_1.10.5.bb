@@ -35,3 +35,5 @@ PARALLEL_MAKE = ""
 do_install() {
     oe_runmake DESTDIR=${D} install
 }
+
+RDEPENDS_${PN} += "python"
