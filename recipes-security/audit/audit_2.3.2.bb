@@ -75,3 +75,5 @@ do_install_append() {
 	install -D -m 0755 ${S}/../auditd ${D}/etc/init.d/auditd
 	rm -rf ${D}/etc/rc.d
 }
+
+RDEPENDS_auditd += "bash"
