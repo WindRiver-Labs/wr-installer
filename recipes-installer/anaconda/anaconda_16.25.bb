@@ -20,7 +20,7 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    e2fsprogs-resize2fs ntfsprogs xfsprogs btrfs-tools nfs-utils-client \
                    parted dosfstools gzip libarchive lvm2 \
                    squashfs-tools openssh python python-misc python-modules python-dbus \
-                   nspr nss python-nss parted python-pyblock python-pygtk \
+                   nspr nss python-nss parted python-pyblock \
                    cracklib-python system-config-keyboard system-config-keyboard-base \
                    system-config-date pykickstart libnewt-python dmraid lvm2 \
                    python-cryptsetup firstboot python-iniparse libnl1\
