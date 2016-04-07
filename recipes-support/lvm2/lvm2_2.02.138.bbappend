@@ -154,3 +154,5 @@ RDEPENDS_${PN} += "ldd"
 
 SYSTEMD_AUTO_ENABLE = "disable"
 
+INSANE_SKIP_device-mapper-event-dev = "dev-elf"
+INSANE_SKIP_${PN}-dev = "dev-elf"
