@@ -12,8 +12,6 @@ SRC_URI += " \
 	file://wr-dhcp.network \
 	"
 
-PACKAGECONFIG = "xz networkd"
-
 do_install_append() {
 	install -m 0755 ${WORKDIR}/wr-dhcp.network ${D}${sysconfdir}/systemd/network
 
