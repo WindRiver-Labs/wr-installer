@@ -27,17 +27,20 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    dmidecode python-meh libuser-python libuser \
                    libreport-python localedef device-mapper device-mapper-multipath \
                    python-pygobject python-rpm pyparted python-urlgrabber\
-                   gnome-python libgnomecanvas grub usermode \
+                   libgnomecanvas grub usermode \
                    gtk-engine-clearlooks gtk-theme-clearlooks \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \
-                   module-init-tools smartpm util-linux efibootmgr tigervnc \
+                   module-init-tools smartpm util-linux efibootmgr \
                    ca-certificates xfsprogs-fsck xfsprogs-mkfs \
                    btrfs-tools ntfs-3g iproute2 mdadm shadow chkconfig \
                    util-linux-swaponoff util-linux-uuidgen \
                    xrandr glibc-charmaps glibc-localedatas \
                 "
+
+# Comment out RDEPENDS
+# tigervnc
 
 # Disabled networkmanager...
 #RDEPENDS_anaconda += "network-manager-applet"
@@ -155,6 +158,7 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://download-file-from-http-ftp-server-to-tar.patch \
            file://replace-inline-with-static-inline.patch \
            file://fix-rpmKernelVersionList-failed-since-oe-core-update.patch \
+           file://0001-explicitly-disable-loader.patch \
           "
 
 # Here is the checksum attribute for the package's tarball. Leave this empty,
