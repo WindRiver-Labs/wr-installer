@@ -8,8 +8,3 @@ do_configure_prepend() {
 	set -x
 }
 
-do_install_append() {
-	if [ ${prefix}/lib != ${libdir} ]; then
-		mv ${D}${prefix}/lib ${D}${libdir}
-	fi
-}
