@@ -26,7 +26,7 @@ RDEPENDS_anaconda="e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs
                    python-cryptsetup firstboot python-iniparse libnl1\
                    dmidecode python-meh libuser-python libuser \
                    libreport-python localedef device-mapper device-mapper-multipath \
-                   python-pygobject python-rpm pyparted python-urlgrabber\
+                   python-pygobject python-rpm python-pyparted python-urlgrabber\
                    libgnomecanvas grub usermode \
                    gtk-engine-clearlooks gtk-theme-clearlooks \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
