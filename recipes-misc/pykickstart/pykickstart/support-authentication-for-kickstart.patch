@@ -1,7 +1,7 @@
-From f874e0a129a09936711033f26ebbbe7a0df94e2b Mon Sep 17 00:00:00 2001
+From bac6439162c16e27cd55424d9da1ca2038344534 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Wed, 15 Apr 2015 15:44:56 +0800
-Subject: [PATCH] support authentication for kickstart
+Date: Mon, 11 Apr 2016 03:52:27 -0400
+Subject: [PATCH 3/3] support authentication for kickstart
 
 While download kickstart file from web server,
 we support basic/digest authentication.
@@ -18,7 +18,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  2 files changed, 28 insertions(+), 3 deletions(-)
 
 diff --git a/pykickstart/errors.py b/pykickstart/errors.py
-index a234d99..7155573 100644
+index 168c6f8..3cafae8 100644
 --- a/pykickstart/errors.py
 +++ b/pykickstart/errors.py
 @@ -35,6 +35,10 @@ It also exports several exception classes:
@@ -52,19 +52,19 @@ index a234d99..7155573 100644
 +        return self.value
 +
 diff --git a/pykickstart/parser.py b/pykickstart/parser.py
-index a54bf3b..d4d566b 100644
+index f2285d6..deeca44 100644
 --- a/pykickstart/parser.py
 +++ b/pykickstart/parser.py
-@@ -44,7 +44,7 @@ import urlgrabber.grabber as grabber
- from snack import *
+@@ -43,7 +43,7 @@ from snack import *
+ import warnings
  
- import constants
--from errors import KickstartError, KickstartParseError, KickstartValueError, formatErrorMsg
-+from errors import KickstartError, KickstartParseError, KickstartValueError, formatErrorMsg, KickstartAuthError
- from ko import KickstartObject
- from sections import *
- import version
-@@ -676,7 +676,7 @@ class KickstartParser:
+ from pykickstart import constants, version
+-from pykickstart.errors import KickstartError, KickstartParseError, KickstartValueError, formatErrorMsg
++from pykickstart.errors import KickstartError, KickstartParseError, KickstartValueError, formatErrorMsg, KickstartAuthError
+ from pykickstart.ko import KickstartObject
+ from pykickstart.sections import PackageSection, PreScriptSection, PreInstallScriptSection, PostScriptSection, TracebackScriptSection, NullSection
+ 
+@@ -723,7 +723,7 @@ class KickstartParser:
          i = PutBackIterator(s.splitlines(True) + [""])
          self._stateMachine (i)
  
@@ -73,7 +73,7 @@ index a54bf3b..d4d566b 100644
          """Process a kickstart file, given by the filename f."""
          if reset:
              self._reset()
-@@ -701,7 +701,7 @@ class KickstartParser:
+@@ -748,7 +748,7 @@ class KickstartParser:
          i = 0
          while i < 45:
              try:
@@ -82,9 +82,9 @@ index a54bf3b..d4d566b 100644
                  wait_wind.pop()
                  break
              except grabber.URLGrabError, e:
-@@ -712,6 +712,12 @@ class KickstartParser:
+@@ -758,6 +758,12 @@ class KickstartParser:
+                     # Continue the loop
                      i+=1
-                     wait_wind.refresh("Try %s times" % i)
                      sleep(1)
 +                elif e.errno == 14 and e.code == 22 and \
 +                  "401" in e.exception[1]:
@@ -94,7 +94,7 @@ index a54bf3b..d4d566b 100644
 +
                  # Break if other failure
                  else:
-                     wait_wind.pop()
+                     raise KickstartError, formatErrorMsg(0, msg=_("Unable to open input kickstart file: %s") % e.strerror)
 -- 
 1.9.1
 

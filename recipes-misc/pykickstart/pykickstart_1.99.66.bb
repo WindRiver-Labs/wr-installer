@@ -6,19 +6,18 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=8ca43cbc842c2336e835926c2166c28b"
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 DEPENDS = "python"
-RDEPENDS_${PN} = "python"
+RDEPENDS_${PN} = "python libnewt-python"
 
-SRC_URI = "http://mirror.itc.virginia.edu/fedora/releases/16/Everything/source/SRPMS//pykickstart-1.99.4-1.fc16.src.rpm;extract=pykickstart-1.99.4.tar.gz \
-           file://pykickstart-read-ks-for-liveimg.patch \
-           file://pykickstart-import-liveimg.patch \
+S = "${WORKDIR}/git"
+SRC_URI = "git://github.com/rhinstaller/pykickstart.git;protocol=https;branch=rhel7-branch \
            file://parser.py-retry-to-invoke-urlread-with-timeout.patch \
            file://add-status-window-while-retrying-to-fetch-.patch \
            file://support-authentication-for-kickstart.patch \
+           file://tweak-native-language-support.patch \
            "
-SRC_URI[md5sum] = "5d3d07425bc2e6a3e7016d22354a48f8"
-SRC_URI[sha256sum] = "96007ad2cf65597dd92868abf48c3be01463fc2c9d381d8aba4a87f6d17c3060"
+SRCREV = "73c9df14d539f2b59a356d8316675a6b7afbf4ac"
 
-inherit python-dir pythonnative
+inherit pythonnative gettext
 
 export STAGING_INCDIR
 export STAGING_LIBDIR
@@ -31,6 +30,7 @@ FILES_${PN}-doc += "${datadir}/doc/${PN}-${PV}"
 FILES_${PN} += "${bindir} ${PYTHON_SITEPACKAGES_DIR}/pykickstart*"
 
 do_compile() {
+    oe_runmake po-empty
     oe_runmake -C po
 }
 
