@@ -23,7 +23,7 @@ IMAGE_INSTALL = "\
     windriver-logos \
     dhcp-client \
     "
-IMAGE_LINGUAS = "en-us"
+IMAGE_LINGUAS = "en-us en-gb"
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES','systemd', '', 'installer_image_pp;',d)} "
 

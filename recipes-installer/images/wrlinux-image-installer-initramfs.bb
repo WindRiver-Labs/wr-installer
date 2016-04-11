@@ -25,7 +25,7 @@ IMAGE_INSTALL = "\
 "
 
 export IMAGE_BASENAME = "wrlinux-image-installer-initramfs"
-IMAGE_LINGUAS = "en-us"
+IMAGE_LINGUAS = "en-us en-gb"
 
 LICENSE = "MIT"
 
