@@ -13,14 +13,16 @@ LIC_FILES_CHKSUM = "file://LICENCE.TXT;md5=75b02c2872421380bbd47781d2bd75d3"
 
 S = "${WORKDIR}/git"
 
-inherit cmake autotools-brokensep
+inherit autotools cmake
+B = "${S}"
 
-SRCREV = "242fdf0c5a5483910537419a4833c3f725889095"
+SRCREV = "5a727f25990d05c9a1f85457b45d6aed66409cb3"
 
-SRC_URI = "git://github.com/TigerVNC/tigervnc.git \
+SRC_URI = "git://github.com/TigerVNC/tigervnc.git;branch=1.6-branch \
            file://disable_vncviewer.patch \
            file://remove_includedir.patch \
            file://add-fPIC-option-to-COMPILE_FLAGS.patch \
+           file://support-xserver-xorg-1.18.patch \
 "
 
 EXTRA_OECONF = "--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \
@@ -42,7 +44,7 @@ EXTRA_OECONF = "--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \
         --without-xmlto \
         --enable-systemd-logind=no \
         --disable-xinerama \
-" 
+"
 do_configure_append () {
     cp -r ${STAGING_DATADIR}/${MLPREFIX}xserver-xorg-source/* unix/xserver
     sed -i "s:malloc(rgnSize)):(pixman_region16_data_t*)malloc(rgnSize)):g" unix/xserver/include/regionstr.h
@@ -56,7 +58,13 @@ do_configure_append () {
     PACKAGE_VERSION_MAJOR=$(grep 'PACKAGE_VERSION_MAJOR' ${STAGING_DATADIR}//${MLPREFIX}xserver-xorg-source/include/do-not-use-config.h | cut -d\  -f3)
     PACKAGE_VERSION_MINOR=$(grep 'PACKAGE_VERSION_MINOR' ${STAGING_DATADIR}//${MLPREFIX}xserver-xorg-source/include/do-not-use-config.h | cut -d\  -f3)
 
-    patch -p1 -b --suffix .vnc < ../xserver$PACKAGE_VERSION_MAJOR$PACKAGE_VERSION_MINOR.patch
+    xserverpatch="${S}/unix/xserver$PACKAGE_VERSION_MAJOR$PACKAGE_VERSION_MINOR.patch"
+    while [ ! -e $xserverpatch ]; do
+        [ "$PACKAGE_VERSION_MINOR" = "0" ] && break
+        PACKAGE_VERSION_MINOR=`expr $PACKAGE_VERSION_MINOR - 1`
+        xserverpatch="${S}/unix/xserver$PACKAGE_VERSION_MAJOR$PACKAGE_VERSION_MINOR.patch"
+        patch -p1 -b --suffix .vnc < $xserverpatch
+    done
 
     rm -rf aclocal-copy/
     rm -f aclocal.m4
