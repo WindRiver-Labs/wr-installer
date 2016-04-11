@@ -52,6 +52,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://utils-Makefile.am-do-not-compile-dd.patch \
            file://scripts-run-anaconda-replace-usr-bin-bash-with-bin-s.patch \
            file://tweak-native-language-support.patch \
+           file://drop-selinux-module.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
