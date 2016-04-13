@@ -19,7 +19,8 @@ S = "${WORKDIR}/git"
 # Disabled networkmanager...
 DEPENDS += "networkmanager"
 
-RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs \
+RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
+                   e2fsprogs-tune2fs e2fsprogs-resize2fs \
                    ntfsprogs xfsprogs btrfs-tools nfs-utils-client \
                    parted dosfstools gzip libarchive lvm2 \
                    squashfs-tools openssh python python-misc python-modules python-dbus \
@@ -40,10 +41,13 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs 
                    btrfs-tools ntfs-3g iproute2 mdadm shadow chkconfig \
                    util-linux-swaponoff util-linux-uuidgen python-blivet \
                    xrandr glibc-charmaps glibc-localedatas python-ipy \
+                   python-pytz python-langtable libpwquality-python \
+                   python-ntplib libgnomekbd libtimezonemap \
                 "
 
-# Disabled networkmanager...
-#RDEPENDS_anaconda += "network-manager-applet"
+RDEPENDS_${PN} += "networkmanager libnmutil libnmglib libnmglib-vpn \
+                   network-manager-applet \
+"
 
 SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-branch \
            file://smartinstall.py \
