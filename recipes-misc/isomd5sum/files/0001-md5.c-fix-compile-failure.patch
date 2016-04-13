@@ -1,0 +1,36 @@
+From 96b712d24223bee16ab7cfabeafa2366e400a959 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 6 Apr 2016 06:45:03 -0400
+Subject: [PATCH] md5.c: fix compile failure
+
+...
+|md5.c: In function 'MD5_Final':
+|md5.c:160:23: error: argument to 'sizeof' in 'memset' call
+is the same expression as the destination; did you mean to
+dereference it? [-Werror=sizeof-pointer-memaccess]
+|  memset(ctx, 0, sizeof(ctx)); /* In case it's sensitive */
+...
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ md5.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/md5.c b/md5.c
+index a1bdd4a..c2fc3ee 100644
+--- a/md5.c
++++ b/md5.c
+@@ -157,7 +157,7 @@ void MD5_Final(unsigned char digest[16], struct MD5Context *ctx)
+ 	MD5_Transform(ctx->buf, (uint32 *) ctx->in);
+ 	if (ctx->doByteReverse) byteReverse((unsigned char *) ctx->buf, 4);
+ 	memcpy(digest, ctx->buf, 16);
+-	memset(ctx, 0, sizeof(ctx));	/* In case it's sensitive */
++	memset(ctx, 0, sizeof(*ctx));	/* In case it's sensitive */
+ }
+ 
+ #ifndef ASM_MD5
+-- 
+1.9.1
+

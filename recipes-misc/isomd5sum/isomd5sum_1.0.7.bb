@@ -15,7 +15,9 @@ SRC_URI = "http://download.fedoraproject.org/pub/fedora/linux/releases/16/Everyt
            file://unused_variable.patch \
            file://use-prefix.patch \
            file://Change-linking-order-of-lpopt.patch \
-           file://use_ldflags.patch"
+           file://use_ldflags.patch \
+           file://0001-md5.c-fix-compile-failure.patch \
+"
 
 inherit python-dir
 
@@ -37,3 +39,4 @@ SRC_URI[md5sum] = "2e571325c7ca4c40bcc924c9956a190b"
 SRC_URI[sha256sum] = "b50a57402b0e3ba6127fbc1cb277a0c94132851d1763c6c3a15413a518b6cb7d"
 
 BBCLASSEXTEND = "native"
+    python-requests \
