@@ -11,7 +11,6 @@ RDEPENDS_${PN} = "python libnewt-python"
 S = "${WORKDIR}/git"
 SRC_URI = "git://github.com/rhinstaller/pykickstart.git;protocol=https;branch=rhel7-branch \
            file://parser.py-retry-to-invoke-urlread-with-timeout.patch \
-           file://add-status-window-while-retrying-to-fetch-.patch \
            file://support-authentication-for-kickstart.patch \
            file://tweak-native-language-support.patch \
            "

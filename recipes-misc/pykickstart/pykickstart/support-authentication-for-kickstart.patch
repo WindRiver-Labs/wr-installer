@@ -1,7 +1,7 @@
-From bac6439162c16e27cd55424d9da1ca2038344534 Mon Sep 17 00:00:00 2001
+From 9c66272049f17d80f7fc6d0dbe1daec42949d497 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Mon, 11 Apr 2016 03:52:27 -0400
-Subject: [PATCH 3/3] support authentication for kickstart
+Date: Thu, 14 Apr 2016 01:31:30 -0400
+Subject: [PATCH] support authentication for kickstart
 
 While download kickstart file from web server,
 we support basic/digest authentication.
@@ -14,8 +14,8 @@ Upstream-Status: inappropriate [wr-installer specific]
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
  pykickstart/errors.py | 19 +++++++++++++++++++
- pykickstart/parser.py | 12 +++++++++---
- 2 files changed, 28 insertions(+), 3 deletions(-)
+ pykickstart/parser.py | 11 ++++++++---
+ 2 files changed, 27 insertions(+), 3 deletions(-)
 
 diff --git a/pykickstart/errors.py b/pykickstart/errors.py
 index 168c6f8..3cafae8 100644
@@ -52,10 +52,10 @@ index 168c6f8..3cafae8 100644
 +        return self.value
 +
 diff --git a/pykickstart/parser.py b/pykickstart/parser.py
-index f2285d6..deeca44 100644
+index 5d1dfdd..e0f4bc9 100644
 --- a/pykickstart/parser.py
 +++ b/pykickstart/parser.py
-@@ -43,7 +43,7 @@ from snack import *
+@@ -42,7 +42,7 @@ import urlgrabber.grabber as grabber
  import warnings
  
  from pykickstart import constants, version
@@ -64,7 +64,7 @@ index f2285d6..deeca44 100644
  from pykickstart.ko import KickstartObject
  from pykickstart.sections import PackageSection, PreScriptSection, PreInstallScriptSection, PostScriptSection, TracebackScriptSection, NullSection
  
-@@ -723,7 +723,7 @@ class KickstartParser:
+@@ -722,7 +722,7 @@ class KickstartParser:
          i = PutBackIterator(s.splitlines(True) + [""])
          self._stateMachine (i)
  
@@ -73,22 +73,21 @@ index f2285d6..deeca44 100644
          """Process a kickstart file, given by the filename f."""
          if reset:
              self._reset()
-@@ -748,7 +748,7 @@ class KickstartParser:
+@@ -746,7 +746,7 @@ class KickstartParser:
          i = 0
          while i < 45:
              try:
 -                s = urlread(f, timeout=2)
 +                s = urlread(f, timeout=2, username=username, password=password)
-                 wait_wind.pop()
                  break
              except grabber.URLGrabError, e:
-@@ -758,6 +758,12 @@ class KickstartParser:
+                 # Continue while timeout or couldn't connect
+@@ -755,6 +755,11 @@ class KickstartParser:
                      # Continue the loop
                      i+=1
                      sleep(1)
 +                elif e.errno == 14 and e.code == 22 and \
 +                  "401" in e.exception[1]:
-+                    wait_wind.pop()
 +                    raise KickstartAuthError, formatErrorMsg(0, msg=_("Unable to download kickstart file: %s") % e.strerror)
 +                    break
 +
