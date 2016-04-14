@@ -1,0 +1,134 @@
+From cac8b479c497c6086c514981330b3a9d8515b7e7 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 28 Apr 2016 05:38:42 -0400
+Subject: [PATCH 15/22] tweak detect kernel version
+
+According kernel layout in oe-core, tweak the detection
+rather than using redhat's.
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/bootloader.py         | 26 ++++++++++++++++++--------
+ pyanaconda/packaging/__init__.py | 38 +++++++++-----------------------------
+ 2 files changed, 27 insertions(+), 37 deletions(-)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index 7feb08e..efcff4e 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -2332,13 +2332,22 @@ def get_bootloader():
+ 
+ def writeSysconfigKernel(storage, version, instClass):
+     # get the name of the default kernel package based on the version
+-    kernel_basename = "vmlinuz-" + version
+-    kernel_file = "/boot/%s" % kernel_basename
+-    if not os.path.isfile(iutil.getSysroot() + kernel_file):
+-        kernel_file = "/boot/efi/EFI/%s/%s" % (instClass.efi_dir, kernel_basename)
+-        if not os.path.isfile(iutil.getSysroot() + kernel_file):
+-            log.error("failed to recreate path to default kernel image")
+-            return
++    for kernel_basename in ["vmlinux", "bzImage"]:
++        kernel_file = "/boot/%s" % kernel_basename
++        if os.path.isfile(iutil.getSysroot() + kernel_file):
++            kernel_file = os.path.realpath(iutil.getSysroot() + kernel_file)
++            break
++        else:
++            kernel_file = "/boot/efi/EFI/%s/%s" % (instClass.efi_dir, kernel_basename)
++            if os.path.isfile(iutil.getSysroot() + kernel_file):
++                kernel_file = os.path.realpath(iutil.getSysroot() + kernel_file)
++                break
++
++        kernel_file = None
++
++    if kernel_file is None:
++        log.error("failed to recreate path to default kernel image")
++        return
+ 
+     try:
+         import rpm
+@@ -2346,6 +2355,7 @@ def writeSysconfigKernel(storage, version, instClass):
+         log.error("failed to import rpm python module")
+         return
+ 
++    log.debug("kernel_file %s" % kernel_file)
+     ts = rpm.TransactionSet(iutil.getSysroot())
+     mi = ts.dbMatch('basenames', kernel_file)
+     try:
+@@ -2415,7 +2425,7 @@ def writeBootLoader(storage, payload, instClass, ksdata):
+         return
+ 
+     # get a list of installed kernel packages
+-    kernel_versions = payload.kernelVersionList + payload.rescueKernelList
++    kernel_versions = payload.kernelVersionList
+     if not kernel_versions:
+         log.warning("no kernel was installed -- boot loader config unchanged")
+         return
+diff --git a/pyanaconda/packaging/__init__.py b/pyanaconda/packaging/__init__.py
+index f31c916..dc96c4c 100644
+--- a/pyanaconda/packaging/__init__.py
++++ b/pyanaconda/packaging/__init__.py
+@@ -356,18 +356,14 @@ class Payload(object):
+         self.data.packages.excludedList.append(pkgid)
+ 
+     def _updateKernelVersionList(self):
+-        try:
+-            import yum
+-        except ImportError:
+-            cmpfunc = cmp
+-        else:
+-            cmpfunc = yum.rpmUtils.miscutils.compareVerOnly
++        for kernel in ["vmlinux", "bzImage"]:
++            files = glob(iutil.getSysroot() + "/boot/%s-*" % kernel)
++            files.extend(glob(iutil.getSysroot() + "/boot/efi/EFI/%s/%s-*" % (self.instclass.efi_dir, kernel)))
+ 
+-        files = glob(iutil.getSysroot() + "/boot/vmlinuz-*")
+-        files.extend(glob(iutil.getSysroot() + "/boot/efi/EFI/%s/vmlinuz-*" % self.instclass.efi_dir))
+-
+-        versions = sorted((f.split("/")[-1][8:] for f in files if os.path.isfile(f)), cmp=cmpfunc)
+-        log.debug("kernel versions: %s", versions)
++            versions = sorted((f.split("/")[-1][8:] for f in files if os.path.isfile(f)))
++            if versions:
++                log.info("kernel versions: %s", versions)
++                break
+ 
+         # Store regular and rescue kernels separately
+         self._kernelVersionList = (
+@@ -792,23 +788,7 @@ class PackagePayload(Payload):
+ 
+     @property
+     def kernelPackages(self):
+-        if "kernel" in self.data.packages.excludedList:
+-            return []
+-
+-        kernels = ["kernel"]
+-
+-        if isys.isPaeAvailable():
+-            kernels.insert(0, "kernel-PAE")
+-
+-        # most ARM systems use platform-specific kernels
+-        if blivet.arch.isARM():
+-            if platform.armMachine is not None:
+-                kernels = ["kernel-%s" % platform.armMachine]
+-
+-            if isys.isLpaeAvailable():
+-                kernels.insert(0, "kernel-lpae")
+-
+-        return kernels
++        return ["kernel-image"]
+ 
+     @property
+     def rpmMacros(self):
+@@ -1007,7 +987,7 @@ class PackagePayload(Payload):
+             sslverify = not (method.noverifyssl or flags.noverifyssl)
+         elif method.method == "cdrom" or (checkmount and not method.method):
+             # Did dracut leave the DVD or NFS mounted for us?
+-            device = blivet.util.get_mount_device(DRACUT_REPODIR)
++            device = blivet.util.get_mount_device(os.path.dirname(DRACUT_REPODIR))
+             # Only look at the dracut mount if we don't already have a cdrom
+             if device and not self.install_device:
+                 self.install_device = storage.devicetree.getDeviceByPath(device)
+-- 
+2.8.1
+

@@ -1,0 +1,48 @@
+From 709bb29aeffe0175da292d90cafacc5a90d7c231 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 5 May 2016 22:49:43 -0400
+Subject: [PATCH 19/22] disable help button
+
+WRLinux does not support help button
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/__init__.py        | 4 +++-
+ pyanaconda/ui/gui/spokes/__init__.py | 4 ++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/pyanaconda/ui/gui/__init__.py b/pyanaconda/ui/gui/__init__.py
+index 35fc54c..6ad3612 100644
+--- a/pyanaconda/ui/gui/__init__.py
++++ b/pyanaconda/ui/gui/__init__.py
+@@ -770,7 +770,9 @@ class GraphicalUserInterface(UserInterface):
+ 
+         # Use connect_after so classes can add actions before we change screens
+         obj.window.connect_after("continue-clicked", self._on_continue_clicked)
+-        obj.window.connect_after("help-button-clicked", self._on_help_clicked, obj)
++
++        # WRLinux does not support help button
++        #obj.window.connect_after("help-button-clicked", self._on_help_clicked, obj)
+         obj.window.connect_after("quit-clicked", self._on_quit_clicked)
+ 
+         return obj
+diff --git a/pyanaconda/ui/gui/spokes/__init__.py b/pyanaconda/ui/gui/spokes/__init__.py
+index 17866ee..f61aed3 100644
+--- a/pyanaconda/ui/gui/spokes/__init__.py
++++ b/pyanaconda/ui/gui/spokes/__init__.py
+@@ -54,8 +54,8 @@ class NormalSpoke(GUIObject, common.NormalSpoke):
+         GUIObject.__init__(self, data)
+         common.NormalSpoke.__init__(self, storage, payload, instclass)
+ 
+-        # Add a help handler
+-        self.window.connect_after("help-button-clicked", self._on_help_clicked)
++        # WRLinux does not support help button
++        #self.window.connect_after("help-button-clicked", self._on_help_clicked)
+ 
+     def _on_help_clicked(self, window):
+         # the help button has been clicked, start the yelp viewer with
+-- 
+2.8.1
+

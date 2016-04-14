@@ -51,13 +51,30 @@ RDEPENDS_${PN} += "networkmanager libnmutil libnmglib libnmglib-vpn \
 "
 
 SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-branch \
-           file://smartinstall.py \
+           file://smartpayload.py \
            file://wrlinux.py \
-           file://widgets-Makefile.am-do-not-compile-doc.patch \
-           file://utils-Makefile.am-do-not-compile-dd.patch \
-           file://scripts-run-anaconda-replace-usr-bin-bash-with-bin-s.patch \
-           file://tweak-native-language-support.patch \
-           file://drop-selinux-module.patch \
+           file://0001-tweak-native-language-support.patch \
+           file://0002-scripts-run-anaconda-replace-usr-bin-bash-with-bin-s.patch \
+           file://0003-widgets-Makefile.am-do-not-compile-doc.patch \
+           file://0004-utils-Makefile.am-do-not-compile-dd.patch \
+           file://0005-pyanaconda-flags.py-drop-selinux-module.patch \
+           file://0006-geoloc.py-support-https.patch \
+           file://0007-comment-out-Keybinder.patch \
+           file://0008-support-en_us-and-en_gb-only.patch \
+           file://0009-anaconda-disable-ntp.patch \
+           file://0010-tweak-for-testing.patch \
+           file://0011-tweak-auditd-invoking-dir.patch \
+           file://0012-use-png-icon-to-replace-svg-icon.patch \
+           file://0013-improve-thread-monitor.patch \
+           file://0014-bootloader.py-Change-grub2-settings-to-match-oe-core.patch \
+           file://0015-tweak-detect-kernel-version.patch \
+           file://0016-tweak-grub-config-file-for-WRLinux.patch \
+           file://0017-set-plain-as-default-auto-partition.patch \
+           file://0018-kickstart-disable-Authconfig-AutoPart-Timezone.patch \
+           file://0019-disable-help-button.patch \
+           file://0020-disable-non-implemented-functions.patch \
+           file://0021-do-not-support-spinner.patch \
+           file://0022-disable-geoloc-by-default.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"

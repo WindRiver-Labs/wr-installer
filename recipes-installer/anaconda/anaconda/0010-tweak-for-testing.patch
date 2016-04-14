@@ -1,0 +1,41 @@
+From ed90397119848ba2cd80985467c102ba0f4fa285 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 13 Apr 2016 23:15:58 -0400
+Subject: [PATCH 10/22] tweak for testing
+
+- use terminal vt7 to display X
+
+- disable startSpiceVDAgent
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ anaconda | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/anaconda b/anaconda
+index 773cc72..d682a82 100755
+--- a/anaconda
++++ b/anaconda
+@@ -120,7 +120,7 @@ def startX11():
+ 
+     # Start Xorg and wait for it become ready
+     iutil.startX(["Xorg", "-br", "-logfile", "/tmp/X.log",
+-                  ":%s" % constants.X_DISPLAY_NUMBER, "vt6", "-s", "1440", "-ac",
++                  ":%s" % constants.X_DISPLAY_NUMBER, "vt7", "-s", "1440", "-ac",
+                   "-nolisten", "tcp", "-dpi", "96",
+                   "-noreset"], output_redirect=xfd)
+ 
+@@ -152,7 +152,7 @@ def doExtraX11Actions(runres):
+ 
+     set_x_resolution(runres)
+ 
+-    startSpiceVDAgent()
++    #startSpiceVDAgent()
+ 
+ def setupPythonUpdates():
+     from distutils.sysconfig import get_python_lib
+-- 
+2.8.1
+

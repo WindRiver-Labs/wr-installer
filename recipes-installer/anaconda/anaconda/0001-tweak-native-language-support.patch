@@ -1,11 +1,11 @@
-From 774d09f4f08f971fc29c57ada6649277459220ab Mon Sep 17 00:00:00 2001
+From 5ab0f9a8b00a17693f44de25f6415147ab06281b Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Sun, 10 Apr 2016 04:25:56 -0400
-Subject: [PATCH] tweak native language support
+Subject: [PATCH 01/22] tweak native language support
 
-Only support en_GB.
+Only support en_GB, it is yocto compliance
 
-Upstream-Status: Inappropriate[wrlinux specific]
+Upstream-Status: Inappropriate [wrlinux specific]
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
@@ -35,5 +35,5 @@ index fe6a91f..277f3d1 100644
 -af am ar as ast be bg bn bn_IN bs ca cs cy da de de_CH el en_GB es et eu fa fi fr gl gu hi hr hu ia id ilo is it ja ka kk kn ko lt lv mai mk ml mr ms nb ne nl nso or pa pl pt pt_BR ro ru si sk sl sq sr sr@latin sv ta te tg th tr uk ur vi zh_CN zh_TW zu
 +en_GB
 -- 
-1.9.1
+2.8.1
 

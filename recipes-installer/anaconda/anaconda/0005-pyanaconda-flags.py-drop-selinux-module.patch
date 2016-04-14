@@ -1,7 +1,7 @@
-From 8043907d74827537109a782d4813a6e4a7a8dfbb Mon Sep 17 00:00:00 2001
+From d95e7a1b9c744eb224a946a432e83a19190294c2 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Mon, 11 Apr 2016 05:40:06 -0400
-Subject: [PATCH] pyanaconda/flags.py: drop selinux module
+Subject: [PATCH 05/22] pyanaconda/flags.py: drop selinux module
 
 And we do not use selinux module for wrlinux, so drop it.
 
@@ -14,26 +14,27 @@ Date:   Wed Aug 10 13:08:26 2011 -0400
     Remove as many of the /selinux path hardcodings as possible (#729563).
 ...
 
-Upstream-Status: Inappropriate <wrlinux specific>
+Upstream-Status: Inappropriate [wrlinux specific]
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
- pyanaconda/flags.py | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ pyanaconda/flags.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/pyanaconda/flags.py b/pyanaconda/flags.py
-index ac774ed..8ba62d9 100644
+index ac774ed..1f94a5c 100644
 --- a/pyanaconda/flags.py
 +++ b/pyanaconda/flags.py
-@@ -17,7 +17,6 @@
+@@ -17,7 +17,7 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
  
 -import selinux
++import os
  import shlex
  import glob
  from pyanaconda.constants import SELINUX_DEFAULT, CMDLINE_APPEND
-@@ -86,7 +85,7 @@ class Flags(object):
+@@ -86,7 +86,7 @@ class Flags(object):
                    "nombr", "gpt"):
              self.set_cmdline_bool(f)
  
@@ -43,5 +44,5 @@ index ac774ed..8ba62d9 100644
  
  cmdline_files = ['/proc/cmdline', '/run/install/cmdline',
 -- 
-1.9.1
+2.8.1
 

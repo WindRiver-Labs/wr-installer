@@ -1,0 +1,46 @@
+From 1327eafc5750006064538e54bf514b064beb1f8f Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 14 Apr 2016 04:46:50 -0400
+Subject: [PATCH 07/22] comment out Keybinder
+
+It caused run time failed:
+...
+| /usr/lib64/python2.7/site-packages/pyanaconda/ui/gui/__init__.py:156:
+Warning: cannot register existing type 'GdkDisplay'
+|  Keybinder.init()
+...
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/__init__.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/pyanaconda/ui/gui/__init__.py b/pyanaconda/ui/gui/__init__.py
+index 76d025b..35fc54c 100644
+--- a/pyanaconda/ui/gui/__init__.py
++++ b/pyanaconda/ui/gui/__init__.py
+@@ -23,7 +23,7 @@ import meh.ui.gui
+ 
+ from contextlib import contextmanager
+ 
+-from gi.repository import Gdk, Gtk, AnacondaWidgets, Keybinder, GdkPixbuf, GLib, GObject
++from gi.repository import Gdk, Gtk, AnacondaWidgets, GdkPixbuf, GLib, GObject
+ 
+ from pyanaconda.i18n import _
+ from pyanaconda.constants import IPMI_ABORTED
+@@ -153,8 +153,8 @@ class GUIObject(common.UIObject):
+         self.builder.connect_signals(self)
+ 
+         # Keybinder from GI needs to be initialized before use
+-        Keybinder.init()
+-        Keybinder.bind("<Shift>Print", self._handlePrntScreen, [])
++        #Keybinder.init()
++        #Keybinder.bind("<Shift>Print", self._handlePrntScreen, [])
+ 
+         self._automaticEntry = False
+         self._autostepRunning = False
+-- 
+2.8.1
+
