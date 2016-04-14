@@ -11,6 +11,8 @@ B = "${S}"
 SRCREV = "de40764141a7624e95ea9b109466bfe464cbfcdc"
 PV = "0.61.15.41+git${SRCPV}"
 SRC_URI = "git://github.com/rhinstaller/blivet;branch=rhel7-branch \
+           file://0001-comment-out-selinux.patch \
+           file://0002-run_program-support-timeout.patch \
 "
 
 inherit setuptools pythonnative
