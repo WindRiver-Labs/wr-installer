@@ -43,6 +43,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    xrandr glibc-charmaps glibc-localedatas python-ipy \
                    python-pytz python-langtable libpwquality-python \
                    python-ntplib libgnomekbd libtimezonemap \
+                   procps python-prctl \
                 "
 
 RDEPENDS_${PN} += "networkmanager libnmutil libnmglib libnmglib-vpn \
