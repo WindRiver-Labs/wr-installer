@@ -16,6 +16,13 @@ INSTALLER_CONFDIR = "${IMAGE_ROOTFS}/installer-config"
 KICKSTART_FILE ?= ""
 WRL_INSTALLER_CONF ?= ""
 
+build_iso_prepend() {
+	install -d ${ISODIR}
+	ln -snf /.discinfo ${ISODIR}/.discinfo
+	ln -snf /.buildstamp ${ISODIR}/.buildstamp
+	ln -snf /Packages ${ISODIR}/Packages
+}
+
 # Code below is copied and adapted from package_rpm.bbclass implementation
 wrl_installer_setup_local_smart() {
 
