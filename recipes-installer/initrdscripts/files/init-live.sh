@@ -88,11 +88,9 @@ boot_live_root() {
     mkdir -p  ${ROOT_MOUNT}/media/realroot
     mount -n --move "/run/media/${ROOT_DISK}" ${ROOT_MOUNT}/media/realroot
 
-    # Move the mount points of some filesystems over to
-    # the corresponding directories under the real root filesystem.
+    # Umount other media for anaconda
     for dir in `awk '/\/dev.* \/run\/media/{print $2}' /proc/mounts`; do
-        mkdir -p  ${ROOT_MOUNT}/media/${dir##*/}
-        mount -n --move $dir ${ROOT_MOUNT}/media/${dir##*/}
+        umount $dir
     done
     mount -n --move /proc ${ROOT_MOUNT}/proc
     mount -n --move /sys ${ROOT_MOUNT}/sys
