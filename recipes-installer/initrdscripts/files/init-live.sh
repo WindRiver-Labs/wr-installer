@@ -2,12 +2,11 @@
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
-ROOT_MOUNT="/rootfs/"
+ROOT_MOUNT="/rootfs"
 ROOT_IMAGE="rootfs.img"
 MOUNT="/bin/mount"
 UMOUNT="/bin/umount"
 ISOLINUX=""
-init_bin="/sbin/init"
 
 ROOT_DISK=""
 
@@ -102,7 +101,7 @@ boot_live_root() {
     cd $ROOT_MOUNT
 
     # busybox switch_root supports -c option
-    exec switch_root $ROOT_MOUNT /sbin/init $CMDLINE ||
+    exec switch_root -c /dev/console $ROOT_MOUNT /sbin/init $CMDLINE ||
         fatal "Couldn't switch_root, dropping to shell"
 }
 
@@ -136,6 +135,7 @@ case $label in
     [ -x ${init_bin} ] && exec ${init_bin}
     ;;
 esac
+
 
 echo "Waiting for removable media..."
 C=0
@@ -191,8 +191,8 @@ mount_and_boot() {
 
     # determine which unification filesystem to use
     union_fs_type=""
-    if grep -q -w "overlayfs" /proc/filesystems; then
-	union_fs_type="overlayfs"
+    if grep -q -w "overlay" /proc/filesystems; then
+	union_fs_type="overlay"
     elif grep -q -w "aufs" /proc/filesystems; then
 	union_fs_type="aufs"
     else
@@ -201,14 +201,15 @@ mount_and_boot() {
 
     # make a union mount if possible
     case $union_fs_type in
-	"overlayfs")
+	"overlay")
 	    mkdir -p /rootfs.ro /rootfs.rw
 	    if ! mount -n --move $ROOT_MOUNT /rootfs.ro; then
 		rm -rf /rootfs.ro /rootfs.rw
 		fatal "Could not move rootfs mount point"
 	    else
 		mount -t tmpfs -o rw,noatime,mode=755 tmpfs /rootfs.rw
-		mount -t overlayfs -o "lowerdir=/rootfs.ro,upperdir=/rootfs.rw" overlayfs $ROOT_MOUNT
+		mkdir -p /rootfs.rw/upperdir /rootfs.rw/work
+		mount -t overlay overlay -o "lowerdir=/rootfs.ro,upperdir=/rootfs.rw/upperdir,workdir=/rootfs.rw/work" $ROOT_MOUNT
 		mkdir -p $ROOT_MOUNT/rootfs.ro $ROOT_MOUNT/rootfs.rw
 		mount --move /rootfs.ro $ROOT_MOUNT/rootfs.ro
 		mount --move /rootfs.rw $ROOT_MOUNT/rootfs.rw
@@ -236,11 +237,7 @@ mount_and_boot() {
     boot_live_root
 }
 
-case $label in
-    boot)
-	mount_and_boot
-	;;
-    install|install-efi)
+if [ "$label" != "boot" -a -f $label.sh ] ; then
 	if [ -f /run/media/$i/$ISOLINUX/$ROOT_IMAGE ] ; then
 	    ./$label.sh $i/$ISOLINUX $ROOT_IMAGE $video_mode $vga_mode $console_params
 	else
@@ -248,10 +245,8 @@ case $label in
 	fi
 
 	# If we're getting here, we failed...
-	fatal "Installation image failed"
-	;;
-    *)
-	# Not sure what boot label is provided.  Try to boot to avoid locking up.
-	mount_and_boot
-	;;
-esac
+	fatal "Target $label failed"
+fi
+
+mount_and_boot
+
