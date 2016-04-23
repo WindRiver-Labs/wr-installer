@@ -53,6 +53,7 @@ FILES_${PN} = "${sbindir}/fsadm \
         ${sbindir}/lvmconf \
         ${sbindir}/build_lvm_initramfs.sh \
         ${sbindir}/blkdeactivate \
+        ${sbindir}/dmstats \
         ${sbindir}/lvmconfig \
         ${sbindir}/lvmetad \
         ${mandir}/man5/lvm.conf.5.gz \
