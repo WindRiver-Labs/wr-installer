@@ -153,7 +153,7 @@ FILES_device-mapper-event-dbg = "${libdir}/device-mapper/.debug"
 DEPENDS += "udev"
 RDEPENDS_${PN} += "ldd"
 
-SYSTEMD_AUTO_ENABLE = "disable"
+SYSTEMD_AUTO_ENABLE = "enable"
 
 INSANE_SKIP_device-mapper-event-dev = "dev-elf"
 INSANE_SKIP_${PN}-dev = "dev-elf"
