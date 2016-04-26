@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 DEPENDS = "e2fsprogs gettext intltool libarchive virtual/libx11 libnl1 \
            pango python rpm slang zlib dbus iscsi-initiator-utils audit \
-           isomd5sum lvm2 system-config-keyboard-native libuser util-linux \
+           lvm2 system-config-keyboard-native libuser util-linux \
            libnewt libxcomposite gtk+ curl libarchive"
 
 DEPENDS += "libxklavier glade \
@@ -37,7 +37,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \
                    module-init-tools smartpm util-linux efibootmgr \
-                   ca-certificates xfsprogs-fsck xfsprogs-mkfs \
+                   ca-certificates xfsprogs-fsck xfsprogs-mkfs isomd5sum \
                    btrfs-tools ntfs-3g iproute2 mdadm shadow chkconfig \
                    util-linux-swaponoff util-linux-uuidgen python-blivet \
                    xrandr glibc-charmaps glibc-localedatas python-ipy \

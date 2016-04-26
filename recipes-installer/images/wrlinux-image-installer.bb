@@ -11,6 +11,9 @@ inherit wrlinux-image
 
 INITRD_IMAGE = "wrlinux-image-installer-initramfs"
 
+DEPENDS += "isomd5sum-native \
+"
+
 # We override what gets set in core-image.bbclass
 IMAGE_INSTALL = "\
     packagegroup-wr-boot \
