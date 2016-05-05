@@ -87,9 +87,6 @@ do_compile_prepend() {
 
 addtask do_setupdistro after do_patch before do_configure
 do_setupdistro() {
-	#rm -f ${S}/pyanaconda/installclasses/*.py
-	#rm -f ${S}/pyanaconda/yuminstall.py
-	cp ${WORKDIR}/wrlinux.py ${S}/pyanaconda/installclasses/.
-	cp ${WORKDIR}/smartinstall.py ${S}/pyanaconda/.
+	cp ${WORKDIR}/wrlinux.py ${S}/pyanaconda/installclasses/
 }
 
