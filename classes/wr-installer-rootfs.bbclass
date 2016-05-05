@@ -217,6 +217,10 @@ wrl_installer_copy_local_repos() {
         echo "Copy rpms from target build to installer image."
         mkdir -p ${IMAGE_ROOTFS}/Packages.$prj_name
 
+        : > ${IMAGE_ROOTFS}/Packages.$prj_name/.treeinfo
+        echo "[general]" >> ${IMAGE_ROOTFS}/Packages.$prj_name/.treeinfo
+        echo "version = ${DISTRO_VERSION}" >> ${IMAGE_ROOTFS}/Packages.$prj_name/.treeinfo
+
         # Determine the max channel priority
         channel_priority=5
         for pt in $installer_target_archs ; do
