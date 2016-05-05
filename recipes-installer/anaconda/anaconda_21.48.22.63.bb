@@ -88,5 +88,6 @@ do_compile_prepend() {
 addtask do_setupdistro after do_patch before do_configure
 do_setupdistro() {
 	cp ${WORKDIR}/wrlinux.py ${S}/pyanaconda/installclasses/
+	cp ${WORKDIR}/smartpayload.py ${S}/pyanaconda/packaging/
 }
 
