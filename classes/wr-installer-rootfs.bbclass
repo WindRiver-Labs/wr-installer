@@ -342,6 +342,7 @@ wrl_installer_get_count() {
     echo $sum
 }
 
+wrl_installer[vardepsexclude] = "DATETIME"
 wrl_installer() {
     cat >${IMAGE_ROOTFS}/.discinfo <<_EOF
 ${DATETIME}
