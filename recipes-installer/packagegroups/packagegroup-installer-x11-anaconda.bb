@@ -42,13 +42,12 @@ RDEPENDS_packagegroup-installer-x11-anaconda = "\
     leafpad \
     ${FILEMANAGER} \
     settings-daemon \
-    xcursor-transparent-theme \
     xrandr \
     x11vnc \
     libsdl \
     metacity \
     gnome-themes \
-    gnome-icon-theme \
+    adwaita-icon-theme \
     pango \
     pango-modules \
     gtk-engine-clearlooks \
