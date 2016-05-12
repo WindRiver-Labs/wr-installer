@@ -71,7 +71,6 @@ for x in $CMDLINE; do
             resolution="${x#resolution=}"
             ;;
         serial|console=*)
-            serial=1
             textinst=1
             ;;
         syslog=*)
@@ -179,7 +178,7 @@ FOE
            echo "$vncpassword" > /tmp/vncpassword.dat
        fi
 
-       for OPTIONS in vnc headless usefbx mpath nompath dmraid nodmraid serial rescue cmdline; do
+       for OPTIONS in vnc headless usefbx mpath nompath dmraid nodmraid rescue cmdline; do
            if [ -n "${!OPTIONS}" ]; then
                anaconda_opts="$anaconda_opts --$OPTIONS"
            fi
