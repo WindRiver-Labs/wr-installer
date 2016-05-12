@@ -1,0 +1,63 @@
+From 86bf6f1034b915fa1710454bb7c5f49dfe96b96b Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 11 May 2016 05:35:00 -0400
+Subject: [PATCH] support UEFI boot
+
+- tweak grub efi package name based on oe-core
+
+- tweak efi_dir according to oe-core's EFI layout
+
+- revert grub.conf generation on the console
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/bootloader.py | 19 +++++++------------
+ 1 file changed, 7 insertions(+), 12 deletions(-)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index d9df6c4..54d7903 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -1502,17 +1502,12 @@ class GRUB2(GRUB):
+         defaults.write("GRUB_DEFAULT=saved\n")
+         defaults.write("GRUB_DISABLE_SUBMENU=true\n")
+         # Original
+-        #if self.console and self.has_serial_console:
+-        #    defaults.write("GRUB_TERMINAL=\"serial console\"\n")
+-        #    defaults.write("GRUB_SERIAL_COMMAND=\"%s\"\n" % self.serial_command)
+-        #else:
+-        #    defaults.write("GRUB_TERMINAL_OUTPUT=\"%s\"\n" % self.terminal_type)
++        if self.console and self.has_serial_console:
++            defaults.write("GRUB_TERMINAL=\"serial console\"\n")
++            defaults.write("GRUB_SERIAL_COMMAND=\"%s\"\n" % self.serial_command)
++        else:
++            defaults.write("GRUB_TERMINAL_OUTPUT=\"%s\"\n" % self.terminal_type)
+         # End Original
+-        # Force serial and vga
+-        defaults.write("GRUB_TERMINAL_OUTPUT=\"console serial\"\n")
+-        defaults.write("GRUB_TERMINAL_INPUT=\"console serial\"\n")
+-        defaults.write("GRUB_SERIAL_COMMAND=\"serial --unit=0 --speed 115200\"\n")
+-        # EndForce serial and vga
+ 
+         # this is going to cause problems for systems containing multiple
+         # linux installations or even multiple boot entries with different
+@@ -1692,12 +1687,12 @@ class GRUB2(GRUB):
+         return ret
+ 
+ class EFIGRUB(GRUB2):
+-    packages = ["grub2-efi", "efibootmgr", "shim"]
++    packages = ["grub-efi", "efibootmgr"]
+     can_dual_boot = False
+     stage2_is_valid_stage1 = False
+     stage2_bootable = False
+ 
+-    _efi_binary = "\\shim.efi"
++    _efi_binary = "\\boot*.efi"
+ 
+     @property
+     def _config_dir(self):
+-- 
+2.8.1
+

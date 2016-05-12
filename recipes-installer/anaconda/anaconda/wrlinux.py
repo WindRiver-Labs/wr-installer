@@ -45,7 +45,7 @@ class WRLinuxBaseInstallClass(BaseInstallClass):
 
     _l10n_domain = "comps"
 
-    efi_dir = ""
+    efi_dir = "BOOT"
 
     def configure(self, anaconda):
         BaseInstallClass.configure(self, anaconda)

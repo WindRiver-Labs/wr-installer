@@ -75,6 +75,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0020-disable-non-implemented-functions.patch \
            file://0021-do-not-support-spinner.patch \
            file://0022-disable-geoloc-by-default.patch \
+           file://0023-support-UEFI-boot.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
