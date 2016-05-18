@@ -323,16 +323,11 @@ fi
         # Setup repository
         for localpath in ["/mnt/install/source", "/mnt/install/cdimage", "/mnt/install/isodir", ""]:
             if os.path.isdir("%s/Packages" % localpath) and os.access("%s/Packages/.feedpriority" % localpath, os.R_OK):
-                f = open("%s/Packages/.feedpriority" % localpath)
-                for line in f:
-                    (priority, feed) = line.split()
-                    if os.path.isdir("%s/Packages/%s/repodata" % (localpath, feed)):
-                        repo = SmartRepoData("media_%s" % feed)
-                        repo.name = "Install Media feed for %s" % feed
-                        repo.cost = priority
-                        repo.baseurl = ["file://%s/Packages/%s" % (localpath, feed)]
-                        self.repo_manager.add(repo)
-                f.close()
+                if os.path.isdir("%s/Packages/repodata" % (localpath)):
+                    repo = SmartRepoData("media")
+                    repo.name = "Install Media feed"
+                    repo.baseurl = ["file://%s/Packages" % (localpath)]
+                    self.repo_manager.add(repo)
 
         # TODO: Add repo from kickstart
 
