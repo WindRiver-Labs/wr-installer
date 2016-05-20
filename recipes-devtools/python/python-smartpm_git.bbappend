@@ -10,5 +10,6 @@ SRC_URI += "${NOREDIRPATCH} \
             file://smart-add-query.patch \
             file://smart-enable-proxy-for-rpm-channel.patch \
             file://fix-dbus-failure.patch \
+            file://fix-update-failed-while-proxy-used.patch \
             ${LIMIT_FREQ_PATCH} \
            "
