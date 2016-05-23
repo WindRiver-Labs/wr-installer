@@ -11,5 +11,6 @@ SRC_URI += "${NOREDIRPATCH} \
             file://smart-enable-proxy-for-rpm-channel.patch \
             file://fix-dbus-failure.patch \
             file://fix-update-failed-while-proxy-used.patch \
+            file://do-not-verify-ssl-certification-by-default.patch \
             ${LIMIT_FREQ_PATCH} \
            "

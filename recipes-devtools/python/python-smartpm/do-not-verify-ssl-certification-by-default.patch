@@ -1,0 +1,32 @@
+From d5149e51dd4d653cda7238d89916cbb9519ddcce Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Sun, 22 May 2016 22:35:26 -0400
+Subject: [PATCH] do not verify ssl certification by default
+
+It is helpful for development that use private certification.
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ smart/fetcher.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/smart/fetcher.py b/smart/fetcher.py
+index a24d1b3..bdb7ff7 100644
+--- a/smart/fetcher.py
++++ b/smart/fetcher.py
+@@ -1718,6 +1718,10 @@ class PyCurlHandler(FetcherHandler):
+                                               partsize+downtotal)
+ 
+                         handle.setopt(pycurl.URL, str(url))
++                        if str(url).startswith("https://"):
++                            handle.setopt(pycurl.SSL_VERIFYPEER, 0)
++                            handle.setopt(pycurl.SSL_VERIFYHOST, 0)
++
+                         handle.setopt(pycurl.OPT_FILETIME, 1)
+                         handle.setopt(pycurl.LOW_SPEED_LIMIT, 1)
+                         handle.setopt(pycurl.LOW_SPEED_TIME, SOCKETTIMEOUT)
+-- 
+2.8.1
+
