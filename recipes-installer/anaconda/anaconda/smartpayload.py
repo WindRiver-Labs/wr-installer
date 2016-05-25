@@ -638,6 +638,40 @@ class SmartPayload(PackagePayload):
             return super(SmartPayload, self).isRepoEnabled(repo_id)
 
     @refresh_base_repo()
+    def _configureAddOnRepo(self, repo):
+        """ Configure a single ksdata repo. """
+        url = repo.baseurl
+        if url and url.startswith("nfs://"):
+            # Let the assignment throw ValueError for bad NFS urls from kickstart
+            (server, path) = url[6:].split(":", 1)
+            mountpoint = "%s/%s.nfs" % (os.path.dirname(MOUNT_DIR), repo.name)
+            self._setupNFS(mountpoint, server, path, None)
+
+            url = "file://" + mountpoint
+
+        if self._repoNeedsNetwork(repo) and not nm_is_connected():
+            raise NoNetworkError
+
+        repoid = "Addon_%s" % repo.name
+        repodata = SmartRepoData(repoid)
+        if repo.proxy:
+            proxy = ProxyString(repo.proxy)
+            repodata.proxy = proxy.noauth_url
+            repodata.proxy_username = proxy.username
+            repodata.proxy_password = proxy.password
+        else:
+            proxy = None
+
+        if repoid not in self._smart.repo_manager.repos():
+            repodata.name = repo.name
+            repodata.baseurl = [url]
+            self._smart.repo_manager.add(repodata)
+        else:
+            self._smart.repo_manager.enable(repoid)
+
+        self._smart.repo_manager.update()
+
+    @refresh_base_repo()
     def updateBaseRepo(self, fallback=True, root=None, checkmount=True):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
 
@@ -685,6 +719,21 @@ class SmartPayload(PackagePayload):
             self._smart.createDefaultRepo(url)
         elif method.method == "nfs" and url.startswith("file://"):
             self._smart.createDefaultRepo(url)
+
+        # set up addon repos
+        for repo in self.data.repo.dataList():
+            log.info("repo %s" % repo)
+            if not repo.enabled:
+                continue
+            try:
+                self._configureAddOnRepo(repo)
+                log.info("enable repo %s" % repo)
+            except NoNetworkError as e:
+                log.error("repo %s needs an active network connection", repo.name)
+                self.disableRepo(repo.name)
+            except PayloadError as e:
+                log.error("repo %s setup failed: %s", repo.name, e)
+                self.disableRepo(repo.name)
 
         # TODO
         return
