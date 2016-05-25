@@ -77,6 +77,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0022-disable-geoloc-by-default.patch \
            file://0023-support-UEFI-boot.patch \
            file://0024-do-not-verify-ssl-certification-by-default.patch \
+           file://0025-tweak-default-nfs-mount-point.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
