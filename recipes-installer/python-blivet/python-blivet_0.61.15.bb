@@ -19,5 +19,5 @@ inherit setuptools pythonnative
 
 RDEPENDS_${PN} = "pykickstart python-pyudev \
                   parted python-pyparted device-mapper-multipath \
-                  device-mapper device-mapper-multipath \
+                  device-mapper device-mapper-multipath lsof \
 "
