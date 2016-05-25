@@ -249,10 +249,10 @@ class AnacondaSmart:
         self.smart_dir = "/tmp/smart"
         self.wrapper_dir = "/tmp/install"
 
-### Configure smart for a cross-install, and the install wrapper
-    def setup(self, command=None, argv=None):
-        log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
+        self._initSmart()
 
+### Configure smart for a cross-install, and the install wrapper
+    def _initSmart(self, command=None, argv=None):
         iutil.mkdirChain(self.smart_dir)
         iutil.mkdirChain(self.wrapper_dir)
 
@@ -312,7 +312,6 @@ fi
         sysconf.set("rpm-root", self.sysroot, soft=True)
         sysconf.set("rpm-extra-macros._tmppath", "/install/tmp", soft=True)
         sysconf.set("rpm-extra-macros._cross_scriptlet_wrapper", self.wrapper_dir + "/scriptlet_wrapper", soft=True)
-
         sysconf.set("rpm-nolinktos", "1")
         sysconf.set("rpm-noparentdirs", "1")
 
@@ -320,20 +319,20 @@ fi
 
         self.repo_manager = SmartRepoManager(self.runSmart)
 
+    def createDefaultRepo(self, repodir):
         # Setup repository
-        for localpath in ["/mnt/install/source", "/mnt/install/cdimage", "/mnt/install/isodir", ""]:
-            if os.path.isdir("%s/Packages" % localpath) and os.access("%s/Packages/.feedpriority" % localpath, os.R_OK):
-                if os.path.isdir("%s/Packages/repodata" % (localpath)):
-                    repo = SmartRepoData("media")
-                    repo.name = "Install Media feed"
-                    repo.baseurl = ["file://%s/Packages" % (localpath)]
-                    self.repo_manager.add(repo)
+        if os.path.isdir(repodir) and os.access("%s/.feedpriority" % repodir, os.R_OK):
+            if os.path.isdir("%s/repodata" % (repodir)):
+                repo = SmartRepoData("media")
+                repo.name = "Install Media feed"
+                repo.baseurl = ["file://%s" % (repodir)]
+                self.repo_manager.add(repo)
 
         # TODO: Add repo from kickstart
 
         self.repo_manager.update()
 
-    def _initRPM(self):
+    def _initTargetRPM(self):
         self.etcrpm_dir = iutil.getSysroot() + "/etc/rpm"
         self.librpm_dir = iutil.getSysroot() + "/var/lib/rpm"
 
@@ -541,7 +540,6 @@ class SmartPayload(PackagePayload):
         self.image, self.tasks = instClass.read_buildstamp()
 
         super(SmartPayload, self).setup(storage, instClass)
-        self._smart.setup()
         self._setup = True
 
         return
@@ -638,6 +636,11 @@ class SmartPayload(PackagePayload):
 
         releasever = None
         method = self.data.method
+
+        # Create default repository
+        if method.method == "cdrom" and url.startswith("file://"):
+            self._smart.createDefaultRepo(url[len("file://"):])
+
         if method.method:
             try:
                 releasever = self._getReleaseVersion(url)
@@ -993,7 +996,8 @@ if __name__ == "__main__":
     ksdata.method.url = "http://dl.fedoraproject.org/pub/fedora/linux/development/17/x86_64/os/"
     smart = AnacondaSmart(ksdata)
     smart.setup()
-    smart._initRPM()
+    smart.createDefaultRepo("/Packages")
+    smart._initTargetRPM()
     log.debug("==============")
     smart.install(["grub", "kernel-image"])
 
