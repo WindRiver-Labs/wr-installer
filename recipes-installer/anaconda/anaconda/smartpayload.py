@@ -319,14 +319,36 @@ fi
 
         self.repo_manager = SmartRepoManager(self.runSmart)
 
-    def createDefaultRepo(self, repodir):
+    def createDefaultRepo(self, repourl, proxy=None):
         # Setup repository
-        if os.path.isdir(repodir) and os.access("%s/.feedpriority" % repodir, os.R_OK):
+        repo = None
+
+        if repourl.startswith("file://"):
+            repodir = repourl[len("file://"):]
             if os.path.isdir("%s/repodata" % (repodir)):
-                repo = SmartRepoData("media")
-                repo.name = "Install Media feed"
-                repo.baseurl = ["file://%s" % (repodir)]
+                repoid = repodir.replace("/", "_")
+                repo = SmartRepoData(repoid)
+                repo.baseurl = [repourl]
+        elif repourl.startswith("http://") or repourl.startswith("https://"):
+            repoid = repourl.replace(":/", "").replace("/", "_")
+            repo = SmartRepoData(repoid)
+            log.info("proxy %s" % proxy)
+            if proxy:
+                repo.proxy = proxy.noauth_url
+                repo.proxy_username = proxy.username
+                repo.proxy_password = proxy.password
+        elif repourl.startswith("ftp://"):
+            repoid = repourl.replace(":/", "").replace("/", "_")
+            repo = SmartRepoData(repoid)
+
+        if repo:
+            if repoid not in self.repo_manager.repos():
+                repo.name = "Install %s feed" % repoid
+                repo.baseurl = [repourl]
                 self.repo_manager.add(repo)
+            else:
+                self.repo_manager.enable(repoid)
+
 
         # TODO: Add repo from kickstart
 
@@ -535,8 +557,14 @@ class SmartPayload(PackagePayload):
         self._groups = None
         self._packages = []
 
+        for repoid in self._smart.repo_manager.repos():
+            self._smart.repo_manager.delete(repoid)
+
+
     def setup(self, storage, instClass):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
+
+        self.reset()
         self.image, self.tasks = instClass.read_buildstamp()
 
         super(SmartPayload, self).setup(storage, instClass)
@@ -598,7 +626,7 @@ class SmartPayload(PackagePayload):
     def getRepo(self, repo_id):
         """ Return the smart repo object. """
         with _smart_lock:
-            repo = self._smart.repos.get(repo_id)
+            repo = self._smart.repo_manager.get(repo_id)
 
         return repo
 
@@ -629,18 +657,13 @@ class SmartPayload(PackagePayload):
         try:
             log.debug("method %s" % self.data.method.method)
             url, mirrorlist, sslverify = self._setupInstallDevice(self.storage, checkmount)
-            log.debug("url %s, mirrorlist %s, sslverify %s" % (url, mirrorlist, sslverify))
+            log.debug("method %s, url %s, mirrorlist %s, sslverify %s" % (self.data.method.method, url, mirrorlist, sslverify))
         except PayloadSetupError:
             self.data.method.method = None
             log.debug("PayloadSetupError")
 
         releasever = None
         method = self.data.method
-
-        # Create default repository
-        if method.method == "cdrom" and url.startswith("file://"):
-            self._smart.createDefaultRepo(url[len("file://"):])
-
         if method.method:
             try:
                 releasever = self._getReleaseVersion(url)
@@ -648,6 +671,20 @@ class SmartPayload(PackagePayload):
             except ConfigParser.MissingSectionHeaderError as e:
                 log.error("couldn't set releasever from base repo (%s): %s",
                           method.method, e)
+
+        # Create default repository
+        if method.method == "cdrom" and url.startswith("file://"):
+            self._smart.createDefaultRepo(url)
+        elif method.method == "url" and (url.startswith("http://") or url.startswith("https://")):
+            if method.proxy:
+                proxy = ProxyString(method.proxy)
+            else:
+                proxy = None
+            self._smart.createDefaultRepo(url, proxy)
+        elif method.method == "url" and url.startswith("ftp://"):
+            self._smart.createDefaultRepo(url)
+        elif method.method == "nfs" and url.startswith("file://"):
+            self._smart.createDefaultRepo(url)
 
         # TODO
         return
