@@ -81,6 +81,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0026-fix-quoted-empty-string-failed.patch \
            file://0027-do-not-support-ISO-hold-by-hard-drive-partitions.patch \
            file://0028-default-repository-setting-does-not-support-mirrorli.patch \
+           file://0029-do-not-support-repo-name-check-and-repo-url-check.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
