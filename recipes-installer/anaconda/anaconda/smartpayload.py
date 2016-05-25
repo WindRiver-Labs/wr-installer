@@ -227,6 +227,12 @@ class SmartRepoManager:
 
         return rc
 
+    def mirrors(self, mirrorlistfile):
+        self.runSmart('mirror', ['--add', mirrorlistfile])
+        self.runSmart('mirror', ['--sync', mirrorlistfile])
+
+    def rmmirrors(self):
+        sysconf.remove("mirrors")
 
 class AnacondaSmart:
     complementary_glob = {}
@@ -560,6 +566,7 @@ class SmartPayload(PackagePayload):
         for repoid in self._smart.repo_manager.repos():
             self._smart.repo_manager.delete(repoid)
 
+        self._smart.repo_manager.rmmirrors()
 
     def setup(self, storage, instClass):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
@@ -640,6 +647,11 @@ class SmartPayload(PackagePayload):
     @refresh_base_repo()
     def _configureAddOnRepo(self, repo):
         """ Configure a single ksdata repo. """
+        if repo.mirrorlist:
+            log.info("mirrorlist %s" % repo.mirrorlist)
+            self._smart.repo_manager.mirrors(repo.mirrorlist)
+            return
+
         url = repo.baseurl
         if url and url.startswith("nfs://"):
             # Let the assignment throw ValueError for bad NFS urls from kickstart
