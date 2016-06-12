@@ -83,6 +83,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0028-default-repository-setting-does-not-support-mirrorli.patch \
            file://0029-do-not-support-repo-name-check-and-repo-url-check.patch \
            file://0030-enable-gui-page-to-support-smart-repository-setting.patch \
+           file://0031-fix-cannot-stat-usr-share-gettext-gettext.h.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
@@ -103,7 +104,7 @@ EXTRA_OECONF += "--disable-selinux \
 inherit autotools-brokensep gettext pythonnative pkgconfig gobject-introspection
 
 do_configure_prepend() {
-	( cd ${S}; ${S}/autogen.sh --noconfigure)
+	( cd ${S}; STAGING_DATADIR_NATIVE=${STAGING_DATADIR_NATIVE} ${S}/autogen.sh --noconfigure)
 }
 
 do_compile_prepend() {
