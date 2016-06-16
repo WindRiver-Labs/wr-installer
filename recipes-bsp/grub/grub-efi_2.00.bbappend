@@ -45,6 +45,10 @@ do_deploy() {
                         ${GRUB_BUILDIN}
         fi
         install -m 644 ${B}/${GRUB_IMAGE} ${DEPLOYDIR}
+
+        # Install the modules to deploy, and efi_populate will
+        # copy them to grub-efi's search path later
+        make -C grub-core install DESTDIR=${DEPLOYDIR} pkglibdir=""
 }
 
 
