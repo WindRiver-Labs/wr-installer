@@ -103,6 +103,7 @@ EXTRA_OECONF += "--disable-selinux \
 
 inherit autotools-brokensep gettext pythonnative pkgconfig gobject-introspection
 
+PYTHON_BASEVERSION = "2.7"
 do_configure_prepend() {
 	( cd ${S}; STAGING_DATADIR_NATIVE=${STAGING_DATADIR_NATIVE} ${S}/autogen.sh --noconfigure)
 }
