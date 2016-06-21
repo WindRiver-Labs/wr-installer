@@ -28,7 +28,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    cracklib-python system-config-keyboard system-config-keyboard-base \
                    system-config-date pykickstart libnewt-python dmraid lvm2 \
                    python-cryptsetup firstboot python-iniparse libnl1\
-                   dmidecode python-meh libuser-python libuser \
+                   dmidecode python-meh python2-libuser libuser \
                    libreport-python localedef device-mapper device-mapper-multipath \
                    python-pygobject python-rpm python-urlgrabber\
                    libgnomecanvas grub usermode tigervnc keybinder \
