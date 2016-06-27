@@ -32,7 +32,6 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    libreport-python localedef device-mapper device-mapper-multipath \
                    python-pygobject python-rpm python-urlgrabber\
                    libgnomecanvas grub usermode tigervnc keybinder \
-                   gtk-engine-clearlooks gtk-theme-clearlooks \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \

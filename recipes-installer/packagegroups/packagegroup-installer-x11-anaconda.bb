@@ -39,7 +39,6 @@ RDEPENDS_packagegroup-installer-x11-anaconda = "\
     xauth \
     xhost \
     xset \
-    leafpad \
     ${FILEMANAGER} \
     settings-daemon \
     xrandr \
@@ -49,7 +48,5 @@ RDEPENDS_packagegroup-installer-x11-anaconda = "\
     adwaita-icon-theme \
     pango \
     pango-modules \
-    gtk-engine-clearlooks \
-    gtk-theme-clearlooks \
     createrepo"
 
