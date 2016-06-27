@@ -43,7 +43,6 @@ RDEPENDS_packagegroup-installer-x11-anaconda = "\
     ${FILEMANAGER} \
     settings-daemon \
     xrandr \
-    x11vnc \
     libsdl \
     metacity \
     gnome-themes \
