@@ -115,7 +115,7 @@ early_setup
 
 read_args
 
-if test $debugshell = y ; then
+if test x$debugshell = xy ; then
         echo "Entering debug shell..."
         exec /bin/sh
 fi
