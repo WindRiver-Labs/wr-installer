@@ -96,22 +96,26 @@ class WRLinuxBaseInstallClass(BaseInstallClass):
                 taskid = short_image
                 name = image_name
                 description = "%s" % image_summary
-                tasks[taskid] = (name, description)
+                group = ""
+                tasks[taskid] = (name, description, group)
 
                 taskid = "%s-dev" % short_image
                 name = "%s dev-pkgs staticdev-pkgs" % image_name
                 description = "%s with development files" % image_summary
-                tasks[taskid] = (name, description)
+                group = "dev-pkgs staticdev-pkgs"
+                tasks[taskid] = (name, description, group)
 
                 taskid = "%s-dbg" % short_image
                 name = "%s dbg-pkgs" % image_name
                 description = "%s with debug symbols" % image_summary
-                tasks[taskid] = (name, description)
+                group = "dbg-pkgs"
+                tasks[taskid] = (name, description, group)
 
                 taskid = "%s-dev-dbg" % short_image
                 name = "%s dev-pkgs staticdev-pkgs dbg-pkgs" % image_name
                 description = "%s with development files and debug symbols" % image_summary
-                tasks[taskid] = (name, description)
+                group = "dev-pkgs staticdev-pkgs dbg-pkgs"
+                tasks[taskid] = (name, description, group)
 
         return image, tasks
 

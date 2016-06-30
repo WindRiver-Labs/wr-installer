@@ -24,6 +24,7 @@ import time
 from functools import wraps
 import glob
 import inspect
+import tempfile
 
 from smart.interface import Interface
 from smart.progress import Progress
@@ -441,10 +442,49 @@ set_lk_max_objects 16384
         return ' '.join(globs)
 
 
-    def install(self, packages):
-        log.debug("install %s" % " ".join(packages))
-        res = self.runSmart('install', packages)
+    def install(self, argv):
+        log.debug("install %s" % " ".join(argv))
+        res = self.runSmart('install', argv)
         log.debug("-->%s" % res)
+
+    def install_group(self, group):
+        log.debug("group %s" % group)
+        if group == []:
+            return
+
+        globs = self.complementary_globs(group).split()
+
+        available_list = self.query(['--show-format=$source $name $version\n'])
+        log.debug("available %d" % len(available_list))
+
+        installed_list = self.query(['--installed', '--show-format=$source $name $version\n'])
+        log.debug("installed %d" % len(installed_list))
+        comp_pkgs = []
+        for installed in installed_list:
+            (installed_src, installed_pkg, installed_ver) = installed.split()
+            for glob in globs:
+                complementary = "%s %s%s %s" % (installed_src, installed_pkg, glob, installed_ver)
+                if complementary in available_list:
+                    comp_pkgs.append("%s%s-%s" % (installed_pkg, glob, installed_ver))
+
+        self.install(['--attempt'] + comp_pkgs)
+        installed_list = self.query(['--installed', '--show-format=$source $name $version\n'])
+        log.debug("installed with group %d" % len(installed_list))
+
+    def query(self, argv):
+        log.debug("query %s" % argv)
+        query_list = []
+        fd, _filename = tempfile.mkstemp()
+        argv.append("--output=%s" % _filename)
+        res = self.runSmart('query', argv)
+        output = os.fdopen(fd, "r")
+        for line in output:
+            line = line.rstrip("\n")
+            if not line:
+                continue
+            query_list.append(line)
+
+        return query_list
 
 
 # TODO
@@ -838,8 +878,9 @@ class SmartPayload(PackagePayload):
 
         if environmentid in self.tasks:
             log.info("environmentDescription %s" % self.tasks)
-            return self.tasks[environmentid]
+            (name, description, group) = self.tasks[environmentid]
 
+            return (name, description)
         return (environmentid, environmentid)
 
     def environmentId(self, environment):
@@ -881,7 +922,8 @@ class SmartPayload(PackagePayload):
     def groupDescription(self, groupid):
         """ Return name/description tuple for the group specified by id. """
         log.info("%s %s, %s" % (self.__class__.__name__, inspect.stack()[0][3], groupid))
-        return self.tasks[groupid]
+        (name, description, group) = self.tasks[groupid]
+        return (name, description)
 
     def _isGroupVisible(self, groupid):
         log.info("%s %s, %s" % (self.__class__.__name__, inspect.stack()[0][3], groupid))
@@ -914,7 +956,7 @@ class SmartPayload(PackagePayload):
                     raise NoNetworkError
 
                 try:
-                    (name, description) = self.tasks[self.taskid]
+                    (name, description, group) = self.tasks[self.taskid]
                     image_name = name.split()[0]
                     (summary, des, package_install, package_install_attemptonly) = self.image[image_name]
                     self._packages = package_install.split()
@@ -1067,6 +1109,12 @@ class SmartPayload(PackagePayload):
         log.info("%s %s: %s" % (self.__class__.__name__, inspect.stack()[0][3], packages))
         self._smart.install(packages)
 
+        self._smart.runSmart('channel', ['--add', 'rpmsys', 'type=rpm-sys', '-y'])
+
+        log.info("taskid %s, %s" % (self.taskid, self.tasks[self.taskid]))
+        (name, description, group) = self.tasks[self.taskid]
+        self._smart.install_group(group.split())
+
     def postInstall(self):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
         super(SmartPayload, self).postInstall()
@@ -1093,11 +1141,16 @@ if __name__ == "__main__":
     ksdata.method.url = "http://husky/install/f17/os/"
     ksdata.method.url = "http://dl.fedoraproject.org/pub/fedora/linux/development/17/x86_64/os/"
     smart = AnacondaSmart(ksdata)
-    smart.setup()
-    smart.createDefaultRepo("/Packages")
+    smart.createDefaultRepo("file:///Packages")
     smart._initTargetRPM()
     log.debug("==============")
-    smart.install(["grub", "kernel-image"])
+    pkgs = "base-files base-passwd shadow sed coreutils busybox ldd gzip iputils shadow systemd e2fsprogs grub kernel-image"
+    smart.install(pkgs.split())
+
+    smart.runSmart('channel', ['--add', 'rpmsys', 'type=rpm-sys', '-y'])
+
+    group = "dbg-pkgs staticdev-pkgs"
+    smart.install_group(group.split())
 
     sys.exit(0)
 
