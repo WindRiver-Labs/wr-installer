@@ -85,6 +85,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0031-fix-cannot-stat-usr-share-gettext-gettext.h.patch \
            file://0032-fix-Wind-River-boot-menu-not-work.patch \
            file://0033-tweak-bootloader-fs-type.patch \
+           file://0034-support-timezone-setting.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"

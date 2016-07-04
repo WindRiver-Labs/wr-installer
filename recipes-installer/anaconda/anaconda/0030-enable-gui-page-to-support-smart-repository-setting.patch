@@ -5,6 +5,7 @@ Subject: [PATCH 30/36] enable gui pages
 
 - support smart repository setting
 - support software selection setting
+- support timezone setting
 
 Upstream-Status: Inappropriate [wrlinux specific]
 
@@ -22,7 +23,7 @@ index d4fe36b..7974dd9 100644
          # It is minimal installation for now, the non-implemented
          # functions will be disabled.
 -        if spoke.mainWidgetName not in ["storageWindow", "passwordWindow"]:
-+        if spoke.mainWidgetName not in ["storageWindow", "passwordWindow", "sourceWindow", "softwareWindow"]:
++        if spoke.mainWidgetName not in ["storageWindow", "passwordWindow", "sourceWindow", "softwareWindow", "datetimeWindow"]:
              spoke.selector.set_sensitive(False)
          else:
              spoke.selector.set_sensitive(spoke.sensitive and spoke.ready)
