@@ -52,6 +52,7 @@ RDEPENDS_${PN} += "networkmanager libnmutil libnmglib libnmglib-vpn \
 SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-branch \
            file://smartpayload.py \
            file://wrlinux.py \
+           file://81-edit-sudoers.ks \
            file://0001-tweak-native-language-support.patch \
            file://0002-scripts-run-anaconda-replace-usr-bin-bash-with-bin-s.patch \
            file://0003-widgets-Makefile.am-do-not-compile-doc.patch \
@@ -88,6 +89,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0034-support-timezone-setting.patch \
            file://0035-disable-ntp-support.patch \
            file://0036-do-not-support-manually-set-time.patch \
+           file://0037-support-user-account-creation.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
@@ -114,6 +116,10 @@ do_configure_prepend() {
 
 do_compile_prepend() {
 	( cd ${S}; make po-empty)
+}
+
+do_install_append() {
+	install -m 644 ${WORKDIR}/81-edit-sudoers.ks ${D}${datadir}/anaconda/post-scripts
 }
 
 addtask do_setupdistro after do_patch before do_configure
