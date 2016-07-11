@@ -20,3 +20,6 @@ EXTRA_OECONF += "--disable-man-pages"
 FILES_${PN} += "${datadir}/* ${libdir}/glade/modules/libgladegtk.so"
 FILES_${PN}-dev += "${libdir}/glade/modules/libgladegtk.la"
 FILES_${PN}-dbg += "${libdir}/glade/modules/.debug/libgladegtk.so"
+
+PYTHON_PN = "python"
+
