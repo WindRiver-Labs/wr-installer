@@ -9,7 +9,7 @@ PR = "r0"
 
 inherit wrlinux-image
 
-INITRD_IMAGE = "wrlinux-image-installer-initramfs"
+INITRD_IMAGE_LIVE = "wrlinux-image-installer-initramfs"
 
 DEPENDS += "isomd5sum-native \
 "
