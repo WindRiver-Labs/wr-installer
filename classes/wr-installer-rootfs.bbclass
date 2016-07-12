@@ -391,11 +391,15 @@ _EOF
 	    if [ -f "$target_build" ]; then
 	        filename=$(basename "$target_build")
 	        extension="${filename##*.}"
-	        if [ "x$extension" = "xext2" -o "x$extension" = "xext3" -o "x$extension" = "xext4" ]; then
+	        bpn=${BPN}
+	        # Do not copy image for initramfs
+	        if [ "${bpn##*initramfs}" != "${bpn%%initramfs*}" ]; then
+	            continue
+	        elif [ "x$extension" = "xext2" -o "x$extension" = "xext3" -o "x$extension" = "xext4" ]; then
 	            echo "Image based target install selected."
 	            mkdir -p "${IMAGE_ROOTFS}/LiveOS.$prj_name"
 	            wrl_installer_hardlinktree "$target_build" "${IMAGE_ROOTFS}/LiveOS.$prj_name/rootfs.img"
-                echo "::`basename $target_build::`" >> ${IMAGE_ROOTFS}/.target_build_list
+	            echo "::`basename $target_build::`" >> ${IMAGE_ROOTFS}/.target_build_list
 	        else
 	            bberror "Unsupported image: $target_build."
 	            bberror "The image must be ext2, ext3 or ext4"
