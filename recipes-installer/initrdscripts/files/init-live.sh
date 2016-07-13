@@ -98,8 +98,7 @@ boot_live_root() {
 
     cd $ROOT_MOUNT
 
-    # busybox switch_root supports -c option
-    exec switch_root -c /dev/console $ROOT_MOUNT /sbin/init $CMDLINE ||
+    exec switch_root $ROOT_MOUNT /sbin/init $CMDLINE ||
         fatal "Couldn't switch_root, dropping to shell"
 }
 
