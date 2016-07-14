@@ -8,13 +8,7 @@
 #
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-SRC_URI += " \
-	file://wr-dhcp.network \
-	"
-
 do_install_append() {
-	install -m 0755 ${WORKDIR}/wr-dhcp.network ${D}${sysconfdir}/systemd/network
-
 	ln -nsf ${systemd_unitdir}/system/anaconda-init-screen@.service \
 		${D}${sysconfdir}/systemd/system/getty.target.wants/getty@tty1.service
 }
