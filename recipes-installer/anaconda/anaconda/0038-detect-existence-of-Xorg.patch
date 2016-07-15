@@ -1,0 +1,55 @@
+From a7f07dfa35b9964c360a147796078fc65a764cd5 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 14 Jul 2016 05:34:18 -0400
+Subject: [PATCH] detect existence of Xorg
+
+Detect the existence of Xorg before start it.
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ anaconda | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/anaconda b/anaconda
+index 0feda9d..7a1edf5 100755
+--- a/anaconda
++++ b/anaconda
+@@ -44,7 +44,7 @@ if ("debug=1" in proc_cmdline) or ("debug" in proc_cmdline):
+     cov.start()
+ 
+ 
+-import atexit, sys, os, time, signal
++import atexit, sys, os, time, signal, subprocess
+ 
+ def exitHandler(rebootData, storage, payload, exitCode=None):
+     # Clear the list of watched PIDs.
+@@ -114,10 +114,24 @@ def startSpiceVDAgent():
+     else:
+         log.info("Started spice-vdagent.")
+ 
++def hasX11():
++    exist = True
++
++    try:
++        subprocess.check_output("ps -A | grep Xorg -q", shell=True)
++    except subprocess.CalledProcessError as e:
++        exist = False
++
++    return exist
++
+ def startX11():
+     # Ignore stdout/stderr, since everything is logged to /tmp/X.log anyway
+     xfd = open("/dev/null", "wb")
+ 
++    if hasX11():
++        log.info("Xorg already existed, no need to start another one")
++        return
++
+     # Start Xorg and wait for it become ready
+     iutil.startX(["Xorg", "-br", "-logfile", "/tmp/X.log",
+                   ":%s" % constants.X_DISPLAY_NUMBER, "vt7", "-s", "1440", "-ac",
+-- 
+2.8.1
+
