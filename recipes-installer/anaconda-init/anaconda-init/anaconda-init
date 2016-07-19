@@ -199,16 +199,17 @@ FOE
        fi
 
        ROOT_IMAGE="/LiveOS/rootfs.img"
+       ROOT_IMAGE_DEV="/dev/loop3"
        if [ -e $ROOT_IMAGE ]; then
-           mkdir -p /mnt/target_rootfs
-           mount | grep /mnt/target_rootfs | grep -q $ROOT_IMAGE
+           ROOT_IMAGE="`realpath $ROOT_IMAGE`"
+           losetup -a | grep -q $ROOT_IMAGE
            if [ $? -eq 0 ]; then
-               echo "Skipping mounting $ROOT_IMAGE since it is already mounted."
+               echo "Skipping mounting $ROOT_IMAGE since it is already setup."
            else
-               mount -o loop=/dev/loop3 -o ro $ROOT_IMAGE /mnt/target_rootfs
+               losetup -r $ROOT_IMAGE_DEV $ROOT_IMAGE
                [ $? -eq 0 ] || exit 1
            fi
-           anaconda_opts="$anaconda_opts --liveinst --method=liveinst:/dev/loop3"
+           anaconda_opts="$anaconda_opts --liveinst --method=livecd:$ROOT_IMAGE_DEV"
        elif [ -n "$liveinst" ]; then
                echo "ERROR: no $ROOT_IMAGE" >&2
                exit 1

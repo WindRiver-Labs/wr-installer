@@ -69,6 +69,10 @@ class WRLinuxBaseInstallClass(BaseInstallClass):
         BaseInstallClass.__init__(self)
 
     def getBackend(self):
+        if flags.livecdInstall:
+            from pyanaconda.packaging.livepayload import LiveImagePayload
+            return LiveImagePayload
+
         return SmartPayload
 
     def read_buildstamp(self):
