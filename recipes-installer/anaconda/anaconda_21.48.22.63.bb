@@ -91,6 +91,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0036-do-not-support-manually-set-time.patch \
            file://0037-support-user-account-creation.patch \
            file://0038-detect-existence-of-Xorg.patch \
+           file://0039-fix-write-network-conf-failed-while-liveinst.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
