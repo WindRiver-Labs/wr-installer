@@ -31,6 +31,8 @@ SYSTEMD_SERVICE_${PN} = "anaconda-init.service \
                          anaconda-init.target \
 "
 
+CLEANBROKEN = "1"
+
 do_install() {
     install -d ${D}/${sbindir}
     install -m 0755 ${WORKDIR}/anaconda-init ${D}${sbindir}/anaconda-init
