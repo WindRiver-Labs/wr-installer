@@ -4,7 +4,6 @@ PXE_UEFI_GRUB_CONF ?= "grub.cfg"
 PXE_UEFI_GRUB_IMAGE ?= "bootx64-pxe.efi"
 
 SRC_URI += "file://grub.cfg \
-            file://cfg-installer \
 "
 
 do_mkpxeimage() {
@@ -32,20 +31,7 @@ do_mkpxeimage() {
     rm ${KERNEL_IMAGETYPE} wrlinux-image-installer-initramfs-${MACHINE}.${INITRAMFS_FSTYPES}
 }
 
-do_deploy() {
-        # Search for the grub.cfg on the local boot media by using the
-        # built in cfg file provided via this recipe
-        if [ X"${DEFAULT_IMAGE}" = X"wrlinux-image-installer" ]; then
-                grub-mkimage -c ../cfg-installer -p /EFI/BOOT -d ./grub-core/ \
-                        -O ${GRUB_TARGET}-efi -o ./${GRUB_IMAGE} \
-                        ${GRUB_BUILDIN}
-        else
-                grub-mkimage -c ../cfg -p /EFI/BOOT -d ./grub-core/ \
-                        -O ${GRUB_TARGET}-efi -o ./${GRUB_IMAGE} \
-                        ${GRUB_BUILDIN}
-        fi
-        install -m 644 ${B}/${GRUB_IMAGE} ${DEPLOYDIR}
-
+do_deploy_append_class-target() {
         # Install the modules to deploy, and efi_populate will
         # copy them to grub-efi's search path later
         make -C grub-core install DESTDIR=${DEPLOYDIR} pkglibdir=""
