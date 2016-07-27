@@ -336,7 +336,7 @@ fi
                 repoid = repodir.replace("/", "_")
                 repo = SmartRepoData(repoid)
                 repo.baseurl = [repourl]
-        elif repourl.startswith("http://") or repourl.startswith("https://"):
+        elif repourl.startswith("http://") or repourl.startswith("https://") or repourl.startswith("ftp://"):
             repoid = repourl.replace(":/", "").replace("/", "_")
             repo = SmartRepoData(repoid)
             log.info("proxy %s" % proxy)
@@ -344,9 +344,6 @@ fi
                 repo.proxy = proxy.noauth_url
                 repo.proxy_username = proxy.username
                 repo.proxy_password = proxy.password
-        elif repourl.startswith("ftp://"):
-            repoid = repourl.replace(":/", "").replace("/", "_")
-            repo = SmartRepoData(repoid)
 
         if repo:
             if repoid not in self.repo_manager.repos():
@@ -761,14 +758,14 @@ class SmartPayload(PackagePayload):
         # Create default repository
         if method.method == "cdrom" and url.startswith("file://"):
             self._smart.createDefaultRepo(url)
-        elif method.method == "url" and (url.startswith("http://") or url.startswith("https://")):
+        elif method.method == "url" and (url.startswith("http://") or
+                                         url.startswith("https://") or
+                                         url.startswith("ftp://")):
             if method.proxy:
                 proxy = ProxyString(method.proxy)
             else:
                 proxy = None
             self._smart.createDefaultRepo(url, proxy)
-        elif method.method == "url" and url.startswith("ftp://"):
-            self._smart.createDefaultRepo(url)
         elif method.method == "nfs" and url.startswith("file://"):
             self._smart.createDefaultRepo(url)
 
