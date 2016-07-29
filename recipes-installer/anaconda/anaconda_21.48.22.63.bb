@@ -96,6 +96,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0041-text-repository-setting-do-not-support-local-ISO-fil.patch \
            file://0042-text-repository-setting-support-http-proxy.patch \
            file://0043-set-keyboard-xlayouts-with-us-by-default.patch \
+           file://0044-text-mode-do-not-support-network-setting-for-now.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
