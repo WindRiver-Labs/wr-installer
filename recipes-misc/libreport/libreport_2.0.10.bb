@@ -3,7 +3,9 @@ to different bug targets like Bugzilla, ftp, trac, etc..."
 HOMEPAGE = "https://fedorahosted.org/abrt/"
 LICENSE = "GPLv2+"
 DEPENDS = "automake flex xmlrpc-c \
-        libgnome-keyring json-c libtar libnewt gtk+ nss libproxy rpm"
+        libgnome-keyring json-c libtar libnewt gtk+ nss libproxy rpm \
+        intltool-native \
+"
 
 RDEPENDS_${PN} = "libproxy"
 

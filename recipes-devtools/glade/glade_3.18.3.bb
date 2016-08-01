@@ -4,7 +4,7 @@ LICENSE = "GPLv2 & LGPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=aabe87591cb8ae0f3c68be6977bb5522 \
                     file://COPYING.GPL;md5=9ac2e7cff1ddaf48b6eab6028f23ef88 \
                     file://COPYING.LGPL;md5=252890d9eee26aab7b432e8b8a616475"
-DEPENDS = "gtk+ gtk+3 glib-2.0 libxml2"
+DEPENDS = "gtk+ gtk+3 glib-2.0 libxml2 intltool-native"
 
 
 inherit autotools pkgconfig pythonnative gnomebase gobject-introspection
