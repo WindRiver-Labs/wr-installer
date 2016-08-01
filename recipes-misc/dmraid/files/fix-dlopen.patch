@@ -24,7 +24,7 @@ index 48e5a99..9721ae1 100644
  
  %.so: $(OBJECTS)
 -	$(CC) -shared -Wl,-soname,$(notdir $@).$(DMRAID_LIB_VERSION) \
-+	$(CC) -shared -Wl,-soname,$(notdir $@).$(DMRAID_LIB_VERSION) -ldl \
++	$(CC) -shared -Wl,-soname,$(notdir $@).$(DMRAID_LIB_VERSION) -ldl $(LDFLAGS) \
  	-Wl,--version-script,.export.sym $(OBJECTS) -o $@ -ldevmapper-event
  
  $(LIB_STATIC): $(OBJECTS)
