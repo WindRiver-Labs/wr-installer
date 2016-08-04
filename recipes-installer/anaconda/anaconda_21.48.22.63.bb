@@ -50,6 +50,7 @@ RDEPENDS_${PN} += "networkmanager libnmutil libnmglib libnmglib-vpn \
 "
 
 SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-branch \
+           http://archives.fedoraproject.org/pub/archive/fedora/linux/releases/21/Everything/source/SRPMS/a/anaconda-21.48.21-1.fc21.src.rpm;extract=anaconda-21.48.21.tar.bz2;name=anaconda-po \
            file://smartpayload.py \
            file://wrlinux.py \
            file://81-edit-sudoers.ks \
@@ -100,10 +101,15 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
+SRC_URI[anaconda-po.md5sum] = "dfdb1546cc18c9ec0a6673ccc3d35098"
+SRC_URI[anaconda-po.sha256sum] = "a3421e067c82e435fc626142c77d91b94d514fe3fd7f3b429b22706876ac306a"
 
 FILES_${PN}-dbg += "${libexecdir}/anaconda/.debug ${PYTHON_SITEPACKAGES_DIR}/pyanaconda/.debug"
 FILES_${PN}-staticdev += "${PYTHON_SITEPACKAGES_DIR}/pyanaconda/_isys.a"
-FILES_${PN} = "/lib ${libdir} ${sysconfdir} ${bindir} ${sbindir} ${libexecdir} ${datadir} ${PYTHON_SITEPACKAGES_DIR}/pyanaconda ${PYTHON_SITEPACKAGES_DIR}/log_picker"
+FILES_${PN} = "/lib ${libdir} ${sysconfdir} ${bindir} ${sbindir} ${libexecdir} \
+              ${datadir}/anaconda ${datadir}/applications ${datadir}/glade \
+              ${PYTHON_SITEPACKAGES_DIR}/pyanaconda ${PYTHON_SITEPACKAGES_DIR}/log_picker \
+"
 FILES_${PN}-misc = "/usr/lib"
 PACKAGES += "${PN}-misc"
 RDEPENDS_${PN}-misc += "bash python"
@@ -112,12 +118,19 @@ EXTRA_OECONF += "--disable-selinux \
          --with-sysroot=${PKG_CONFIG_SYSROOT_DIR} \
 "
 
-#USE_NLS = "no"
+PACKAGECONFIG ??= "${@base_conditional('USE_NLS','yes','nls','',d)}"
+PACKAGECONFIG[nls] = "--enable-nls, --disable-nls, packagegroup-fonts-ttf"
 
 inherit autotools-brokensep gettext pythonnative pkgconfig gobject-introspection
 
 PYTHON_BASEVERSION = "2.7"
 PYTHON_PN = "python"
+
+do_prepare_po () {
+	install -m 644 ${WORKDIR}/anaconda-21.48.21/po/*.po ${S}/po/
+}
+do_patch[postfuncs] += "${@base_conditional('USE_NLS','yes','do_prepare_po','',d)}"
+
 do_configure_prepend() {
 	( cd ${S}; STAGING_DATADIR_NATIVE=${STAGING_DATADIR_NATIVE} ${S}/autogen.sh --noconfigure)
 }
