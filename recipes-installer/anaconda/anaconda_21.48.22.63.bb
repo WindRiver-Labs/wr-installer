@@ -53,14 +53,12 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://smartpayload.py \
            file://wrlinux.py \
            file://81-edit-sudoers.ks \
-           file://0001-tweak-native-language-support.patch \
            file://0002-scripts-run-anaconda-replace-usr-bin-bash-with-bin-s.patch \
            file://0003-widgets-Makefile.am-do-not-compile-doc.patch \
            file://0004-utils-Makefile.am-do-not-compile-dd.patch \
            file://0005-pyanaconda-flags.py-drop-selinux-module.patch \
            file://0006-geoloc.py-support-https.patch \
            file://0007-comment-out-Keybinder.patch \
-           file://0008-support-en_us-and-en_gb-only.patch \
            file://0009-anaconda-disable-ntp.patch \
            file://0010-tweak-for-testing.patch \
            file://0011-tweak-auditd-invoking-dir.patch \
@@ -122,10 +120,6 @@ PYTHON_BASEVERSION = "2.7"
 PYTHON_PN = "python"
 do_configure_prepend() {
 	( cd ${S}; STAGING_DATADIR_NATIVE=${STAGING_DATADIR_NATIVE} ${S}/autogen.sh --noconfigure)
-}
-
-do_compile_prepend() {
-	( cd ${S}; make po-empty)
 }
 
 do_install_append() {
