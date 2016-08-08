@@ -429,13 +429,16 @@ set_lk_max_objects 16384
 
         return rc
 
-    def complementary_globs(self, groups):
+    def complementary_globs(self, groups, linguas_groups=[]):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
 
         globs = []
         for name, glob in self.complementary_glob.items():
             if name in groups:
                 globs.append(glob)
+
+        globs += linguas_groups
+        log.info("glibs %s" % ' '.join(globs))
         return ' '.join(globs)
 
 
@@ -444,12 +447,9 @@ set_lk_max_objects 16384
         res = self.runSmart('install', argv)
         log.debug("-->%s" % res)
 
-    def install_group(self, group):
-        log.debug("group %s" % group)
-        if group == []:
-            return
-
-        globs = self.complementary_globs(group).split()
+    def install_group(self, group, linguas_groups=[]):
+        log.debug("group %s, linguas %s" % (group, linguas_groups))
+        globs = self.complementary_globs(group, linguas_groups).split()
 
         available_list = self.query(['--show-format=$source $name $version\n'])
         log.debug("available %d" % len(available_list))
@@ -464,7 +464,8 @@ set_lk_max_objects 16384
                 if complementary in available_list:
                     comp_pkgs.append("%s%s-%s" % (installed_pkg, glob, installed_ver))
 
-        self.install(['--attempt'] + comp_pkgs)
+        if comp_pkgs != []:
+            self.install(['--attempt'] + comp_pkgs)
         installed_list = self.query(['--installed', '--show-format=$source $name $version\n'])
         log.debug("installed with group %d" % len(installed_list))
 
@@ -580,6 +581,7 @@ class SmartPayload(PackagePayload):
 
         # WRlinux specific
         self.image = {}
+        self.linguas_groups = []
         self.tasks = {}
         self.taskid = None
 
@@ -955,8 +957,12 @@ class SmartPayload(PackagePayload):
                 try:
                     (name, description, group) = self.tasks[self.taskid]
                     image_name = name.split()[0]
-                    (summary, des, package_install, package_install_attemptonly) = self.image[image_name]
+                    (summary, des, package_install, package_install_attemptonly, image_linguas) = self.image[image_name]
                     self._packages = package_install.split()
+                    for lang in image_linguas.split():
+                        self.linguas_groups.append("-locale-%s" % lang)
+                        self.linguas_groups.append("-locale-%s" % lang.split('-')[0])
+                        self._packages.append("locale-base-%s" % lang)
                 except RepoError as e:
                     log.error("failed to get package list: %s", e)
 
@@ -1110,7 +1116,7 @@ class SmartPayload(PackagePayload):
 
         log.info("taskid %s, %s" % (self.taskid, self.tasks[self.taskid]))
         (name, description, group) = self.tasks[self.taskid]
-        self._smart.install_group(group.split())
+        self._smart.install_group(group.split(), self.linguas_groups)
 
     def postInstall(self):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))

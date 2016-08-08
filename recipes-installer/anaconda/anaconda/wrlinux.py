@@ -90,10 +90,12 @@ class WRLinuxBaseInstallClass(BaseInstallClass):
                 package_install = config.get(image_name, "PACKAGE_INSTALL")
                 package_install_attemptonly = config.get(image_name,
                                                          "PACKAGE_INSTALL_ATTEMPTONLY")
+                image_linguas = config.get(image_name, "IMAGE_LINGUAS")
                 image[image_name] = (image_summary,
                                      image_description,
                                      package_install,
-                                     package_install_attemptonly)
+                                     package_install_attemptonly,
+                                     image_linguas)
 
                 short_image = image_name.replace("%s-image-" % self.id, "")
 
