@@ -16,5 +16,6 @@ RDEPENDS_${PN} = "\
     ttf-sazanami-gothic \
     ttf-sazanami-mincho \
     ttf-wqy-zenhei \
+    ttf-tlwg \
 "
 
