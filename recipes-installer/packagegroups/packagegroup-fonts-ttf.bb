@@ -8,7 +8,13 @@ inherit packagegroup allarch
 
 RDEPENDS_${PN} = "\
     ttf-abyssinica \
+    ttf-dejavu-common \
+    ttf-dejavu-sans \
+    ttf-dejavu-sans-mono \
     ttf-lklug \
     ttf-lohit \
+    ttf-sazanami-gothic \
+    ttf-sazanami-mincho \
+    ttf-wqy-zenhei \
 "
 
