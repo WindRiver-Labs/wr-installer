@@ -42,7 +42,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    xrandr glibc-charmaps glibc-localedatas python-ipy \
                    python-pytz python-langtable libpwquality-python \
                    python-ntplib libgnomekbd libtimezonemap \
-                   procps python-prctl rsync \
+                   procps python-prctl rsync glibc-utils \
                 "
 
 RDEPENDS_${PN} += "networkmanager libnmutil libnmglib libnmglib-vpn \
@@ -60,6 +60,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0005-pyanaconda-flags.py-drop-selinux-module.patch \
            file://0006-geoloc.py-support-https.patch \
            file://0007-comment-out-Keybinder.patch \
+           file://0008-dynamic-detect-workable-locale.patch \
            file://0009-anaconda-disable-ntp.patch \
            file://0010-tweak-for-testing.patch \
            file://0011-tweak-auditd-invoking-dir.patch \
