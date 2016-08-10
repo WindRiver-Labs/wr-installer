@@ -8,8 +8,7 @@ SRC_URI = "file://syslinux-splash.png \
            file://topbar-bg.png \
            file://anaconda-selected-icon.png \
            file://dialog-warning-symbolic.png \
-           file://banner_wrlinux_750x120.png \
-           file://banner_wrlinux_800x88.png \
+           file://banner_wrlinux_847x94.png \
            file://COPYING"
 
 S = "${WORKDIR}"
