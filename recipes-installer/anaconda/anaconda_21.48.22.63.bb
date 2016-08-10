@@ -71,7 +71,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0016-tweak-grub-config-file-for-WRLinux.patch \
            file://0017-set-plain-as-default-auto-partition.patch \
            file://0018-kickstart-disable-Authconfig-AutoPart-Timezone.patch \
-           file://0019-disable-help-button.patch \
+           file://0019-invisible-help-button.patch \
            file://0020-disable-non-implemented-functions.patch \
            file://0021-do-not-support-spinner.patch \
            file://0022-disable-geoloc-by-default.patch \
