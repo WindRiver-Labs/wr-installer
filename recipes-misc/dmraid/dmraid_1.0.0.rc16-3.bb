@@ -31,6 +31,7 @@ SRC_URI = "http://people.redhat.com/heinzm/sw/dmraid/src/dmraid-1.0.0.rc16-3.tar
 	   file://bz626417_21-add_option_that_postpones_any_metadata_updates.patch \
 	   file://klibc.m4 \
 	   file://fix-dlopen.patch \
+	   file://fix-parallel-compile-issue.patch \
 	"
 
 SRC_URI[md5sum] = "507252c1b68d745c2ecbda2ceac8feea"
