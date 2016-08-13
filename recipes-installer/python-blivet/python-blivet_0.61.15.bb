@@ -14,6 +14,7 @@ SRC_URI = "git://github.com/rhinstaller/blivet;branch=rhel7-branch \
            file://0001-comment-out-selinux.patch \
            file://0002-run_program-support-timeout.patch \
            file://0003-storage-partition-ignore-live-image.patch \
+           file://0004-invoking-mke2fs-with-infinite-timeout.patch \
 "
 
 inherit setuptools pythonnative
