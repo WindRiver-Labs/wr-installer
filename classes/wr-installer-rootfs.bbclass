@@ -31,6 +31,7 @@ build_iso_append() {
 wrl_installer_setup_local_smart() {
 
     target_build=$1
+    target_repo_dir=$2
 
     # Need to configure RPM/Smart so we can get a full pkglist from the distro
     rm -rf ${WORKDIR}/distro-tmp
@@ -62,7 +63,7 @@ wrl_installer_setup_local_smart() {
     for arch in $archs; do
         if [ -d "$target_build/bitbake_build/tmp/deploy/rpm/"$arch ] ; then
             echo "Note: adding Smart channel $arch"
-            smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart channel --add $arch type=rpm-md type=rpm-md baseurl="$target_build/bitbake_build/tmp/deploy/rpm/"$arch -y
+            smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart channel --add $arch type=rpm-md type=rpm-md baseurl=$target_repo_dir/$arch -y
         fi
     done
 
@@ -233,7 +234,6 @@ wrl_installer_copy_local_repos() {
                 channel_priority=$(expr $channel_priority - 5)
                 echo "$channel_priority $arch" >> ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
                 wrl_installer_hardlinktree "$target_build/bitbake_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
-                rm -r "${IMAGE_ROOTFS}/Packages.$prj_name/$arch/repodata"
             fi
         done
         createrepo --update -q ${IMAGE_ROOTFS}/Packages.$prj_name/
@@ -276,7 +276,7 @@ wrl_installer_copy_pkgs() {
         echo "DISTRO[unexport] = ''" > ${WORKDIR}/export-distro.conf
         PSEUDO_UNLOAD=1 make -C $target_build bbc \
         BBCMD="bitbake -R ${WORKDIR}/export-distro.conf -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | \
-            grep $common_grep -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' \
+            grep $common_grep -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' -e '^WORKDIR=.*' \
             -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' > ${BB_LOGFILE}.distro_vals"
 
         eval `cat ${BB_LOGFILE}.distro_vals`
@@ -297,7 +297,9 @@ wrl_installer_copy_pkgs() {
         fi
         export installer_target_archs
     fi
-    wrl_installer_setup_local_smart $target_build
+
+    echo "wrl_installer_setup_local_smart $target_build $WORKDIR/rpms"
+    wrl_installer_setup_local_smart $target_build $WORKDIR/rpms
     wrl_installer_translate_oe_to_smart $target_build $PACKAGE_INSTALL
     install="$pkgs_to_install"
     wrl_installer_translate_oe_to_smart $target_build $PACKAGE_INSTALL_ATTEMPTONLY
