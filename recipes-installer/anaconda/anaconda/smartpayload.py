@@ -1114,6 +1114,7 @@ class SmartPayload(PackagePayload):
 
     def postInstall(self):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
+        iutil.execWithRedirect("depmod", ["-a"], root=iutil.getSysroot())
         super(SmartPayload, self).postInstall()
 
 
