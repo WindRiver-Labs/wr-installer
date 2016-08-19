@@ -98,6 +98,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0043-set-keyboard-xlayouts-with-us-by-default.patch \
            file://0044-text-mode-do-not-support-network-setting-for-now.patch \
            file://0045-text-add-user-to-sudo-group-as-administrator.patch \
+           file://0046-support-EULA-location-configurable.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"

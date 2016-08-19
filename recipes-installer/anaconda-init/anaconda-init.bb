@@ -36,6 +36,13 @@ CLEANBROKEN = "1"
 do_install() {
     install -d ${D}/${sbindir}
     install -m 0755 ${WORKDIR}/anaconda-init ${D}${sbindir}/anaconda-init
+    if [ -n "${EULA_DIR}" ]; then
+        sed -i "s#@EULA_DIR@#${EULA_DIR}#g" ${D}${sbindir}/anaconda-init
+    else
+        bbwarn "EULA_DIR is NULL, please set it in a local conf"
+        bbwarn "The EULA_DIR helps user to locate End User License Agreement during image installation"
+        sed -i "s#@EULA_DIR@##g" ${D}${sbindir}/anaconda-init
+    fi
     install -d ${D}/${sysconfdir}
     install -d ${D}/${sysconfdir}/init.d
     ln -sf ${sbindir}/anaconda-init ${D}/${sysconfdir}/init.d/anaconda-init
@@ -65,3 +72,5 @@ USERADD_PARAM_${PN} = "--create-home \
                        --groups video,tty,audio \
                        --user-group xuser"
 
+# Location of End User License Agreement
+EULA_DIR ??= ""

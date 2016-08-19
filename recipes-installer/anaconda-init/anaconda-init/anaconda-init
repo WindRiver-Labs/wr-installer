@@ -10,6 +10,9 @@
 
 # Don't reboot when failed
 stoponfail="1"
+EXTRA_ENVS=""
+EULA_DIR="@EULA_DIR@"
+EXTRA_ENVS="$EXTRA_ENVS EULA_DIR=$EULA_DIR"
 
 export PATH=/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin
 
@@ -326,7 +329,7 @@ FOE
        if [ -n "$noinstall" ]; then
            echo "Bypassing installer..."
        else
-           su -l -c "/usr/sbin/anaconda $anaconda_opts 2>&1" $username
+           su -l -c "$EXTRA_ENVS /usr/sbin/anaconda $anaconda_opts 2>&1" $username
            if [ "$stoponfail" != 1 ] ; then
                echo "Rebooting system..."
                /sbin/reboot -f
