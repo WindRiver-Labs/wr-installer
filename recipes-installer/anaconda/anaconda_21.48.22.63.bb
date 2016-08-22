@@ -6,7 +6,7 @@ SECTION = "devel"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
-DEPENDS = "e2fsprogs gettext intltool libarchive virtual/libx11 libnl1 \
+DEPENDS = "e2fsprogs gettext intltool libarchive virtual/libx11 \
            pango python rpm slang zlib dbus iscsi-initiator-utils audit \
            lvm2 system-config-keyboard-native libuser util-linux \
            libnewt libxcomposite gtk+ curl libarchive"
@@ -27,7 +27,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    nspr nss python-nss python-pyparted python-pyblock \
                    cracklib-python system-config-keyboard system-config-keyboard-base \
                    system-config-date pykickstart libnewt-python dmraid lvm2 \
-                   python-cryptsetup firstboot python-iniparse libnl1\
+                   python-cryptsetup firstboot python-iniparse \
                    dmidecode python-meh python2-libuser libuser \
                    libreport-python localedef device-mapper device-mapper-multipath \
                    python-pygobject python-rpm python-urlgrabber\
