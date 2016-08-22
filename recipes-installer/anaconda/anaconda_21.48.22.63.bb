@@ -120,7 +120,7 @@ EXTRA_OECONF += "--disable-selinux \
 "
 
 PACKAGECONFIG ??= "${@base_conditional('USE_NLS','yes','nls','',d)}"
-PACKAGECONFIG[nls] = "--enable-nls, --disable-nls, packagegroup-fonts-ttf"
+PACKAGECONFIG[nls] = "--enable-nls, --disable-nls,,packagegroup-fonts-ttf"
 
 inherit autotools-brokensep gettext pythonnative pkgconfig gobject-introspection
 
