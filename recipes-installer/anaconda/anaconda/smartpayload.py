@@ -437,7 +437,8 @@ set_lk_max_objects 16384
             if name in groups:
                 globs.append(glob)
 
-        globs += linguas_groups
+        for lang_group in linguas_groups:
+            globs.append("-%s" % lang_group)
         log.info("globs %s" % ' '.join(globs))
         return ' '.join(globs)
 
@@ -583,6 +584,7 @@ class SmartPayload(PackagePayload):
         # WRlinux specific
         self.image = {}
         self.linguas_groups = []
+        self._groups = []
         self.tasks = {}
         self.taskid = None
 
@@ -600,7 +602,6 @@ class SmartPayload(PackagePayload):
         # available we can use that as a better value.
         self._space_required = Size("3000 MB")
 
-        self._groups = None
         self._packages = []
 
         for repoid in self._smart.repo_manager.repos():
@@ -937,8 +938,11 @@ class SmartPayload(PackagePayload):
 
     def _selectSmartGroup(self, groupid, default=True, optional=False, required=False):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
-        # TODO
-
+        # Use optional to mark language group
+        if optional and groupid not in self.linguas_groups:
+            self.linguas_groups.append(groupid)
+        elif groupid not in self._groups:
+            self._groups.append(groupid)
 
     def _deselectSmartGroup(self, groupid):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
@@ -957,13 +961,15 @@ class SmartPayload(PackagePayload):
                     raise NoNetworkError
 
                 try:
-                    (name, description, group) = self.tasks[self.taskid]
+                    (name, description, groups) = self.tasks[self.taskid]
+                    if not self._groups:
+                        self._groups = groups.split()
                     image_name = name.split()[0]
                     (summary, des, package_install, package_install_attemptonly, image_linguas) = self.image[image_name]
                     self._packages = package_install.split()
                     for lang in image_linguas.split():
-                        self.linguas_groups.append("-locale-%s" % lang)
-                        self.linguas_groups.append("-locale-%s" % lang.split('-')[0])
+                        self.linguas_groups.append("locale-%s" % lang)
+                        self.linguas_groups.append("locale-%s" % lang.split('-')[0])
                         self._packages.append("locale-base-%s" % lang)
                 except RepoError as e:
                     log.error("failed to get package list: %s", e)
@@ -1031,11 +1037,6 @@ class SmartPayload(PackagePayload):
 
             This follows the same ordering/pattern as kickstart.py.
         """
-        if self.data.packages.nocore:
-            log.info("skipping core group due to %%packages --nocore; system may not be complete")
-        else:
-            self._selectSmartGroup("core")
-
         env = None
 
         if self.data.packages.default and self.environments:
@@ -1133,6 +1134,12 @@ class SmartPayload(PackagePayload):
 
         progressQ.send_message("It takes some time to install extra packages")
         self._smart.install_group(self._groups, self.linguas_groups)
+
+        # Record group to new generated kickstart file
+        for group in self._groups:
+            self.selectGroup(group)
+        for lang_group in self.linguas_groups:
+            self.selectGroup(lang_group, optional=True)
 
     def postInstall(self):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
