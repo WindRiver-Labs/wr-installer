@@ -438,7 +438,7 @@ set_lk_max_objects 16384
                 globs.append(glob)
 
         globs += linguas_groups
-        log.info("glibs %s" % ' '.join(globs))
+        log.info("globs %s" % ' '.join(globs))
         return ' '.join(globs)
 
 
@@ -951,6 +951,7 @@ class SmartPayload(PackagePayload):
     def packages(self):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
         with _smart_lock:
+            # If kickstart is empty, install packages listted in /.buildstamp
             if not self._packages:
                 if self.needsNetwork and not nm_is_connected():
                     raise NoNetworkError
@@ -976,7 +977,9 @@ class SmartPayload(PackagePayload):
                    a version or architecture component.
         """
         log.debug("select package %s", pkgid)
-        # TODO
+        with _smart_lock:
+            if pkgid not in self._packages:
+                self._packages.append(pkgid)
 
     def _deselectSmartPackage(self, pkgid):
         """Mark a package to be excluded from installation.
@@ -985,7 +988,10 @@ class SmartPayload(PackagePayload):
                    a version or architecture component.
         """
         log.debug("deselect package %s", pkgid)
-        # TODO
+        with _smart_lock:
+            if pkgid in self._packages:
+                self._packages.remove(pkgid)
+
 
     ###
     ### METHODS FOR QUERYING STATE
@@ -1057,12 +1063,14 @@ class SmartPayload(PackagePayload):
             except NoSuchGroup as e:
                 self._handleMissing(e)
 
+        # Install packages listed in kickstart file
         for package in self.data.packages.packageList:
             try:
                 self._selectSmartPackage(package)
             except NoSuchPackage as e:
                 self._handleMissing(e)
 
+        # Do not install packages listed in kickstart file
         for package in self.data.packages.excludedList:
             self._deselectSmartPackage(package)
 
@@ -1114,6 +1122,11 @@ class SmartPayload(PackagePayload):
         self._smart.install(packages)
 
         self._smart.runSmart('channel', ['--add', 'rpmsys', 'type=rpm-sys', '-y'])
+
+        # Record installed packages to new generated kickstart file
+        installed_list = self._smart.query(['--installed', '--show-format=$name\n'])
+        for pkg in installed_list:
+            self.selectPackage(pkg)
 
         log.info("taskid %s, %s" % (self.taskid, self.tasks[self.taskid]))
         (name, description, group) = self.tasks[self.taskid]
