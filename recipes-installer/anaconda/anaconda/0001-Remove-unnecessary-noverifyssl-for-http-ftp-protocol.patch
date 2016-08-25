@@ -1,0 +1,42 @@
+From 80df109bc1754cc374b504f813a824addc217f78 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 25 Aug 2016 01:33:32 -0400
+Subject: [PATCH] Remove unnecessary --noverifyssl for http/ftp protocol
+
+We set --noverifyssl by default, but it makes sense for https only
+---
+url --url="https://128.224.162.227/Packages/Packages/" --noverifyssl
+---
+
+The http/ftp does not require '--noverifyssl'
+---
+url --url="http://128.224.162.227/Packages/Packages/"
+---
+
+So remove unnecessary --noverifyssl for http/ftp protocol
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/install.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/pyanaconda/install.py b/pyanaconda/install.py
+index 0af5578..0bc33bd 100644
+--- a/pyanaconda/install.py
++++ b/pyanaconda/install.py
+@@ -48,6 +48,10 @@ def _writeKS(ksdata):
+                ksdata.partition.dataList() + ksdata.raid.dataList():
+         obj.passphrase = ""
+ 
++    # The true of '--noverifyssl' makes sense for https only
++    if ksdata.method.method == "url" and not ksdata.method.url.startswith("https://"):
++        ksdata.method.noverifyssl = False
++
+     with open(path, "w") as f:
+         f.write(str(ksdata))
+ 
+-- 
+2.8.1
+

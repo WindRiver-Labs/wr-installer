@@ -54,6 +54,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://smartpayload.py \
            file://wrlinux.py \
            file://81-edit-sudoers.ks \
+           file://0001-Remove-unnecessary-noverifyssl-for-http-ftp-protocol.patch \
            file://0002-scripts-run-anaconda-replace-usr-bin-bash-with-bin-s.patch \
            file://0003-widgets-Makefile.am-do-not-compile-doc.patch \
            file://0004-utils-Makefile.am-do-not-compile-dd.patch \
