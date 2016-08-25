@@ -1,0 +1,31 @@
+From ef8ccc414d6231c405b9d952ac477d9cfaf9f2a6 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 25 Aug 2016 04:25:25 -0400
+Subject: [PATCH] tweak /boot storage sanity check
+
+Since kernel-vmlinux (200MB+) was installed to /boot,
+tweak /boot storage sanity check from 200MB to 300MB.
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/storage_utils.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyanaconda/storage_utils.py b/pyanaconda/storage_utils.py
+index 89fd87d..39b4b50 100644
+--- a/pyanaconda/storage_utils.py
++++ b/pyanaconda/storage_utils.py
+@@ -167,7 +167,7 @@ def sanity_check(storage, min_ram=isys.MIN_RAM):
+     exns = []
+ 
+     checkSizes = [('/usr', Size("250 MiB")), ('/tmp', Size("50 MiB")), ('/var', Size("384 MiB")),
+-                  ('/home', Size("100 MiB")), ('/boot', Size("200 MiB"))]
++                  ('/home', Size("100 MiB")), ('/boot', Size("300 MiB"))]
+     mustbeonlinuxfs = ['/', '/var', '/tmp', '/usr', '/home', '/usr/share', '/usr/lib']
+     mustbeonroot = ['/bin','/dev','/sbin','/etc','/lib','/root', '/mnt', 'lost+found', '/proc']
+ 
+-- 
+2.8.1
+
