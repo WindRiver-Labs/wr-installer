@@ -17,6 +17,7 @@ SRC_URI = "git://github.com/rhinstaller/blivet;branch=rhel7-branch \
            file://0004-invoking-mke2fs-with-infinite-timeout.patch \
            file://0005-Mount-var-volatile-during-install.patch \
            file://0006-update-fstab-by-appending.patch \
+           file://0007-fix-new.roots-object-is-not-iterable.patch \
 "
 
 inherit setuptools pythonnative
