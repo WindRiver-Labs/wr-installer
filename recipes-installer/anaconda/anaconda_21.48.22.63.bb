@@ -106,6 +106,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0050-support-to-get-kickstart-from-network.patch \
            file://0051-support-authentication-for-kickstart.patch \
            file://0052-support-downloading-file-from-http-ftp-server-to-tar.patch \
+           file://0053-live-install-supports-kickstart.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
