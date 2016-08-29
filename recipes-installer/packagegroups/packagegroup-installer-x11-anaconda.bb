@@ -32,7 +32,7 @@ VIRTUAL-RUNTIME_graphical_init_manager ?= "anaconda-init"
 
 RDEPENDS_packagegroup-installer-x11-anaconda = "\
     dbus \
-    pointercal \
+    xinput-calibrator \
     ${XSERVER} \
     ${VIRTUAL-RUNTIME_xserver_common} \
     liberation-fonts \
