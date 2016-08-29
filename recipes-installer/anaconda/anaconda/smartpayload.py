@@ -465,6 +465,7 @@ set_lk_max_objects 16384
                     comp_pkgs.append("%s%s-%s" % (installed_pkg, glob, installed_ver))
 
         if comp_pkgs != []:
+            progressQ.send_message("%d extra packages will be installed, please wait..." % len(comp_pkgs))
             self.install(['--attempt'] + comp_pkgs)
         installed_list = self.query(['--installed', '--show-format=$source $name $version\n'])
         log.debug("installed with group %d" % len(installed_list))
@@ -1116,7 +1117,9 @@ class SmartPayload(PackagePayload):
 
         log.info("taskid %s, %s" % (self.taskid, self.tasks[self.taskid]))
         (name, description, group) = self.tasks[self.taskid]
-        self._smart.install_group(group.split(), self.linguas_groups)
+
+        progressQ.send_message("It takes some time to install extra packages")
+        self._smart.install_group(self._groups, self.linguas_groups)
 
     def postInstall(self):
         log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
