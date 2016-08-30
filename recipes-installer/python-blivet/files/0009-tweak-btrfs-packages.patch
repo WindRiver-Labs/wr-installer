@@ -1,0 +1,45 @@
+From c78ba018ddf80041db1e8b67ea2caa4502dfc139 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Mon, 29 Aug 2016 21:46:39 -0400
+Subject: [PATCH] tweak btrfs packages
+
+In oe-cre/yocto, we name btrfs package with btrfs-tools,
+rather than btrfs-progs.
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ blivet/devices/btrfs.py | 2 +-
+ blivet/formats/fs.py    | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/blivet/devices/btrfs.py b/blivet/devices/btrfs.py
+index e72c8e4..399055b 100644
+--- a/blivet/devices/btrfs.py
++++ b/blivet/devices/btrfs.py
+@@ -41,7 +41,7 @@ from .container import ContainerDevice
+ class BTRFSDevice(StorageDevice):
+     """ Base class for BTRFS volume and sub-volume devices. """
+     _type = "btrfs"
+-    _packages = ["btrfs-progs"]
++    _packages = ["btrfs-tools"]
+ 
+     def __init__(self, *args, **kwargs):
+         """ Passing None or no name means auto-generate one like btrfs.%d """
+diff --git a/blivet/formats/fs.py b/blivet/formats/fs.py
+index 57d7e32..13014ec 100644
+--- a/blivet/formats/fs.py
++++ b/blivet/formats/fs.py
+@@ -1166,7 +1166,7 @@ class BTRFS(FS):
+     _formattable = True
+     _linuxNative = True
+     _supported = True
+-    _packages = ["btrfs-progs"]
++    _packages = ["btrfs-tools"]
+     _minSize = Size("256 MiB")
+     _maxSize = Size("16 EiB")
+     # FIXME parted needs to be taught about btrfs so that we can set the
+-- 
+2.8.1
+
