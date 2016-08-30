@@ -1,0 +1,71 @@
+From b856f4e8bb398717a53e256984b5f6821fc6266f Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 30 Aug 2016 07:23:39 -0400
+Subject: [PATCH] support initramfs boot and lvm auto partition
+
+- Generate initramfs before invoking grub-mkconfig
+  The grub.cfg will have initrd setting.
+
+- Set lvm as auto partition.
+
+- Make sure temp dir existed which required by dracut while live install.
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/constants.py | 3 +--
+ pyanaconda/install.py   | 9 ++++++---
+ 2 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/pyanaconda/constants.py b/pyanaconda/constants.py
+index 5624188..ad3d98e 100644
+--- a/pyanaconda/constants.py
++++ b/pyanaconda/constants.py
+@@ -163,8 +163,7 @@ SCREENSHOTS_TARGET_DIRECTORY = "/root/anaconda-screenshots"
+ # cmdline arguments that append instead of overwrite
+ CMDLINE_APPEND = ["modprobe.blacklist"]
+ 
+-#DEFAULT_AUTOPART_TYPE = AUTOPART_TYPE_LVM
+-DEFAULT_AUTOPART_TYPE =  AUTOPART_TYPE_PLAIN
++DEFAULT_AUTOPART_TYPE = AUTOPART_TYPE_LVM
+ 
+ import logging
+ LOGLVL_LOCK = logging.DEBUG-1
+diff --git a/pyanaconda/install.py b/pyanaconda/install.py
+index 8835cf3..0fcca28 100644
+--- a/pyanaconda/install.py
++++ b/pyanaconda/install.py
+@@ -115,9 +115,6 @@ def doConfiguration(storage, payload, ksdata, instClass):
+     with progress_report(_("Configuring addons")):
+         ksdata.addons.execute(storage, ksdata, instClass, u)
+ 
+-    with progress_report(_("Generating initramfs")):
+-        payload.recreateInitrds(force=True)
+-
+     if willRunRealmd:
+         with progress_report(_("Joining realm: %s") % ksdata.realm.discovered):
+             ksdata.realm.execute(storage, ksdata, instClass)
+@@ -202,6 +199,9 @@ def doInstall(storage, payload, ksdata, instClass):
+                                                             wait_for_entropy=entropy_wait_clbk)
+ 
+     turnOnFilesystems(storage, mountOnly=flags.flags.dirInstall, callbacks=callbacks_reg)
++    # Make sure temp dir existed, dracut requires it while live install
++    for subdir in ["log", "tmp"]:
++        iutil.mkdirChain(iutil.getSysroot() + "/var/volatile/%s" % subdir)
+ 
+     # Run %pre-install scripts with the filesystem mounted and no packages
+     with progress_report(_("Running pre-installation scripts")):
+@@ -271,6 +271,9 @@ def doInstall(storage, payload, ksdata, instClass):
+ 
+     # Do bootloader.
+     if willInstallBootloader:
++        with progress_report(_("Generating initramfs")):
++            payload.recreateInitrds(force=True)
++
+         with progress_report(_("Installing boot loader")):
+             writeBootLoader(storage, payload, instClass, ksdata)
+ 
+-- 
+2.8.1
+
