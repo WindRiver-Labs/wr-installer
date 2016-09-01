@@ -26,10 +26,10 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    squashfs-tools openssh python python-misc python-modules python-dbus \
                    nspr nss python-nss python-pyparted python-pyblock \
                    cracklib-python system-config-keyboard system-config-keyboard-base \
-                   system-config-date pykickstart libnewt-python dmraid lvm2 \
+                   system-config-date pykickstart libnewt-python dmraid \
                    python-cryptsetup firstboot python-iniparse \
                    dmidecode python-meh python2-libuser libuser \
-                   libreport-python localedef device-mapper device-mapper-multipath \
+                   libreport-python localedef \
                    python-pygobject python-rpm python-urlgrabber\
                    libgnomecanvas grub usermode tigervnc keybinder \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \

@@ -12,7 +12,6 @@ IMAGE_INSTALL = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'sysvinit', '', d)} \
     sysvinit-inittab \
     base-passwd \
-    device-mapper \
     wr-init \
     kernel-modules \
     windriver-gnome-theme \
