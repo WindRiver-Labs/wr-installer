@@ -108,6 +108,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0052-support-downloading-file-from-http-ftp-server-to-tar.patch \
            file://0053-live-install-supports-kickstart.patch \
            file://0054-support-initramfs-boot-and-lvm-auto-partition.patch \
+           file://0055-fix-hang-while-installed-system-reboot.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
