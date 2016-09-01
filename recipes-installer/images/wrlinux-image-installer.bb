@@ -25,6 +25,7 @@ IMAGE_INSTALL = "\
     windriver-gnome-theme \
     windriver-logos \
     dhcp-client \
+    ldd \
     "
 IMAGE_LINGUAS = "en-us en-gb"
 

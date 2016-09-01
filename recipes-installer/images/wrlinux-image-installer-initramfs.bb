@@ -7,7 +7,7 @@ IMAGE_INSTALL = "\
     initramfs-live-boot \
     initramfs-live-install \
     initramfs-live-install-efi \
-    busybox udev \
+    busybox udev ldd \
     initscripts \
     ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'sysvinit', '', d)} \
     sysvinit-inittab \
