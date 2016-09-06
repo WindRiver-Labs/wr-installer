@@ -24,7 +24,7 @@ build_iso_prepend() {
 }
 
 build_iso_append() {
-	implantisomd5 ${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.iso
+	implantisomd5 ${IMGDEPLOYDIR}/${IMAGE_NAME}.iso
 }
 
 # Code below is copied and adapted from package_rpm.bbclass implementation
