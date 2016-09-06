@@ -1,25 +1,28 @@
-From b856f4e8bb398717a53e256984b5f6821fc6266f Mon Sep 17 00:00:00 2001
+From ee4b0c53397b7d9d6acf861905fafa082d5a6da7 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Tue, 30 Aug 2016 07:23:39 -0400
+Date: Mon, 5 Sep 2016 22:03:51 -0400
 Subject: [PATCH] support initramfs boot and lvm auto partition
 
-- Generate initramfs before invoking grub-mkconfig
-  The grub.cfg will have initrd setting.
+- Create fake initramfs to cheat grub-mkconfig which
+  could generate grub.cfg that have initrd setting.
 
 - Set lvm as auto partition.
 
 - Make sure temp dir existed which required by dracut while live install.
 
+- Improve condition of updating kernel version list.
+
 Upstream-Status: Inappropriate [wrlinux specific]
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
- pyanaconda/constants.py | 3 +--
- pyanaconda/install.py   | 9 ++++++---
- 2 files changed, 7 insertions(+), 5 deletions(-)
+ pyanaconda/constants.py          | 3 +--
+ pyanaconda/install.py            | 6 ++++++
+ pyanaconda/packaging/__init__.py | 2 +-
+ 3 files changed, 8 insertions(+), 3 deletions(-)
 
 diff --git a/pyanaconda/constants.py b/pyanaconda/constants.py
-index 5624188..ad3d98e 100644
+index fabe290..123a5e9 100644
 --- a/pyanaconda/constants.py
 +++ b/pyanaconda/constants.py
 @@ -163,8 +163,7 @@ SCREENSHOTS_TARGET_DIRECTORY = "/root/anaconda-screenshots"
@@ -33,20 +36,10 @@ index 5624188..ad3d98e 100644
  import logging
  LOGLVL_LOCK = logging.DEBUG-1
 diff --git a/pyanaconda/install.py b/pyanaconda/install.py
-index 8835cf3..0fcca28 100644
+index 8835cf3..1973460 100644
 --- a/pyanaconda/install.py
 +++ b/pyanaconda/install.py
-@@ -115,9 +115,6 @@ def doConfiguration(storage, payload, ksdata, instClass):
-     with progress_report(_("Configuring addons")):
-         ksdata.addons.execute(storage, ksdata, instClass, u)
- 
--    with progress_report(_("Generating initramfs")):
--        payload.recreateInitrds(force=True)
--
-     if willRunRealmd:
-         with progress_report(_("Joining realm: %s") % ksdata.realm.discovered):
-             ksdata.realm.execute(storage, ksdata, instClass)
-@@ -202,6 +199,9 @@ def doInstall(storage, payload, ksdata, instClass):
+@@ -202,6 +202,9 @@ def doInstall(storage, payload, ksdata, instClass):
                                                              wait_for_entropy=entropy_wait_clbk)
  
      turnOnFilesystems(storage, mountOnly=flags.flags.dirInstall, callbacks=callbacks_reg)
@@ -56,16 +49,29 @@ index 8835cf3..0fcca28 100644
  
      # Run %pre-install scripts with the filesystem mounted and no packages
      with progress_report(_("Running pre-installation scripts")):
-@@ -271,6 +271,9 @@ def doInstall(storage, payload, ksdata, instClass):
+@@ -271,6 +274,9 @@ def doInstall(storage, payload, ksdata, instClass):
  
      # Do bootloader.
      if willInstallBootloader:
-+        with progress_report(_("Generating initramfs")):
-+            payload.recreateInitrds(force=True)
++        for kernel in payload.kernelVersionList:
++            open(iutil.getSysroot()+"/boot/initramfs-%s.img" % kernel, "w").write("\n")
 +
          with progress_report(_("Installing boot loader")):
              writeBootLoader(storage, payload, instClass, ksdata)
  
+diff --git a/pyanaconda/packaging/__init__.py b/pyanaconda/packaging/__init__.py
+index dc96c4c..cc8bd4f 100644
+--- a/pyanaconda/packaging/__init__.py
++++ b/pyanaconda/packaging/__init__.py
+@@ -381,7 +381,7 @@ class Payload(object):
+ 
+     @property
+     def kernelVersionList(self):
+-        if not self._kernelVersionList:
++        if not self._kernelVersionList or not self._kernelVersionList[0]:
+             self._updateKernelVersionList()
+ 
+         return self._kernelVersionList[0]
 -- 
 2.8.1
 
