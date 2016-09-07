@@ -7,7 +7,7 @@ SECTION = "devel"
 LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 DEPENDS = "e2fsprogs gettext intltool libarchive virtual/libx11 \
-           pango python rpm slang zlib dbus iscsi-initiator-utils audit \
+           pango python rpm slang zlib dbus audit \
            lvm2 system-config-keyboard-native libuser util-linux \
            libnewt libxcomposite gtk+ curl libarchive"
 
@@ -110,6 +110,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0054-support-initramfs-boot-and-lvm-auto-partition.patch \
            file://0055-fix-hang-while-installed-system-reboot.patch \
            file://0056-fix-installed-system-boot-from-encrypt-fs-failed.patch \
+           file://0057-installation-destination-disable-iSCSI-network-disks.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
