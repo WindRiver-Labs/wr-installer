@@ -432,6 +432,20 @@ Building the target installer
     The file be download to target image (/mnt/image/****). For host image,
     we could make use of "%pre" section with invoking shell to do that)
 
+16 How to create RPM metadata in build
+   make package-index
+
+   or
+
+   make bbs
+   bitbake package-index
+
+   There are multiple repodata in deploy dir:
+   $ find export/RPMS/ -name repodata
+   export/RPMS/all/repodata
+   export/RPMS/corei7_64/repodata
+   export/RPMS/intel_x86_64/repodata
+
 License
 -------
 Copyright (C) 2013-2014 Wind River Systems, Inc.
