@@ -198,7 +198,7 @@ FOE
        if [ -n "$ks" ]; then
            anaconda_opts="$anaconda_opts --kickstart=$ks"
        elif [ -e $KICKSTART_FILE ]; then
-           anaconda_opts="$anaconda_opts --kickstart=file:///installer-config/ks.cfg"
+           anaconda_opts="$anaconda_opts --kickstart=/installer-config/ks.cfg"
        fi
 
        ROOT_IMAGE="/LiveOS/rootfs.img"
