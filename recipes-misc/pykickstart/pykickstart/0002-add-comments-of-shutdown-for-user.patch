@@ -1,0 +1,31 @@
+From bcf6b13576096bdc87acb08e9bfa611a20e50d73 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 28 Sep 2016 21:43:25 -0400
+Subject: [PATCH] add comments of shutdown for user
+
+While neither shutdown or reboot in ks file, add comments of shutdown
+for user.
+
+Upstream-Status: Inappropriate[wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pykickstart/commands/reboot.py | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/pykickstart/commands/reboot.py b/pykickstart/commands/reboot.py
+index 4f9257b..0c1ab44 100644
+--- a/pykickstart/commands/reboot.py
++++ b/pykickstart/commands/reboot.py
+@@ -36,6 +36,8 @@ class FC3_Reboot(KickstartCommand):
+             retval += "# Reboot after installation\nreboot\n"
+         elif self.action == KS_SHUTDOWN:
+             retval += "# Shutdown after installation\nshutdown\n"
++        else:
++            retval += "# Shutdown after installation\n#shutdown\n"
+ 
+         return retval
+ 
+-- 
+2.8.1
+
