@@ -128,8 +128,8 @@ case $label in
         umount $dir
     done
     echo "" > /etc/udev/scripts/mount.sh
-    echo "init_bin ${init_bin}"
-    [ -x ${init_bin} ] && exec ${init_bin}
+    echo "init_bin /sbin/init"
+    [ -x /sbin/init ] && exec /sbin/init
     ;;
 esac
 
