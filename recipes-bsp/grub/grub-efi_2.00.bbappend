@@ -5,8 +5,7 @@ PXE_UEFI_GRUB_IMAGE ?= "bootx64-pxe.efi"
 
 SRC_URI += "file://grub.cfg \
 "
-
-do_mkpxeimage() {
+do_deploy_append_class-target() {
     install -d boot/grub
     if [ -e ${PXE_UEFI_GRUB_CONF} ]; then
         # Use customer's
@@ -29,13 +28,8 @@ do_mkpxeimage() {
 
     install -m 644 ${PXE_UEFI_GRUB_IMAGE} ${DEPLOY_DIR_IMAGE}
     rm ${KERNEL_IMAGETYPE} wrlinux-image-installer-initramfs-${MACHINE}.${INITRAMFS_FSTYPES}
+
+    # Install the modules to deploy, and efi_populate will
+    # copy them to grub-efi's search path later
+    make -C grub-core install DESTDIR=${DEPLOYDIR} pkglibdir=""
 }
-
-do_deploy_append_class-target() {
-        # Install the modules to deploy, and efi_populate will
-        # copy them to grub-efi's search path later
-        make -C grub-core install DESTDIR=${DEPLOYDIR} pkglibdir=""
-}
-
-
-addtask do_mkpxeimage after do_install
