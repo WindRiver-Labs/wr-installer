@@ -9,7 +9,8 @@ PR = "r0"
 
 inherit wrlinux-image
 
-INITRD_IMAGE_LIVE = "wrlinux-image-installer-initramfs"
+# Support installation from initrd boot
+do_image_complete[depends] += "wrlinux-image-installer-initramfs:do_image_complete"
 
 DEPENDS += "isomd5sum-native \
 "

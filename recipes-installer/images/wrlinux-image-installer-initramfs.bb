@@ -1,7 +1,5 @@
-# Simple initramfs image. Mostly used for live images.
-DESCRIPTION = "Small image capable of booting a device. The kernel includes \
-the Minimal RAM-based Initial Root Filesystem (initramfs), which finds the \
-first 'init' program more efficiently."
+DESCRIPTION = "The initramfs contains anaconda installer, which supports \
+PXE (net boot installation)"
 
 IMAGE_INSTALL = "\
     initramfs-live-boot \

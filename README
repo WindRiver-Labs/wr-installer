@@ -265,9 +265,9 @@ Building the target installer
          Copy kernel (bzImage) to tftp download dir. In ISO, it named vmlinuz.
 
     10.2 initrd boot
-         We support initrd boot by default, please copy initramfs
-         (wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz) to tftp
-         download dir. In ISO, it named initrd.
+         Use recipe wrlinux-image-installer-initramfs to support initrd boot,
+         please copy initramfs (wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz)
+         to tftp download dir.
 
          We must add param "LABEL=initrd-install" to PXE config file.
          There is an example in examples/pxe/pxelinux.cfg/default.initramfs
