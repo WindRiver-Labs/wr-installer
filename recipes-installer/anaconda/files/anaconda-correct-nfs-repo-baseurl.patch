@@ -1,0 +1,17 @@
+AnacondaSmartRepo's baseurl should be a list rather than a string.
+
+Upstream-Status: Inappropriate [WR specific]
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+
+--- anaconda-16.25/pyanaconda/iw/task_gui.py.orig	2014-07-18 14:35:50.203294032 +0800
++++ anaconda-16.25/pyanaconda/iw/task_gui.py	2014-07-18 14:36:15.571294723 +0800
+@@ -328,7 +328,7 @@
+                   "repository:\n\n%s") % e)
+             return False
+ 
+-        repo.baseurl = "file://%s" % dest
++        repo.baseurl = ["file://%s" % dest]
+         repo.anacondaBaseURLs = ["nfs:%s:%s:%s" % (options,server,path)]
+         return True
+ 

@@ -1,0 +1,35 @@
+Remove option add new repo from cd/dvd temporarily that it is not practical for WRLinux.
+
+Upstream-Status: Inappropriate [WR specific]
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+
+--- anaconda-16.25/pyanaconda/iw/task_gui.py.orig	2014-07-22 19:41:45.609212616 +0800
++++ anaconda-16.25/pyanaconda/iw/task_gui.py	2014-07-22 20:03:45.309248581 +0800
+@@ -129,6 +129,8 @@
+ 
+         # Remove these until they are actually implemented
+         self.typeComboBox.remove_text(3)
++        self.typeComboBox.remove_text(1)
++        self.notebook.remove_page(1)
+ 
+     # Given a method string, return the index of the typeComboBox that should
+     # be made active in order to match.
+@@ -338,7 +338,7 @@
+         return True
+ 
+     def run(self):
+-        applyFuncs = [ self._applyURL, self._applyMedia, self._applyNfs,
++        applyFuncs = [ self._applyURL, self._applyNfs,
+                        self._applyHd ]
+ 
+         while True:
+@@ -490,7 +490,7 @@
+         return None
+ 
+     def run(self):
+-        applyFuncs = [ self._applyURL, self._applyMedia, self._applyNfs,
++        applyFuncs = [ self._applyURL, self._applyNfs,
+                        self._applyHd ]
+ 
+         while True:

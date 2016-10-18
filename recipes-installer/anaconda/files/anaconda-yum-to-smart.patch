@@ -1,0 +1,253 @@
+Adjust anaconda to use smart and not yum as the package manager
+
+This patch requires the smartinstall.py to also be installed in order
+to function properly.
+
+Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
+
+Index: anaconda-16.25/pyanaconda/iw/task_gui.py
+===================================================================
+--- anaconda-16.25.orig/pyanaconda/iw/task_gui.py
++++ anaconda-16.25/pyanaconda/iw/task_gui.py
+@@ -34,8 +34,7 @@ _ = lambda x: gettext.ldgettext("anacond
+ from pyanaconda import network
+ from pyanaconda import iutil
+ 
+-from pyanaconda.yuminstall import AnacondaYumRepo
+-import yum.Errors
++from pyanaconda.smartinstall import AnacondaSmartRepo, SmartRepo
+ 
+ import logging
+ log = logging.getLogger("anaconda")
+@@ -48,7 +47,7 @@ def setupRepo(anaconda, repo):
+         anaconda.backend.doRepoSetup(anaconda, thisrepo=repo.id, fatalerrors=False)
+         anaconda.backend.doSackSetup(anaconda, thisrepo=repo.id, fatalerrors=False)
+         log.info("added (UI) repository %s with source URL %s, id:%s" % (repo.name, repo.mirrorlist or repo.baseurl, repo.id))
+-    except (IOError, yum.Errors.RepoError) as e:
++    except (IOError, ValueError) as e:
+         anaconda.intf.messageWindow(_("Error"),
+               _("Unable to read package metadata from repository.  "
+                 "This may be due to a missing repodata directory.  "
+@@ -147,8 +146,8 @@ class RepoEditor:
+ 
+     def _addAndEnableRepo(self, repo):
+         try:
+-            self.backend.ayum.repos.add(repo)
+-        except yum.Errors.DuplicateRepoError as e:
++            self.backend.asmart.repos.add(repo)
++        except ValueError as e:
+             self.intf.messageWindow(_("Error"),
+                   _("The repository %s has already been added.  Please "
+                     "choose a different repository name and "
+@@ -161,7 +160,7 @@ class RepoEditor:
+     def _disableAndRemoveRepo(self, repo):
+         repo.disable()
+         repo.close()
+-        self.anaconda.backend.ayum.repos.delete(repo.id)
++        self.anaconda.backend.asmart.repos.delete(repo.id)
+ 
+ 
+     def _validURL(self, url):
+@@ -213,7 +212,7 @@ class RepoEditor:
+                     (device, fstype, path) = m.split(":")
+ 
+                 # find device in self.partitionComboBox and select it
+-                self.directoryChooser.set_current_folder("%s%s" % (self.anaconda.backend.ayum.isodir, path))
++                self.directoryChooser.set_current_folder("%s%s" % (self.anaconda.backend.asmart.isodir, path))
+             else:
+                 self.baseurlEntry.set_text(url)
+ 
+@@ -268,8 +267,8 @@ class RepoEditor:
+ 
+     def _applyMedia(self, repo):
+         # FIXME works only if storage has detected format of cdrom drive
+-        ayum = self.anaconda.backend.ayum
+-        cdr = scanForMedia(ayum.tree, self.anaconda.storage)
++        asmart = self.anaconda.backend.asmart
++        cdr = scanForMedia(asmart.tree, self.anaconda.storage)
+         if not cdr:
+             self.intf.messageWindow(_("No Media Found"),
+                                     _("No installation media was found. "
+@@ -279,11 +278,11 @@ class RepoEditor:
+ 
+         log.info("found installation media on %s" % cdr)
+         repo.name = self.nameEntry.get_text()
+-        repo.anacondaBaseURLs = ["cdrom://%s:%s" % (cdr, self.anaconda.backend.ayum.tree)]
+-        repo.baseurl = "file://%s" % ayum.tree
+-        ayum.mediagrabber = ayum.mediaHandler
++        repo.anacondaBaseURLs = ["cdrom://%s:%s" % (cdr, self.anaconda.backend.asmart.tree)]
++        repo.baseurl = "file://%s" % asmart.tree
++        asmart.mediagrabber = asmart.mediaHandler
+         self.anaconda.mediaDevice = cdr
+-        repo.mediaid = getMediaId(ayum.tree)
++        repo.mediaid = getMediaId(asmart.tree)
+         log.info("set mediaid of repo %s to: %s" % (repo.name, repo.mediaid))
+ 
+         return True
+@@ -305,13 +304,14 @@ class RepoEditor:
+                                     _("Please enter an NFS server and path."))
+             return False
+ 
+-        if not network.hasActiveNetDev():
+-            if not self.anaconda.intf.enableNetwork():
+-                self.intf.messageWindow(_("No Network Available"),
+-                    _("Some of your software repositories require "
+-                      "networking, but there was an error enabling the "
+-                      "network on your system."))
+-                return False
++        # MGH: Assume the network is always active...
++        #if not network.hasActiveNetDev():
++        #    if not self.anaconda.intf.enableNetwork():
++        #        self.intf.messageWindow(_("No Network Available"),
++        #            _("Some of your software repositories require "
++        #              "networking, but there was an error enabling the "
++        #              "network on your system."))
++        #        return False
+ 
+         import tempfile
+         dest = tempfile.mkdtemp("", repo.name.replace(" ", ""), "/mnt")
+@@ -354,16 +354,17 @@ class RepoEditor:
+             if self.repo:
+                 # use temporary id so that we don't get Duplicate Repo error
+                 # when adding
+-                newRepoObj = AnacondaYumRepo("UIedited_%s" %
+-                                             self.anaconda.backend.ayum.repoIDcounter.next())
++                newRepoObj = AnacondaSmartRepo("UIedited_%s" %
++                                             self.anaconda.backend.asmart.repoIDcounter.next(), self.anaconda)
+                 newRepoObj.cost = self.repo.cost
+                 removeOld = True
+             else:
+-                newRepoObj = AnacondaYumRepo(reponame.replace(" ", ""))
++                newRepoObj = AnacondaSmartRepo(reponame.replace(" ", ""), self.anaconda)
+                 removeOld = False
+ 
++            # MGH: Ignore the cachedir
+             # corresponds to self.repos.setCacheDir in AnacondaYum.doConfigSetup
+-            newRepoObj.basecachedir = self.anaconda.backend.ayum.conf.cachedir
++            #newRepoObj.basecachedir = self.anaconda.backend.ayum.conf.cachedir
+ 
+             type = self.typeComboBox.get_active()
+             if (not applyFuncs[type](newRepoObj) or
+@@ -374,28 +375,30 @@ class RepoEditor:
+                 continue
+ 
+             if removeOld:
+-                try:
+-                    os.unlink("%s/cachecookie" % self.repo.cachedir)
+-                    os.unlink("%s/repomd.xml" % self.repo.cachedir)
+-                except OSError:
+-                    pass
++                # MGH: Don't cleanup the cachedir!
++                #try:
++                #    os.unlink("%s/cachecookie" % self.repo.cachedir)
++                #    os.unlink("%s/repomd.xml" % self.repo.cachedir)
++                #except OSError:
++                #    pass
+ 
+                 self.repo.disable()
+                 self.repo.close()
+-                self.anaconda.backend.ayum.repos.delete(self.repo.id)
++                self.anaconda.backend.asmart.repos.delete(self.repo.id)
+                 log.info("deleted (UI) repository %s with source URL %s, id:%s"
+                          % (self.repo.name, self.repo.mirrorlist or self.repo.baseurl, self.repo.id))
+-                try:
+-                    shutil.rmtree(self.repo.cachedir)
+-                except Exception as e:
+-                    log.warning("error removing cachedir for %s: %s" %(self.repo, e))
+-                    pass
++                #try:
++                #    shutil.rmtree(self.repo.cachedir)
++                #except Exception as e:
++                #    log.warning("error removing cachedir for %s: %s" %(self.repo, e))
++                #    pass
+ 
++            # MGH: Need to figure out groups
+             if (newRepoObj.enablegroups or 
+                 (removeOld and self.repo.enablegroups)):
+                 # update groups information
+                 try:
+-                    self.anaconda.backend.ayum.doGroupSetup()
++                    self.anaconda.backend.asmart.doGroupSetup()
+                     self.group_update_cb()
+                 except Exception as e:
+                     log.debug("unable to reset group information after UI repo edit: %s"
+@@ -413,7 +416,7 @@ class RepoMethodstrEditor(RepoEditor):
+     def __init__(self, anaconda, methodstr):
+         # Create temporary repo to store methodstr needed for
+         # createDialog parent method.
+-        temprepo = AnacondaYumRepo("UITmpMethodstrRepo")
++        temprepo = AnacondaSmartRepo("UITmpMethodstrRepo", anaconda)
+         temprepo.name = "Installation Repo"
+         temprepo.anacondaBaseURLs = [methodstr]
+         RepoEditor.__init__(self, anaconda, temprepo)
+@@ -440,7 +443,7 @@ class RepoMethodstrEditor(RepoEditor):
+         return repourl
+ 
+     def _applyMedia(self):
+-        cdr = scanForMedia(self.anaconda.backend.ayum.tree, self.anaconda.storage)
++        cdr = scanForMedia(self.anaconda.backend.asmart.tree, self.anaconda.storage)
+         if not cdr:
+             self.intf.messageWindow(_("No Media Found"),
+                                     _("No installation media was found. "
+@@ -448,10 +451,10 @@ class RepoMethodstrEditor(RepoEditor):
+                                       "and try again."))
+             return False
+ 
+-        self.anaconda.backend.ayum.mediagrabber = self.anaconda.backend.ayum.mediaHandler
+-        self.anaconda.backend.ayum.anaconda.mediaDevice = cdr
++        self.anaconda.backend.asmart.mediagrabber = self.anaconda.backend.asmart.mediaHandler
++        self.anaconda.backend.asmart.anaconda.mediaDevice = cdr
+         log.info("found installation media on %s" % cdr)
+-        return "cdrom://%s:%s" % (cdr, self.anaconda.backend.ayum.tree)
++        return "cdrom://%s:%s" % (cdr, self.anaconda.backend.asmart.tree)
+ 
+     def _applyNfs(self):
+         server = self.nfsServerEntry.get_text()
+@@ -511,11 +514,14 @@ class TaskWindow(InstallWindow):
+ 
+         tasks = self.xml.get_widget("taskList").get_model()
+         for (cb, task, grps) in filter(lambda x: not x[0], tasks):
+-            map(lambda g: setattr(self.backend.ayum.comps.return_group(g),
+-                                  "default", False), grps)
++            log.debug("not - cb = %s, task = %s, grps = %s" % (cb, task, grps))
++            #map(lambda g: setattr(self.backend.asmart.comps.return_group(g),
++            #                      "default", False), grps)
+         for (cb, task, grps) in filter(lambda x: x[0], tasks):
+-            map(lambda g: setattr(self.backend.ayum.comps.return_group(g),
+-                                  "default", True), grps)
++            log.debug("    - cb = %s, task = %s, grps = %s" % (cb, task, grps))
++            self.backend.task_to_install = (task, grps)
++            #map(lambda g: setattr(self.backend.asmart.comps.return_group(g),
++            #                      "default", True), grps)
+ 
+     def _editRepo(self, *args):
+         repo = None
+@@ -665,6 +671,7 @@ class TaskWindow(InstallWindow):
+         for (reponame, repo) in self.repos.repos.items():
+             repo_name = gettext.ldgettext(self.anaconda.instClass.l10n_domain,
+                                           repo.name)
++
+             store.append([repo.isEnabled(),
+                           repo_name,
+                           repo])
+@@ -681,7 +688,7 @@ class TaskWindow(InstallWindow):
+         self.anaconda = anaconda
+ 
+         self.tasks = anaconda.instClass.tasks
+-        self.repos = anaconda.backend.ayum.repos
++        self.repos = anaconda.backend.asmart.repos
+ 
+         (self.xml, vbox) = gui.getGladeWidget("tasksel.glade", "taskBox")
+ 
+Index: anaconda-16.25/pyanaconda/textw/task_text.py
+===================================================================
+--- anaconda-16.25.orig/pyanaconda/textw/task_text.py
++++ anaconda-16.25/pyanaconda/textw/task_text.py
+@@ -23,6 +23,6 @@ from pyanaconda.constants import *
+ class TaskWindow:
+     def __call__(self, screen, anaconda):
+         anaconda.backend.resetPackageSelections()
+-        anaconda.backend.selectGroup("Core")
++        anaconda.backend.task_to_install = anaconda.instClass.tasks[0]
+ 
+         return INSTALL_OK

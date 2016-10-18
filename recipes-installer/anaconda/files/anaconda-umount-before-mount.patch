@@ -1,0 +1,39 @@
+From 6164c8ee8a3f2d3defc158c44354a6b9a9010fb5 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Thu, 22 May 2014 21:27:32 +0800
+Subject: [PATCH] pyanaconda/isys/__init__.py: umount the device before mount
+
+The udev may mount the devices to /media which would cause errors when
+we remount the devices in installer, so umount it before mount.
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/isys/__init__.py | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/pyanaconda/isys/__init__.py b/pyanaconda/isys/__init__.py
+index dc9b16e..2a30d9e 100755
+--- a/pyanaconda/isys/__init__.py
++++ b/pyanaconda/isys/__init__.py
+@@ -124,6 +124,16 @@ def mount(device, location, fstype = "ext2", readOnly = False,
+ 
+     flags = ",".join(opts)
+ 
++    # Umount the device before mount it
++    if not remount and device.startswith('/dev/'):
++        try:
++            ret = iutil.execWithRedirect("umount",
++                                          [device],
++                                          stdout="/dev/tty5",
++                                          stderr="/dev/tty5")
++        except Exception:
++            pass
++
+     log.debug("isys.py:mount()- going to mount %s on %s as %s with options %s" %(device, location, fstype, flags))
+     rc = _isys.mount(fstype, device, location, flags)
+ 
+-- 
+1.8.3.1
+

@@ -1,0 +1,66 @@
+From 8d4c3d8bfb968c18707398a16470b2da22118183 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Wed, 23 Apr 2014 18:31:51 +0800
+Subject: [PATCH] storage/formats: umount the fs before format it
+
+When we use the live image, the init-live.sh will mount all the devices it can
+found, and move the mount to the second target before switch_root, then they
+would be mounted on the second system which would cause errors, we can umount
+the fs before we format it to fix the problem.
+
+Upstream-Status: Inappropriate [WR specific]
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/storage/formats/__init__.py | 13 ++++++++++++-
+ pyanaconda/storage/formats/fs.py       |  9 +++++++++
+ 2 files changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/pyanaconda/storage/formats/__init__.py b/pyanaconda/storage/formats/__init__.py
+index 4b83604..dc3ac70 100644
+--- a/pyanaconda/storage/formats/__init__.py
++++ b/pyanaconda/storage/formats/__init__.py
+@@ -298,8 +298,19 @@ class DeviceFormat(object):
+     def destroy(self, *args, **kwargs):
+         log_method_call(self, device=self.device,
+                         type=self.type, status=self.status)
++
++        # Umount the device before format it
++        log.warning("self.device %s" % self.device)
++        try:
++            ret = execWithRedirect("umount",
++                                              [self.device],
++                                              stdout="/dev/tty5",
++                                              stderr="/dev/tty5")
++        except Exception:
++            raise
++
+         try:
+-            rc = execWithRedirect("wipefs", ["-a", self.device],
++            rc = execWithRedirect("wipefs", ["-a", "-f", self.device],
+                                   stderr="/dev/tty5",
+                                   stdout="/dev/tty5")
+         except Exception as e:
+diff --git a/pyanaconda/storage/formats/fs.py b/pyanaconda/storage/formats/fs.py
+index 900223c..f8118ad 100644
+--- a/pyanaconda/storage/formats/fs.py
++++ b/pyanaconda/storage/formats/fs.py
+@@ -358,6 +358,15 @@ class FS(DeviceFormat):
+                                     % {"type": self.type, "device": self.device},
+                                     100, pulse = True)
+ 
++        # Umount the device before format it
++        try:
++            ret = iutil.execWithRedirect("umount",
++                                              [self.device],
++                                              stdout="/dev/tty5",
++                                              stderr="/dev/tty5")
++        except Exception:
++            pass
++
+         try:
+             ret = iutil.execWithPulseProgress(self.mkfsProg,
+                                               argv,
+-- 
+1.8.3.1
+

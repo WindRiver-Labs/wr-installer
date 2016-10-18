@@ -1,0 +1,6 @@
+[subgit "downloads"]
+	bare = false
+	clone-or-force-pull-only = false
+	path = downloads
+	url = ../wr-installer-dl
+	optional = true

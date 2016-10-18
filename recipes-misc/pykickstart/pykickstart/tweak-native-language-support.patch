@@ -1,0 +1,137 @@
+From af0f4dfa9e2021a6999d385bcaf729b4aa6536dc Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Mon, 11 Apr 2016 08:19:07 +0000
+Subject: [PATCH] tweak native language support
+
+Only support en_GB.
+
+Upstream-Status: Inappropriate[wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ Makefile   |  2 +-
+ zanata.xml | 94 --------------------------------------------------------------
+ 2 files changed, 1 insertion(+), 95 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 01a9c1a..890800d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -25,7 +25,7 @@ po-pull:
+ po-empty:
+ 	for lingua in $$(gawk 'match($$0, /locale>(.*)<\/locale/, ary) {print ary[1]}' ./zanata.xml) ; do \
+ 		[ -f ./po/$$lingua.po ] || \
+-		msginit -i ./po/$(PKGNAME).pot -o ./po/$$lingua.po --no-translator || \
++		msginit -i ./po/$(PKGNAME).pot -o ./po/$$lingua.po -l $$lingua --no-translator || \
+ 		exit 1 ; \
+ 	done
+ 
+diff --git a/zanata.xml b/zanata.xml
+index 3612076..e93bdd7 100644
+--- a/zanata.xml
++++ b/zanata.xml
+@@ -6,101 +6,7 @@
+   <project-type>gettext</project-type>
+ 
+   <locales>
+-    <locale>sq</locale>
+-    <locale>ar</locale>
+-    <locale>as</locale>
+-    <locale>ast</locale>
+-    <locale>bal</locale>
+-    <locale>eu</locale>
+-    <locale>bn</locale>
+-    <locale>bn-IN</locale>
+-    <locale>brx</locale>
+-    <locale>bs</locale>
+-    <locale>br</locale>
+-    <locale>bg</locale>
+-    <locale>ca</locale>
+-    <locale>zh-CN</locale>
+-    <locale>zh-HK</locale>
+-    <locale>zh-TW</locale>
+-    <locale>kw</locale>
+-    <locale>kw-GB</locale>
+-    <locale>cs</locale>
+-    <locale>da</locale>
+-    <locale>nl</locale>
+     <locale>en-GB</locale>
+-    <locale>eo</locale>
+-    <locale>et</locale>
+-    <locale>fi</locale>
+-    <locale>fr</locale>
+-    <locale>gl</locale>
+-    <locale>ka</locale>
+-    <locale>de</locale>
+-    <locale>el</locale>
+-    <locale>gu</locale>
+-    <locale>he</locale>
+-    <locale>hi</locale>
+-    <locale>hu</locale>
+-    <locale>is</locale>
+-    <locale>id</locale>
+-    <locale>ia</locale>
+-    <locale>it</locale>
+-    <locale>ja</locale>
+-    <locale>kn</locale>
+-    <locale>kk</locale>
+-    <locale>km</locale>
+-    <locale>ky</locale>
+-    <locale>ko</locale>
+-    <locale>lt</locale>
+-    <locale>nds</locale>
+-    <locale>mk</locale>
+-    <locale>mai</locale>
+-    <locale>ms</locale>
+-    <locale>ml</locale>
+-    <locale>mr</locale>
+-    <locale>mn</locale>
+-    <locale>ne</locale>
+-    <locale>nb</locale>
+-    <locale>nn</locale>
+-    <locale>or</locale>
+-    <locale>pa</locale>
+-    <locale>fa</locale>
+-    <locale>pl</locale>
+-    <locale>pt</locale>
+-    <locale>pt-BR</locale>
+-    <locale>ro</locale>
+-    <locale>ru</locale>
+-    <locale>sr</locale>
+-    <locale>sr@latin</locale>
+-    <locale>si</locale>
+-    <locale>sk</locale>
+-    <locale>sl</locale>
+-    <locale>es</locale>
+-    <locale>sv</locale>
+-    <locale>tg</locale>
+-    <locale>ta</locale>
+-    <locale>te</locale>
+-    <locale>bo</locale>
+-    <locale>tr</locale>
+-    <locale>uk</locale>
+-    <locale>ur</locale>
+-    <locale>wba</locale>
+-    <locale>cy</locale>
+-    <locale>lv</locale>
+-    <locale>kw@uccor</locale>
+-    <locale>kw@kkcor</locale>
+-    <locale>af</locale>
+-    <locale>am</locale>
+-    <locale>be</locale>
+-    <locale>hr</locale>
+-    <locale>de-CH</locale>
+-    <locale>th</locale>
+-    <locale>vi</locale>
+-    <locale>zu</locale>
+-    <locale>ilo</locale>
+-    <locale>nso</locale>
+-    <locale>tw</locale>
+-    <locale>yo</locale>
+-    <locale>anp</locale>
+   </locales>
+ 
+ </config>
+-- 
+2.5.0
+

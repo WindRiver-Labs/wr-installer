@@ -1,0 +1,45 @@
+From 3923c29384e2616bdd53f8cc6fb3d2f4c069495e Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Sun, 27 Jul 2014 16:39:00 +0800
+Subject: [PATCH] upgrade.py: fix /tmp for upgrade
+
+Fixed:
+/tmp -> /var/tmp to /tmp -> var/tmp
+
+The upgrade requires /tmp not to be a absolute symlink.
+
+Upstream-Stauts: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/upgrade.py | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/pyanaconda/upgrade.py b/pyanaconda/upgrade.py
+index 01d8e35..d0d5148 100644
+--- a/pyanaconda/upgrade.py
++++ b/pyanaconda/upgrade.py
+@@ -209,13 +209,19 @@ def upgradeMountFilesystems(anaconda):
+         if not os.path.islink(n_path): continue
+         l = os.readlink(n_path)
+         if l[0] == '/':
+-            # Fix /bin/sh -> /bin/bash to /bin/sh -> bash
++            # Fix absolute symbolic to relative one:
++            # /bin/sh -> /bin/bash to /bin/sh -> bash
+             if n == '/bin/sh':
+                 # They are in the same dir, easily fix it
+                 if os.path.dirname(n) == os.path.dirname(l):
+                     os.unlink(n_path)
+                     os.symlink(os.path.basename(l), n_path)
+                     continue
++            # /tmp -> /var/tmp to /tmp -> var/tmp
++            elif n == '/tmp' and l == '/var/tmp':
++                    os.unlink(n_path)
++                    os.symlink('var/tmp', n_path)
++                    continue
+             badLinks.append(n)
+ 
+     if badLinks:
+-- 
+1.8.3.1
+

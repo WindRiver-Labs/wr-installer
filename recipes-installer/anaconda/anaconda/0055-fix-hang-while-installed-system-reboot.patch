@@ -1,0 +1,31 @@
+From 70ffd1f36c08ce0296fdcd6b4ccee8c6d40e0d34 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 1 Sep 2016 09:56:37 -0400
+Subject: [PATCH] fix hang while installed system reboot
+
+The lvm2 installed to target system, and it disabled by
+default which caused target system reboot hang.
+
+Enable service lvm2-monitor.service could fix the issue.
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ data/interactive-defaults.ks | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/data/interactive-defaults.ks b/data/interactive-defaults.ks
+index cda7f76..b9a926f 100644
+--- a/data/interactive-defaults.ks
++++ b/data/interactive-defaults.ks
+@@ -3,3 +3,6 @@
+ auth --enableshadow --passalgo=sha512
+ firstboot --enable
+ keyboard --xlayouts='us'
++
++# Fix hang while installed system reboot
++services --enabled lvm2-monitor.service
+-- 
+2.8.1
+

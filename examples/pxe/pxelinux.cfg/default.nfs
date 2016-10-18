@@ -1,0 +1,8 @@
+default netboot
+prompt 1 
+display 
+pxeboot.msg 
+timeout 1
+label netboot 
+	kernel bzImage
+	append ip=dhcp root=/dev/nfs nfsroot=128.224.162.194:/home/nfs/export

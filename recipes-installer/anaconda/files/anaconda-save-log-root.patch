@@ -1,0 +1,90 @@
+From e156f3264e5e057a353e5162f5a7c1bd97870666 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Tue, 20 May 2014 11:53:45 +0800
+Subject: [PATCH] packages.py: save logs to /root/anaconda_log
+
+* The log was saved to /var/log/anaconda, but our /var is on tempfs
+  which can't save anything after reboot, so save the log to
+  /root/anaconda_log.
+
+* Save /tmp/scriptlet.log, too.
+
+* It seems that we don't use the rsyslog, it creates install.log and
+  install.log.syslog in /root, and install.log is null, the
+  install.log.syslog doesn't contain any useful info either, only
+  contains its self start info, so disable it.
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/backend.py  |  7 ++++---
+ pyanaconda/packages.py | 11 ++++++-----
+ 2 files changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/pyanaconda/backend.py b/pyanaconda/backend.py
+index 4e3456f..2adb728 100644
+--- a/pyanaconda/backend.py
++++ b/pyanaconda/backend.py
+@@ -25,7 +25,7 @@ import shutil
+ import iutil
+ import os, sys
+ import logging
+-import backend_log
++#import backend_log
+ from constants import *
+ 
+ import isys
+@@ -66,7 +66,8 @@ class AnacondaBackend:
+         pass
+ 
+     def doPreInstall(self, anaconda):
+-        self.initLog(anaconda.rootPath)
++        pass
++        #self.initLog(anaconda.rootPath)
+ 
+     def copyFirmware(self, anaconda):
+         # Multiple driver disks may be loaded, so we need to glob for all
+@@ -98,7 +99,7 @@ class AnacondaBackend:
+ 
+         storage.writeEscrowPackets(anaconda)
+         sys.stdout.flush()
+-        backend_log.log.stop()
++        #backend_log.log.stop()
+ 
+     def doInstall(self, anaconda):
+         log.warning("doInstall not implemented for backend!")
+diff --git a/pyanaconda/packages.py b/pyanaconda/packages.py
+index 5ef7c8d..1a1a634 100644
+--- a/pyanaconda/packages.py
++++ b/pyanaconda/packages.py
+@@ -68,8 +68,8 @@ def writeKSConfiguration(anaconda):
+ 
+ def copyAnacondaLogs(anaconda):
+     log.info("Copying anaconda logs")
+-    if not os.path.isdir (anaconda.rootPath + '/var/log/anaconda'):
+-        os.mkdir(anaconda.rootPath + '/var/log/anaconda')
++    if not os.path.isdir (anaconda.rootPath + '/root/anaconda_log'):
++        os.mkdir(anaconda.rootPath + '/root/anaconda_log')
+ 
+     for (fn, dest) in (("/tmp/anaconda.log", "anaconda.log"),
+                        ("/tmp/syslog", "anaconda.syslog"),
+@@ -77,11 +77,12 @@ def copyAnacondaLogs(anaconda):
+                        ("/tmp/program.log", "anaconda.program.log"),
+                        ("/tmp/storage.log", "anaconda.storage.log"),
+                        ("/tmp/ifcfg.log", "anaconda.ifcfg.log"),
+-                       ("/tmp/yum.log", "anaconda.yum.log")):
++                       ("/tmp/yum.log", "anaconda.yum.log"),
++                       ("/tmp/scriptlet.log", "anaconda.scriptlet.log")):
+         if os.access(fn, os.R_OK):
+             try:
+-                shutil.copyfile(fn, "%s/var/log/anaconda/%s" %(anaconda.rootPath, dest))
+-                os.chmod("%s/var/log/anaconda/%s" %(anaconda.rootPath, dest), 0600)
++                shutil.copyfile(fn, "%s/root/anaconda_log/%s" %(anaconda.rootPath, dest))
++                os.chmod("%s/root/anaconda_log/%s" %(anaconda.rootPath, dest), 0600)
+             except:
+                 pass
+ 
+-- 
+1.8.3.1
+

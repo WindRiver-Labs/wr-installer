@@ -1,0 +1,44 @@
+From 25e37d41c130fdc759e23d0f5e13b89be0cb7bf2 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 26 May 2015 10:51:50 +0800
+Subject: [PATCH] vnc.py: support vncquestion while text display
+
+While text display, there should be vnc question for customer,
+But the obsolete network detection break the question window,
+we comment out the network detection to support vncquestion.
+
+Upstream-Status: Inappropriate [WRLinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/vnc.py | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/pyanaconda/vnc.py b/pyanaconda/vnc.py
+index 47e42eb..be6fc67 100644
+--- a/pyanaconda/vnc.py
++++ b/pyanaconda/vnc.py
+@@ -100,7 +100,8 @@ class VncServer:
+         devices = netinfo.netdevices
+         active_devs = network.getActiveNetDevs()
+ 
+-        self.ip = None
++        #self.ip = None
++        self.ip = "127.0.0.1"
+         if active_devs != []:
+             devname = devices[active_devs[0]].iface
+             try:
+@@ -323,8 +324,8 @@ def askVncWindow(title = None, message = None):
+     if not os.access('/usr/bin/Xvnc', os.X_OK):
+         return -1
+ 
+-    if not network.hasActiveNetDev():
+-        return -1
++    #if not network.hasActiveNetDev():
++    #    return -1
+ 
+     if not title:
+         title = _("Unable to Start X")
+-- 
+1.9.1
+

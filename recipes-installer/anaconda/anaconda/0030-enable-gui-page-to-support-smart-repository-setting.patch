@@ -1,0 +1,33 @@
+From 2e333b0262f5fef36dbdd2f1cb50395ec4850ecb Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 25 May 2016 21:42:57 -0400
+Subject: [PATCH 30/36] enable gui pages
+
+- support smart repository setting
+- support software selection setting
+- support timezone setting
+- support user creation setting
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/hubs/__init__.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyanaconda/ui/gui/hubs/__init__.py b/pyanaconda/ui/gui/hubs/__init__.py
+index d4fe36b..7974dd9 100644
+--- a/pyanaconda/ui/gui/hubs/__init__.py
++++ b/pyanaconda/ui/gui/hubs/__init__.py
+@@ -205,7 +205,7 @@ class Hub(GUIObject, common.Hub):
+         log.info("_updateCompleteness %s" % (spoke.mainWidgetName))
+         # It is minimal installation for now, the non-implemented
+         # functions will be disabled.
+-        if spoke.mainWidgetName not in ["storageWindow", "passwordWindow"]:
++        if spoke.mainWidgetName not in ["storageWindow", "passwordWindow", "sourceWindow", "softwareWindow", "datetimeWindow", "userCreationWindow"]:
+             spoke.selector.set_sensitive(False)
+         else:
+             spoke.selector.set_sensitive(spoke.sensitive and spoke.ready)
+-- 
+2.8.1
+

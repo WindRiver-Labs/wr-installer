@@ -1,0 +1,43 @@
+--- anaconda-16.25/pyanaconda/iw/task_gui.py.orig	2014-07-15 15:49:16.696350349 +0800
++++ anaconda-16.25/pyanaconda/iw/task_gui.py	2014-07-15 15:52:16.204355241 +0800
+@@ -154,11 +154,11 @@
+                     "URL.") % repo.name, type="ok", custom_icon="error")
+             return False
+ 
+-        repo.enable()
++        self.backend.asmart.repos.enable(repo.id)
+         return True
+ 
+     def _disableAndRemoveRepo(self, repo):
+-        repo.disable()
++        self.backend.asmart.repos.disable(repo.id)
+         repo.close()
+         self.anaconda.backend.asmart.repos.delete(repo.id)
+ 
+@@ -382,7 +382,7 @@
+                 #except OSError:
+                 #    pass
+ 
+-                self.repo.disable()
++                self.backend.asmart.repos.disable(self.repo.id)
+                 self.repo.close()
+                 self.anaconda.backend.asmart.repos.delete(self.repo.id)
+                 log.info("deleted (UI) repository %s with source URL %s, id:%s"
+@@ -591,14 +591,12 @@
+                 if not self.anaconda.intf.enableNetwork():
+                     return
+ 
+-            repo.enable()
++            self.anaconda.backend.asmart.repos.enable(repo.id)
+             if not setupRepo(self.anaconda, repo):
+-                repo.disable()
+-                repo.close()
++                self.anaconda.backend.asmart.repos.disable(repo.id)
+                 return
+         else:
+-            repo.disable()
+-            repo.close()
++            self.anaconda.backend.asmart.repos.disable(repo.id)
+ 
+         store.set_value(i, 0, not wasChecked)
+ 

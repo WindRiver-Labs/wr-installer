@@ -1,0 +1,44 @@
+From 7156ed6cc0174ed6a690e10368b1e210127d0f6b Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 7 Apr 2016 01:05:26 -0400
+Subject: [PATCH] explicitly disable loader
+
+The loader is not used by WRLINUX, so explicitly disable it.
+
+Upstream-Status: Inappropriate [WRLINUX specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ Makefile.am | 2 +-
+ Makefile.in | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 34c3c20..b4a2d12 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -19,7 +19,7 @@
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-SUBDIRS = pyanaconda loader gptsync po data \
++SUBDIRS = pyanaconda gptsync po data \
+ 	  tests utils scripts docs
+ 
+ EXTRA_DIST = config.rpath COPYING \
+diff --git a/Makefile.in b/Makefile.in
+index 6cedc9d..79a78a3 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -348,7 +348,7 @@ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ ACLOCAL_AMFLAGS = -I m4
+-SUBDIRS = pyanaconda loader gptsync po data \
++SUBDIRS = pyanaconda gptsync po data \
+ 	  tests utils scripts docs
+ 
+ EXTRA_DIST = config.rpath COPYING \
+-- 
+1.9.1
+

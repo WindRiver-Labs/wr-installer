@@ -1,0 +1,33 @@
+From 666031c440516f20b16f8fef7cd9052a5f86cf90 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 25 May 2016 03:25:10 -0400
+Subject: [PATCH 28/35] default repository setting does not support mirrorlist
+
+It is yum based, and hard to implement in smart.
+The requirement is not clear also.
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/spokes/source.py | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/pyanaconda/ui/gui/spokes/source.py b/pyanaconda/ui/gui/spokes/source.py
+index 6d86e29..df8cce1 100644
+--- a/pyanaconda/ui/gui/spokes/source.py
++++ b/pyanaconda/ui/gui/spokes/source.py
+@@ -1126,7 +1126,9 @@ class SourceSpoke(NormalSpoke, GUISpokeInputCheckHandler):
+         # the currently selected protocol.
+         self._proxyButton.set_sensitive(self._http_active() or self._mirror_active())
+         self._nfsOptsBox.set_visible(self._nfs_active())
+-        self._mirrorlistCheckbox.set_visible(self._http_active())
++
++        # Default repository setting does not support mirrorlist
++        self._mirrorlistCheckbox.set_visible(False)
+         self._setup_no_updates()
+ 
+         # Any changes to the protocol combo box also need to update the check to see
+-- 
+2.8.1
+

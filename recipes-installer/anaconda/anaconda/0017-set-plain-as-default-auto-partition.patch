@@ -1,0 +1,78 @@
+From c0854b0a250eb5e4d8ffb72020b300a87f8f513c Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 5 May 2016 04:18:16 -0400
+Subject: [PATCH 17/22] set plain as default auto partition
+
+We do not support lvm for now, so set plain as default auto partition
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/constants.py             | 10 +++++-----
+ pyanaconda/ui/gui/spokes/storage.py |  5 +++--
+ 2 files changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/pyanaconda/constants.py b/pyanaconda/constants.py
+index c54f498..742012b 100644
+--- a/pyanaconda/constants.py
++++ b/pyanaconda/constants.py
+@@ -28,8 +28,7 @@ SELINUX_DEFAULT = -1
+ # where to look for 3rd party addons
+ ADDON_PATHS = ["/usr/share/anaconda/addons"]
+ 
+-from pykickstart.constants import AUTOPART_TYPE_LVM
+-
++from pykickstart.constants import AUTOPART_TYPE_LVM, AUTOPART_TYPE_PLAIN
+ # common string needs to be easy to change
+ from pyanaconda import product
+ productName = product.productName
+@@ -52,8 +51,8 @@ DD_RPMS = "/tmp/DD-*"
+ TRANSLATIONS_UPDATE_DIR="/tmp/updates/po"
+ 
+ ANACONDA_CLEANUP = "anaconda-cleanup"
+-MOUNT_DIR = "/mnt/install"
+-DRACUT_REPODIR = "/run/install/repo"
++MOUNT_DIR = "/media/realroot"
++DRACUT_REPODIR = MOUNT_DIR + "/Packages"
+ DRACUT_ISODIR = "/run/install/source"
+ ISO_DIR = MOUNT_DIR + "/isodir"
+ IMAGE_DIR = MOUNT_DIR + "/image"
+@@ -163,7 +162,8 @@ SCREENSHOTS_TARGET_DIRECTORY = "/root/anaconda-screenshots"
+ # cmdline arguments that append instead of overwrite
+ CMDLINE_APPEND = ["modprobe.blacklist"]
+ 
+-DEFAULT_AUTOPART_TYPE = AUTOPART_TYPE_LVM
++#DEFAULT_AUTOPART_TYPE = AUTOPART_TYPE_LVM
++DEFAULT_AUTOPART_TYPE =  AUTOPART_TYPE_PLAIN
+ 
+ import logging
+ LOGLVL_LOCK = logging.DEBUG-1
+diff --git a/pyanaconda/ui/gui/spokes/storage.py b/pyanaconda/ui/gui/spokes/storage.py
+index fce61ab..9c2805a 100644
+--- a/pyanaconda/ui/gui/spokes/storage.py
++++ b/pyanaconda/ui/gui/spokes/storage.py
+@@ -69,9 +69,10 @@ from pyanaconda.product import productName
+ from pyanaconda.flags import flags
+ from pyanaconda.i18n import _, C_, CN_, P_
+ from pyanaconda import constants, iutil, isys
++from pyanaconda.constants import DEFAULT_AUTOPART_TYPE
+ from pyanaconda.bootloader import BootLoaderError
+ 
+-from pykickstart.constants import CLEARPART_TYPE_NONE, AUTOPART_TYPE_LVM
++from pykickstart.constants import CLEARPART_TYPE_NONE
+ from pykickstart.errors import KickstartValueError
+ 
+ import sys
+@@ -475,7 +476,7 @@ class StorageSpoke(NormalSpoke, StorageChecker):
+         self.autopart = self.data.autopart.autopart
+         self.autoPartType = self.data.autopart.type
+         if self.autoPartType is None:
+-            self.autoPartType = AUTOPART_TYPE_LVM
++            self.autoPartType = DEFAULT_AUTOPART_TYPE
+         self.encrypted = self.data.autopart.encrypted
+         self.passphrase = self.data.autopart.passphrase
+ 
+-- 
+2.8.1
+

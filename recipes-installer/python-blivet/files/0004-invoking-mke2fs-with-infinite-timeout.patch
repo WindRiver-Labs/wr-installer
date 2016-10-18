@@ -1,0 +1,88 @@
+From 2aec5fe59142ffedc8564c2bd5fb5be3865c4d12 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Sat, 13 Aug 2016 05:17:07 -0400
+Subject: [PATCH 2/2] invoking mke2fs with infinite timeout
+
+This large timeout is needed when running on machines with
+lots of disks, or with slow disks.
+
+On bsp NUC5i3MYBE with 512GB storage, it takes 67s to execute
+mke2fs with 167GB partition.
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ blivet/formats/fs.py |  4 +++-
+ blivet/util.py       | 12 ++++++++----
+ 2 files changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/blivet/formats/fs.py b/blivet/formats/fs.py
+index 7c5f4cd..57d7e32 100644
+--- a/blivet/formats/fs.py
++++ b/blivet/formats/fs.py
+@@ -435,7 +435,9 @@ class FS(DeviceFormat):
+            do_labeling=not self.relabels())
+ 
+         try:
+-            ret = util.run_program([self.mkfsProg] + argv)
++            # This large timeout is needed when running on machines with
++            # lots of disks, or with slow disks
++            ret = util.run_program([self.mkfsProg] + argv, timeout=-1)
+         except OSError as e:
+             raise FormatCreateError(e, self.device)
+ 
+diff --git a/blivet/util.py b/blivet/util.py
+index a9e9dde..e2dcc57 100644
+--- a/blivet/util.py
++++ b/blivet/util.py
+@@ -22,6 +22,7 @@ from threading import Lock
+ # this will get set to anaconda's program_log_lock in enable_installer_mode
+ program_log_lock = Lock()
+ 
++# timeout = -1 means infinite timeout, always wait.
+ def timeout_command(argv, timeout, *args, **kwargs):
+     """call shell-command and either return its output or kill it
+     if it doesn't normally exit within timeout seconds and return None"""
+@@ -33,7 +34,7 @@ def timeout_command(argv, timeout, *args, **kwargs):
+         while proc.poll() is None:
+             time.sleep(0.1)
+             now = datetime.datetime.now()
+-            if (now - start).seconds> timeout:
++            if timeout != -1 and (now - start).seconds> timeout:
+                 os.kill(proc.pid, signal.SIGKILL)
+                 os.waitpid(-1, os.WNOHANG)
+                 program_log.debug("%d seconds timeout" % timeout)
+@@ -47,7 +48,7 @@ def timeout_command(argv, timeout, *args, **kwargs):
+     program_log.debug("Return code: %d", proc.returncode)
+     return (proc.returncode, proc.stdout.read())
+ 
+-def _run_program(argv, root='/', stdin=None, env_prune=None):
++def _run_program(argv, root='/', stdin=None, env_prune=None, timeout=10):
+     if env_prune is None:
+         env_prune = []
+ 
+@@ -56,7 +57,10 @@ def _run_program(argv, root='/', stdin=None, env_prune=None):
+             os.chroot(root)
+ 
+     with program_log_lock:
+-        program_log.info("Running... %s", " ".join(argv))
++        if timeout != -1:
++            program_log.info("Running... %s", " ".join(argv))
++        else:
++            program_log.info("Running... %s ...infinite timeout", " ".join(argv))
+ 
+         env = os.environ.copy()
+         env.update({"LC_ALL": "C",
+@@ -64,7 +68,7 @@ def _run_program(argv, root='/', stdin=None, env_prune=None):
+         for var in env_prune:
+             env.pop(var, None)
+ 
+-        res, out = timeout_command(argv, 10,
++        res, out = timeout_command(argv, timeout,
+                               stdin=stdin,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT,
+-- 
+2.8.1
+

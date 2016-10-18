@@ -1,0 +1,84 @@
+From a99480777c259c1ef0db3ac972abae348d930b41 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 9 Oct 2015 07:12:36 -0400
+Subject: [PATCH] workaround for anaconda installer while loading
+ libAnacondaWidgets
+
+Here is easy way to reproduce the failure:
+...
+root@localhost:~# python
+>>> from gi.repository import Gtk, AnacondaWidgets
+>>> builder = Gtk.Builder()
+>>> builder.get_type_from_name("AnacondaStandaloneWindow")
+<GType invalid (0)>
+...
+
+Which is expected:
+...
+root@localhost:~# python
+>>> from gi.repository import Gtk, AnacondaWidgets
+>>> builder = Gtk.Builder()
+>>> builder.get_type_from_name("AnacondaStandaloneWindow")
+<GType AnacondaStandaloneWindow (7297024)>
+...
+
+The root cause is the issue of 'g_module_open' and 'g_module_symbol'
+in libgmodule-2.0.so.0:
+While invoking 'g_module_open("libAnacondaWidgets.so.2.1.0", G_MODULE_BIND_LAZY);'
+, the following invoking 'g_module_open(NULL, G_MODULE_BIND_LAZY);' could not
+find its symbol by invoking g_module_symbol.
+
+So we hardcode to load the anaconda module explicitly.
+
+Upstream-Status: inappropriate<wr-installer specific>
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ gtk/gtkbuilder.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/gtk/gtkbuilder.c b/gtk/gtkbuilder.c
+index f9599ab..8315638 100644
+--- a/gtk/gtkbuilder.c
++++ b/gtk/gtkbuilder.c
+@@ -398,6 +398,27 @@ type_name_mangle (const gchar *name)
+ }
+ 
+ static GType
++_gtk_builder_resolve_type_lazily_anaconda (const gchar *name)
++{
++  static GModule *module = NULL;
++  GTypeGetFunc func;
++  gchar *symbol;
++  GType gtype = G_TYPE_INVALID;
++
++  if (!module)
++  {
++    module = g_module_open ("libAnacondaWidgets.so.2", 0);
++  }
++  symbol = type_name_mangle (name);
++  if (g_module_symbol (module, symbol, (gpointer)&func))
++    gtype = func ();
++
++  g_free (symbol);
++
++  return gtype;
++}
++
++static GType
+ _gtk_builder_resolve_type_lazily (const gchar *name)
+ {
+   static GModule *module = NULL;
+@@ -405,6 +426,9 @@ _gtk_builder_resolve_type_lazily (const gchar *name)
+   gchar *symbol;
+   GType gtype = G_TYPE_INVALID;
+ 
++  if (strncmp(name, "Anaconda", strlen("Anaconda")) == 0)
++    return _gtk_builder_resolve_type_lazily_anaconda(name);
++
+   if (!module)
+     module = g_module_open (NULL, 0);
+   
+-- 
+1.9.1
+

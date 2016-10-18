@@ -1,0 +1,24 @@
+Index: anaconda-16.25/loader/rpmextract.c
+===================================================================
+--- anaconda-16.25.orig/loader/rpmextract.c
++++ anaconda-16.25/loader/rpmextract.c
+@@ -25,7 +25,9 @@
+ #include <stdio.h>
+ #include <string.h>
+ 
+-#include <rpm/rpmlib.h>		/* rpmReadPackageFile .. */
++#include <rpm/rpmtypes.h>
++#include <rpm/rpm46compat.h>
++#include <rpm/pkgio.h>		/* rpmReadPackageFile .. */
+ #include <rpm/rpmtag.h>
+ #include <rpm/rpmio.h>
+ #include <rpm/rpmpgp.h>
+@@ -127,8 +129,6 @@ int explodeRPM(const char *source,
+     vsflags = 0;
+ 
+     /* Do not check digests, signatures or headers */
+-    vsflags |= _RPMVSF_NODIGESTS;
+-    vsflags |= _RPMVSF_NOSIGNATURES;
+     vsflags |= RPMVSF_NOHDRCHK;
+     (void) rpmtsSetVSFlags(ts, vsflags);
+ 

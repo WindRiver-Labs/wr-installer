@@ -1,0 +1,22 @@
+Validate new added repo.
+
+Upstream-Status: Pending
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+---
+diff -ur anaconda-16.25/pyanaconda.orig/iw/task_gui.py anaconda-16.25/pyanaconda/iw/task_gui.py
+--- anaconda-16.25/pyanaconda.orig/iw/task_gui.py	2014-07-30 16:32:43.767740244 +0800
++++ anaconda-16.25/pyanaconda/iw/task_gui.py	2014-07-30 16:53:49.903774749 +0800
+@@ -44,7 +44,11 @@
+         if not anaconda.intf.enableNetwork():
+             return False
+     try:
+-        anaconda.backend.doRepoSetup(anaconda, thisrepo=repo.id, fatalerrors=False)
++        rc = anaconda.backend.doRepoSetup(anaconda, thisrepo=repo.id, fatalerrors=False)
++        if rc:
++            if repo.proxy:
++                raise ValueError("Please check your proxy setting.")
++            raise ValueError
+         anaconda.backend.doSackSetup(anaconda, thisrepo=repo.id, fatalerrors=False)
+         log.info("added (UI) repository %s with source URL %s, id:%s" % (repo.name, repo.mirrorlist or repo.baseurl, repo.id))
+     except (IOError, ValueError) as e:

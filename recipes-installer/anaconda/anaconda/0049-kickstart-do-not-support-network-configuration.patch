@@ -1,0 +1,29 @@
+From ae3eb896140026ae9987133b13740bac28891d41 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 Aug 2016 01:33:45 -0400
+Subject: [PATCH] kickstart do not support network configuration
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/install.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/pyanaconda/install.py b/pyanaconda/install.py
+index 0bc33bd..38642cd 100644
+--- a/pyanaconda/install.py
++++ b/pyanaconda/install.py
+@@ -52,6 +52,9 @@ def _writeKS(ksdata):
+     if ksdata.method.method == "url" and not ksdata.method.url.startswith("https://"):
+         ksdata.method.noverifyssl = False
+ 
++    # Do not support network configuration
++    ksdata.network.network = []
++
+     with open(path, "w") as f:
+         f.write(str(ksdata))
+ 
+-- 
+2.8.1
+

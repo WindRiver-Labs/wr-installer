@@ -1,0 +1,35 @@
+Disable "Modify repository" button for local repos that they are not supported.
+
+Upstream-Status: Pending
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+---
+--- anaconda-16.25/pyanaconda/iw/task_gui.py.orig	2014-08-01 14:20:28.224233163 +0800
++++ anaconda-16.25/pyanaconda/iw/task_gui.py	2014-08-01 14:20:35.232233354 +0800
+@@ -670,6 +670,18 @@
+         else:
+             return aStr == bStr
+ 
++    def _repoCursorChanged(self, treeview, store):
++        path, column = treeview.get_cursor()
++        i = store.get_iter(path[0])
++        repo = store.get_value(i, 2)
++
++        self.xml.get_widget("editRepoButton").set_sensitive(True)
++        for url in repo.baseurl:
++            if not url.startswith('file:'):
++                break
++        else:
++            self.xml.get_widget("editRepoButton").set_sensitive(False)
++                
+     def _createRepoStore(self):
+         store = gtk.ListStore(gobject.TYPE_BOOLEAN,
+                               gobject.TYPE_STRING,
+@@ -686,6 +700,7 @@
+         col = gtk.TreeViewColumn('Text', gtk.CellRendererText(), text = 1)
+         col.set_clickable(False)
+         tl.append_column(col)
++        tl.connect("cursor-changed", self._repoCursorChanged, store)
+ 
+         for (reponame, repo) in self.repos.repos.items():
+             repo_name = gettext.ldgettext(self.anaconda.instClass.l10n_domain,

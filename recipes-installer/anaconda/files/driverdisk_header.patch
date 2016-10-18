@@ -1,0 +1,13 @@
+Index: anaconda-16.25/loader/driverdisk.c
+===================================================================
+--- anaconda-16.25.orig/loader/driverdisk.c
++++ anaconda-16.25/loader/driverdisk.c
+@@ -33,7 +33,7 @@
+ #include <blkid/blkid.h>
+ 
+ #include <glob.h>
+-#include <rpm/rpmlib.h>
++//#include <rpm/rpmlib.h>
+ #include <sys/utsname.h>
+ 
+ #include "copy.h"

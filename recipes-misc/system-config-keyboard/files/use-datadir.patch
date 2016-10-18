@@ -1,0 +1,35 @@
+Index: b/Makefile
+===================================================================
+--- a/Makefile
++++ b/Makefile
+@@ -34,22 +34,22 @@ install: ${PKGNAME}.desktop
+ 	mkdir -p $(DESTDIR)$(PAMD_DIR)
+ 	mkdir -p $(DESTDIR)$(SECURITY_DIR)
+ 	mkdir -p $(DESTDIR)$(PKGDATADIR)/pixmaps
+-	mkdir -p $(DESTDIR)/usr/share/applications
+-	mkdir -p $(DESTDIR)/usr/share/firstboot
+-	mkdir -p $(DESTDIR)/usr/share/firstboot/modules
+-	mkdir -p $(DESTDIR)/usr/share/icons/hicolor/48x48/apps
++	mkdir -p $(DESTDIR)$(DATADIR)/applications
++	mkdir -p $(DESTDIR)$(DATADIR)/firstboot
++	mkdir -p $(DESTDIR)$(DATADIR)/firstboot/modules
++	mkdir -p $(DESTDIR)$(DATADIR)/icons/hicolor/48x48/apps
+ 	mkdir -p $(DESTDIR)$(PYTHON_SITELIB)/$(PYTHON_MODULE)
+ 	install -m 644 src/*.py $(DESTDIR)$(PKGDATADIR)
+ 	install -m 755 src/${PKGNAME} $(DESTDIR)$(SBINDIR)/$(PKGNAME)
+ 	install -m 644 lib/*.py $(DESTDIR)$(PYTHON_SITELIB)/$(PYTHON_MODULE)
+ 	install -m 644 pixmaps/*.png $(DESTDIR)$(PKGDATADIR)/pixmaps
+-	install -m 644 pixmaps/${PKGNAME}.png $(DESTDIR)/usr/share/icons/hicolor/48x48/apps
++	install -m 644 pixmaps/${PKGNAME}.png $(DESTDIR)$(DATADIR)/icons/hicolor/48x48/apps
+ 	install -m 644 ${PKGNAME}.pam $(DESTDIR)$(PAMD_DIR)/${PKGNAME}
+ 	install -m 644 ${PKGNAME}.console $(DESTDIR)$(SECURITY_DIR)/${PKGNAME}
+-	install -m 644 ${PKGNAME}.desktop $(DESTDIR)/usr/share/applications/${PKGNAME}.desktop
++	install -m 644 ${PKGNAME}.desktop $(DESTDIR)$(DATADIR)/applications/${PKGNAME}.desktop
+ 	ln -sf consolehelper $(DESTDIR)/$(BINDIR)/${PKGNAME}
+-	ln -sf $(PKGDATADIR)/keyboard_gui.py $(DESTDIR)/usr/share/firstboot/modules/keyboard.py 
+-	cd po && for i in *.mo; do mkdir -p $(DESTDIR)/usr/share/locale/$$(echo $$i |sed s/.mo//)/LC_MESSAGES/; install -m 644 $$i $(DESTDIR)/usr/share/locale/$$(echo $$i |sed s/.mo//)/LC_MESSAGES/system-config-keyboard.mo || exit 1; done
++	ln -sf $(PKGDATADIR)/keyboard_gui.py $(DESTDIR)$(DATADIR)/firstboot/modules/keyboard.py 
++	cd po && for i in *.mo; do mkdir -p $(DESTDIR)$(DATADIR)/locale/$$(echo $$i |sed s/.mo//)/LC_MESSAGES/; install -m 644 $$i $(DESTDIR)$(DATADIR)/locale/$$(echo $$i |sed s/.mo//)/LC_MESSAGES/system-config-keyboard.mo || exit 1; done
+ 
+ dist:
+ 	rm -rf $(PKGNAME)-$(VERSION)

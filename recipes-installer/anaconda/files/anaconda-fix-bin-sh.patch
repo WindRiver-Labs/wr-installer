@@ -1,0 +1,56 @@
+From 509c80c313c7a900228141150a741f40f8b18f7b Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Fri, 27 Jun 2014 11:37:08 +0800
+Subject: [PATCH] upgrade.py: change /bin/sh to relative symlink
+
+The anaconda requires /bin/sh be a relative symlink, but we use absolute
+symlink, for example:
+    /bin/sh -> /bin/bash
+
+Change it to /bin/sh -> bash when possible, and show error messages when
+can't change.
+
+We'd better fix it from bash or busybox, but it's not easy to fix that
+in WRL6, the update-alternatives will change it to absolute symlink
+even if we use the relative link.
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/upgrade.py | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/pyanaconda/upgrade.py b/pyanaconda/upgrade.py
+index 22f90ff..01d8e35 100644
+--- a/pyanaconda/upgrade.py
++++ b/pyanaconda/upgrade.py
+@@ -199,14 +199,23 @@ def upgradeMountFilesystems(anaconda):
+             elif rc == 1:
+                 sys.exit(0)
+ 
++
+     checkLinks = ( '/etc', '/var', '/var/lib', '/var/lib/rpm',
+                    '/boot', '/tmp', '/var/tmp', '/root',
+                    '/bin/sh', '/usr/tmp')
+     badLinks = []
+     for n in checkLinks:
+-        if not os.path.islink(anaconda.rootPath + n): continue
+-        l = os.readlink(anaconda.rootPath + n)
++        n_path = anaconda.rootPath + n
++        if not os.path.islink(n_path): continue
++        l = os.readlink(n_path)
+         if l[0] == '/':
++            # Fix /bin/sh -> /bin/bash to /bin/sh -> bash
++            if n == '/bin/sh':
++                # They are in the same dir, easily fix it
++                if os.path.dirname(n) == os.path.dirname(l):
++                    os.unlink(n_path)
++                    os.symlink(os.path.basename(l), n_path)
++                    continue
+             badLinks.append(n)
+ 
+     if badLinks:
+-- 
+1.8.3.1
+

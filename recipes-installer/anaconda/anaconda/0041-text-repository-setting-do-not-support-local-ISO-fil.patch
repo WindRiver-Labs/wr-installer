@@ -1,0 +1,89 @@
+From bebcbd1c738f97c64cfa92ae39ccd6c01640ae3a Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 26 Jul 2016 23:19:43 -0400
+Subject: [PATCH 1/2] text repository setting: do not support local ISO file
+
+WRLinux does not support repository in local ISO file
+(an ISO in HDD), so remove it.
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/helpers.py           |  2 ++
+ pyanaconda/ui/tui/spokes/source.py | 18 +++++-------------
+ 2 files changed, 7 insertions(+), 13 deletions(-)
+
+diff --git a/pyanaconda/ui/helpers.py b/pyanaconda/ui/helpers.py
+index e6654b9..44054a7 100644
+--- a/pyanaconda/ui/helpers.py
++++ b/pyanaconda/ui/helpers.py
+@@ -108,6 +108,7 @@ class SourceSwitchHandler(object):
+     It will correctly switch to the new method
+     and cleanup any previous method set.
+     """
++    log = logging.getLogger("anaconda")
+ 
+     __metaclass__ = ABCMeta
+ 
+@@ -171,6 +172,7 @@ class SourceSwitchHandler(object):
+         self.data.method.method = "url"
+         if url is not None:
+             self.data.method.url = url
++            self.log.info("url: %s" % url)
+ 
+     def set_source_nfs(self, opts=None):
+         """ Switch to NFS install source """
+diff --git a/pyanaconda/ui/tui/spokes/source.py b/pyanaconda/ui/tui/spokes/source.py
+index edb8587..8bbadfd 100644
+--- a/pyanaconda/ui/tui/spokes/source.py
++++ b/pyanaconda/ui/tui/spokes/source.py
+@@ -139,6 +139,7 @@ class SourceSpoke(EditTUISpoke, SourceSwitchHandler):
+             return not self._error and self.ready and (self.data.method.method or self.payload.baseRepo)
+ 
+     def refresh(self, args=None):
++        LOG.info("refresh args %s" % (args))
+         EditTUISpoke.refresh(self, args)
+ 
+         threadMgr.wait(THREAD_PAYLOAD)
+@@ -149,8 +150,8 @@ class SourceSpoke(EditTUISpoke, SourceSwitchHandler):
+             self._window += [TextWidget(message), ""]
+             return True
+ 
+-        _methods = [_("CD/DVD"), _("local ISO file"), _("Network")]
+-        if args == 3:
++        _methods = [_("CD/DVD"), _("Network")]
++        if args == 2:
+             text = [TextWidget(_(p)) for p in self._protocols]
+         else:
+             self._window += [TextWidget(_("Choose an installation source type."))]
+@@ -176,7 +177,8 @@ class SourceSpoke(EditTUISpoke, SourceSwitchHandler):
+         except ValueError:
+             return key
+ 
+-        if args == 3:
++        LOG.info("input args %s, key %s" % (args, key))
++        if args == 2:
+             # network install
+             self._selection = num
+             if 0 < self._selection < 4:
+@@ -204,16 +206,6 @@ class SourceSpoke(EditTUISpoke, SourceSwitchHandler):
+                 self.apply()
+                 self.close()
+                 return INPUT_PROCESSED
+-        elif num == 2:
+-            # local ISO file (HDD ISO)
+-            self._selection = num
+-            newspoke = SelectDeviceSpoke(self.app, self.data,
+-                    self.storage, self.payload,
+-                    self.instclass)
+-            self.app.switch_screen_modal(newspoke)
+-            self.apply()
+-            self.close()
+-            return INPUT_PROCESSED
+         else:
+             # mounted ISO
+             if num == 1:
+-- 
+2.8.1
+

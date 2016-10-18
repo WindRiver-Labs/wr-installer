@@ -1,0 +1,60 @@
+From ddb007a5dc6d9321ae104a25d5539cad951ad574 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 18 May 2016 03:43:49 -0400
+Subject: [PATCH] fix nfs mount without specific version failed
+
+There are two ways to specify the version:
+- With option: -o "vers=4"
+- In /etc/nfsmount.conf
+  "Defaultvers=4"
+
+If no specific version setting (none of above), mount nfs failed:
+...
+root@localhost:~# mount.nfs  -v  "128.224.163.142:/var/www/Packages" "/tmp/source"
+mount.nfs: timeout set for Wed May 18 07:36:54 2016
+mount.nfs: trying text-based options 'vers=4.2,addr=128.224.163.142,clientaddr=128.224.163.148'
+mount.nfs: mount(2): Invalid argument
+mount.nfs: an incorrect mount option was specified
+...
+It choose default version 4.2, and mount(2) does not recognize it and break
+the loop which could not retry other version(3/2) nfs.
+
+Accept mount(2) error, and continue the loop to retry other version(3/2) nfs.
+Here is the result while applying the fix:
+...
+root@localhost:~#  mount.nfs  -v  "128.224.163.142:/var/www/Packages" "/tmp/source"
+mount.nfs: timeout set for Wed May 18 14:06:46 2016
+mount.nfs: trying text-based options 'vers=4.2,addr=128.224.163.142,clientaddr=128.224.163.148'
+mount.nfs: mount(2): Invalid argument
+mount.nfs: trying text-based options 'addr=128.224.163.142'
+mount.nfs: prog 100003, trying vers=3, prot=6
+mount.nfs: trying 128.224.163.142 prog 100003 vers 3 prot TCP port 2049
+mount.nfs: prog 100005, trying vers=3, prot=17
+mount.nfs: trying 128.224.163.142 prog 100005 vers 3 prot UDP port 56907
+...
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ utils/mount/stropts.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/utils/mount/stropts.c b/utils/mount/stropts.c
+index 16c0830..be61f3f 100644
+--- a/utils/mount/stropts.c
++++ b/utils/mount/stropts.c
+@@ -851,6 +851,10 @@ check_result:
+ 		/* Linux servers prior to 2.6.25 may return
+ 		 * EPERM when NFS version 4 is not supported. */
+ 		goto fall_back;
++
++	case EINVAL:
++		goto fall_back;
++
+ 	case ECONNREFUSED:
+ 		/* UDP-Only servers won't support v4, but maybe it
+ 		 * just isn't ready yet.  So try v3, but double-check
+-- 
+2.8.1
+

@@ -1,0 +1,26 @@
+Upstream-Status: Inappropriate [For WRLinux only]
+
+Mount /run and /var/volatile as tmpfs for "liveinst" way.
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+
+--- anaconda-16.25/pyanaconda/storage/__init__.py.orig	2014-05-18 15:35:49.072879514 +0800
++++ anaconda-16.25/pyanaconda/storage/__init__.py	2014-05-18 15:32:54.101040823 +0800
+@@ -2350,6 +2350,17 @@
+         # /etc/fstab
+         fstab_path = os.path.normpath("%s/etc/fstab" % instPath)
+         fstab = self.fstab()
++
++        # mount /run and /var/volatile as tmpfs
++        format = "%-23s %-23s %-7s %-15s %d %d\n"
++        if not re.search('tmpfs\s+/run\s+', fstab):
++            fstab += format % ('tmpfs', '/run', 'tmpfs',
++                               'mode=0755,nodev,nosuid,strictatime',
++                                0, 0)
++        if not re.search('tmpfs\s+/var/volatile\s+', fstab):
++            fstab += format % ('tmpfs', '/var/volatile', 'tmpfs',
++                               'defaults', 0, 0)
++
+         open(fstab_path, "w").write(fstab)
+ 
+         # /etc/crypttab

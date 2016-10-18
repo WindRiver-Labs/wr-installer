@@ -1,0 +1,159 @@
+From 9781878864e11eab340e0350fe059b5683970f31 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 15 Apr 2015 16:45:48 +0800
+Subject: [PATCH] support authentication for kickstart
+
+We add option 'ksuser' and 'kspasswd' in /proc/cmdline to support
+authentication while downloading kickstart from web server.
+
+We also add a prompt page while authentication failed, to give
+customer another chance to input username/password.
+
+Upstream-Status: inappropriate [wr-installer specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/flags.py     |  8 +++++
+ pyanaconda/kickstart.py | 80 ++++++++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 81 insertions(+), 7 deletions(-)
+
+diff --git a/pyanaconda/flags.py b/pyanaconda/flags.py
+index 37f53ab..46e5b46 100644
+--- a/pyanaconda/flags.py
++++ b/pyanaconda/flags.py
+@@ -120,6 +120,14 @@ class Flags:
+ 
+         self.__dict__['flags']['nogpt'] = self.__dict__['flags']['cmdline'].has_key("nogpt")
+ 
++        self.__dict__['flags']['ksuser'] = None
++        if self.__dict__['flags']['cmdline'].has_key("ksuser"):
++            self.__dict__['flags']['ksuser'] = self.__dict__['flags']['cmdline']['ksuser']
++
++        self.__dict__['flags']['kspasswd'] = None
++        if self.__dict__['flags']['cmdline'].has_key("kspasswd"):
++            self.__dict__['flags']['kspasswd'] = self.__dict__['flags']['cmdline']['kspasswd']
++
+ global flags
+ flags = Flags()
+ 
+diff --git a/pyanaconda/kickstart.py b/pyanaconda/kickstart.py
+index c371dbe..03a79bb 100644
+--- a/pyanaconda/kickstart.py
++++ b/pyanaconda/kickstart.py
+@@ -46,10 +46,11 @@ import upgrade
+ import pykickstart.commands as commands
+ from storage.devices import *
+ from scdate.core import zonetab
++from snack import *
+ 
+ from pykickstart.base import KickstartCommand, BaseData
+ from pykickstart.constants import *
+-from pykickstart.errors import formatErrorMsg, KickstartError, KickstartValueError, KickstartParseError
++from pykickstart.errors import formatErrorMsg, KickstartError, KickstartValueError, KickstartParseError, KickstartAuthError
+ from pykickstart.parser import Group, KickstartParser, Packages, Script
+ from pykickstart.sections import *
+ from pykickstart.version import returnClassForVersion
+@@ -1263,12 +1264,77 @@ class AnacondaKSHandler(superclass):
+                                      "configuration file:\n\n%s") % e)
+                 sys.exit(1)
+ 
+-class AnacondaPreParser(KickstartParser):
+-    # A subclass of KickstartParser that only looks for %pre scripts and
+-    # sets them up to be run.  All other scripts and commands are ignored.
++class WRKickstartParser(KickstartParser):
++    # A subclass of KickstartParser that parse the authentication failure
++    # while downloading kickstart file from web server
+     def __init__ (self, handler, followIncludes=True, errorsAreFatal=True,
+                   missingIncludeIsFatal=True):
+         KickstartParser.__init__(self, handler, missingIncludeIsFatal=False)
++        self.username = flags.ksuser
++        self.password = flags.kspasswd
++
++    def readKickstart(self, f, reset=True):
++        while True:
++            try:
++                KickstartParser.readKickstart(self, f, reset=reset,
++                                              username=self.username,
++                                              password=self.password)
++
++                # Make sure the following readKickstart invoking will success
++                flags.ksuser = self.username
++                flags.kspasswd = self.password
++                break
++            except KickstartAuthError as e:
++                result = self._AuthEntryWindow()
++                if result == "ok":
++                    continue
++                raise
++            except:
++                raise
++
++    def _AuthEntryWindow(self):
++        screen = SnackScreen()
++        toplevel = GridFormHelp(screen, _("Authentication for kickstart"),
++                                "Authentication while downloading kickstart from web server",
++                                1, 3)
++        toplevel.add(TextboxReflowed(37,
++                                     _("A username and password are being "
++                                       "requested while downloading kickstart "
++                                       "from web server")),
++                     0, 0, (0, 0, 0, 1))
++
++
++        user_entry = Entry(24)
++        pass_entry = Entry(24, password=1)
++        authgrid = Grid(2, 2)
++        authgrid.setField(Label(_("Username:")), 0, 0, (0, 0, 1, 0),
++                          anchorLeft=1)
++        authgrid.setField(Label(_("Password:")), 0, 1, (0, 0, 1, 0),
++                          anchorLeft=1)
++        authgrid.setField(user_entry, 1, 0)
++        authgrid.setField(pass_entry, 1, 1)
++        toplevel.add(authgrid, 0, 1, (0, 0, 0, 1))
++
++        bb = ButtonBar(screen, (("Ok", "ok"), ("Cancel", "cancel")))
++        toplevel.add(bb, 0, 2, growx = 1)
++
++        result = bb.buttonPressed(toplevel.run())
++        if result == "ok":
++            self.username = user_entry.value()
++            self.password = pass_entry.value()
++
++        screen.popWindow()
++        screen.finish()
++
++        log.info("result %s, username %s, password %s" % (result, self.username, self.password))
++        return result
++
++class AnacondaPreParser(WRKickstartParser):
++    # A subclass of WRKickstartParser that only looks for %pre scripts and
++    # sets them up to be run.  All other scripts and commands are ignored.
++    def __init__ (self, handler, followIncludes=True, errorsAreFatal=True,
++                  missingIncludeIsFatal=True):
++        WRKickstartParser.__init__(self, handler, missingIncludeIsFatal=False)
+ 
+     def handleCommand (self, lineno, args):
+         pass
+@@ -1279,16 +1345,16 @@ class AnacondaPreParser(KickstartParser):
+         self.registerSection(NullSection(self.handler, sectionOpen="%traceback"))
+         self.registerSection(NullSection(self.handler, sectionOpen="%packages"))
+ 
+-class AnacondaKSParser(KickstartParser):
++class AnacondaKSParser(WRKickstartParser):
+     def __init__ (self, handler, followIncludes=True, errorsAreFatal=True,
+                   missingIncludeIsFatal=True):
+-        KickstartParser.__init__(self, handler)
++        WRKickstartParser.__init__(self, handler)
+ 
+     def handleCommand (self, lineno, args):
+         if not self.handler:
+             return
+ 
+-        retval = KickstartParser.handleCommand(self, lineno, args)
++        retval = WRKickstartParser.handleCommand(self, lineno, args)
+         self.handler.add(retval)
+         return retval
+ 
+-- 
+1.9.1
+

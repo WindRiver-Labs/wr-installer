@@ -1,0 +1,59 @@
+configure.ac: remove prog test of xmlto and asciidoc
+
+The prog of xmlto and asciidoc were used to generate documents,
+and since the doc module has already been disabled, so we should
+remove the prog test.
+
+Upstream-Status:  Inappropriate workaround
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ configure.ac | 34 +++++++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+--- a/configure.ac
++++ b/configure.ac
+@@ -49,23 +49,23 @@ if test -z "$PYTHON"; then
+     exit 1
+ fi
+ 
+-AC_PATH_PROG([ASCIIDOC], [asciidoc], [no])
+-[if test "$ASCIIDOC" = "no"]
+-[then]
+-    [echo "The asciidoc program was not found in the search path. Please ensure"]
+-    [echo "that it is installed and its directory is included in the search path."]
+-    [echo "Then run configure again before attempting to build libreport."]
+-    [exit 1]
+-[fi]
+-
+-AC_PATH_PROG([XMLTO], [xmlto], [no])
+-[if test "$XMLTO" = "no"]
+-[then]
+-    [echo "The xmlto program was not found in the search path. Please ensure"]
+-    [echo "that it is installed and its directory is included in the search path."]
+-    [echo "Then run configure again before attempting to build libreport."]
+-    [exit 1]
+-[fi]
++dnl AC_PATH_PROG([ASCIIDOC], [asciidoc], [no])
++dnl [if test "$ASCIIDOC" = "no"]
++dnl [then]
++dnl     [echo "The asciidoc program was not found in the search path. Please ensure"]
++dnl     [echo "that it is installed and its directory is included in the search path."]
++dnl     [echo "Then run configure again before attempting to build libreport."]
++dnl     [exit 1]
++dnl [fi]
++
++dnl AC_PATH_PROG([XMLTO], [xmlto], [no])
++dnl [if test "$XMLTO" = "no"]
++dnl [then]
++dnl     [echo "The xmlto program was not found in the search path. Please ensure"]
++dnl     [echo "that it is installed and its directory is included in the search path."]
++dnl     [echo "Then run configure again before attempting to build libreport."]
++dnl     [exit 1]
++dnl [fi]
+ 
+ PKG_CHECK_MODULES([GTK], [$GTK_VER])
+ PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.21])
+-- 
+1.8.1.2
+

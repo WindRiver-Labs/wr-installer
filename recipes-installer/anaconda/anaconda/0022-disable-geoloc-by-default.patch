@@ -1,0 +1,30 @@
+From 85048269ca1efd05b06ec607e792d7f036392a40 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 10 May 2016 00:39:17 -0400
+Subject: [PATCH 22/22] disable geoloc by default
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ anaconda | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/anaconda b/anaconda
+index b122ca8..e03bd66 100755
+--- a/anaconda
++++ b/anaconda
+@@ -1267,8 +1267,8 @@ if __name__ == "__main__":
+     else:
+         # flags.cmdline.getbool is used as it handles values such as
+         # 0, no, off and also nogeoloc as False
+-        # and other values or geoloc not being present as True
+-        use_geolocation = flags.cmdline.getbool('geoloc', True)
++        # and other values or geoloc not being present as False
++        use_geolocation = flags.cmdline.getbool('geoloc', False)
+ 
+     if use_geolocation:
+         provider_id = constants.GEOLOC_DEFAULT_PROVIDER
+-- 
+2.8.1
+

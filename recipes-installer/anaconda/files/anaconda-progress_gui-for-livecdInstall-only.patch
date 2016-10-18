@@ -1,0 +1,34 @@
+From bdc0b7c7cc063807626542496ce3e52327dbc4c4 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Thu, 17 Apr 2014 09:49:20 -0400
+Subject: [PATCH] progress_gui.py: only use the InstallProgressWindow for
+ livecdInstall
+
+The smartinstall.py uses another progress bar for the package installs,
+but the InstallProgressWindow still shows, and its status doesn't move
+on, we should only show it for livecdInstall.
+
+Upstream-Status: Inappropriate [WR specific]
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/iw/progress_gui.py |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/pyanaconda/iw/progress_gui.py b/pyanaconda/iw/progress_gui.py
+index 2967092..55c75eb 100644
+--- a/pyanaconda/iw/progress_gui.py
++++ b/pyanaconda/iw/progress_gui.py
+@@ -109,6 +109,9 @@ class InstallProgressWindow (InstallWindow):
+         
+ 
+     def getScreen (self, anaconda):
++	# This gui is only used by livecdInstall
++	if not flags.livecdInstall:
++	    return
+ 	self.intf = anaconda.intf
+ 	if anaconda.dir == DISPATCH_BACK:
+ 	    self.intf.icw.prevClicked()
+-- 
+1.7.10.4
+

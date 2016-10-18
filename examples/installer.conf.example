@@ -1,0 +1,19 @@
+## This is an example of glibc-small, you can edit it as you like,
+## remove the comment, set WRL_INSTALLER_CONF to the file
+
+#[Main]
+#Product=Wind River Linux
+#Version=6.0.0.0
+#BugURL=http://www.windriver.com/
+#IsFinal=True
+#UUID=20140515023853.x86_64
+#
+#[Rootfs]
+#LIST=wrlinux-image-glibc-small
+#
+#[wrlinux-image-glibc-small]
+#SUMMARY=wrlinux-image-glibc-small version 1.0-r1
+#DESCRIPTION=A foundational basic image that boots to a console.
+#PACKAGE_INSTALL= packagegroup-core-boot@intel_x86_64 kernel-modules@intel_x86_64 grub@x86_64 grubby@x86_64 shadow@x86_64 efibootmgr@x86_64 rpm@x86_64 smartpm@x86_64 kernel-image-3.10.19-wr6.0.0.0-standard@intel_x86_64
+#PACKAGE_INSTALL_ATTEMPTONLY=
+#MULTILIB_PREFIX_LIST= default:intel_x86_64:x86_64:noarch:any:all lib32:lib32_intel_x86_64:lib32_x86:noarch:any:all

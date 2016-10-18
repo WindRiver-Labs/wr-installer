@@ -1,0 +1,56 @@
+From a58223d5072571f2cdf4b17e7356381891691c38 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Tue, 17 Jun 2014 21:14:35 +0800
+Subject: [PATCH 1/4] storage: check Wind River Linux
+
+The anconda checks /etc/lsb-release for the release info, we may not
+have this file, check /etc/issue if /etc/lsb-release is not available.
+
+Upstream-Status: Inappropriate [WR specific]
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/storage/__init__.py | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
+
+diff --git a/pyanaconda/storage/__init__.py b/pyanaconda/storage/__init__.py
+index b0905ba..7d4d94d 100644
+--- a/pyanaconda/storage/__init__.py
++++ b/pyanaconda/storage/__init__.py
+@@ -1489,9 +1489,11 @@ def getReleaseString(mountpoint):
+         relArch = h['arch']
+         break
+ 
+-    filename = "%s/etc/lsb-release" % mountpoint
+-    if os.access(filename, os.R_OK):
+-        with open(filename) as f:
++    filename_lsb = "%s/etc/lsb-release" % mountpoint
++    # Check /etc/issue for Wind River Linux since it may note have /etc/lsb-release.
++    filename_issue = "%s/etc/issue" % mountpoint
++    if os.access(filename_lsb, os.R_OK):
++        with open(filename_lsb) as f:
+             try:
+                 for line in f:
+                     if '=' in line:
+@@ -1502,7 +1504,17 @@ def getReleaseString(mountpoint):
+                             relVer = value
+             except (IOError, AttributeError):
+                 relstr = ""
+-
++    elif os.access(filename_issue, os.R_OK):
++        wrl_name = "Wind River Linux"
++        with open(filename_issue) as f:
++            try:
++                for line in f:
++                    if wrl_name in line:
++                        relName= wrl_name
++                        # The line's format is: Wind River Linux 6.0.0.0 \n \l
++                        relVer = line.split(wrl_name)[1].split('\n')[0]
++            except (IOError, AttributeError):
++                relstr = ""
+     return (relArch, relName, relVer)
+ 
+ def findExistingRootDevices(anaconda, upgradeany=False):
+-- 
+1.8.3.1
+

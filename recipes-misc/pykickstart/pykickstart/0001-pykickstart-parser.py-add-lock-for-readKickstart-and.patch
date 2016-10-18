@@ -1,0 +1,77 @@
+From cc0a6a70ed5505c7f85316d8a93485e939bc035a Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 Aug 2016 03:52:59 -0400
+Subject: [PATCH] pykickstart/parser.py: add lock for readKickstart and support
+ https without certification
+
+- Add lock for readKickstart to fix race issue
+
+- Support to download kickstart file through https without certification
+
+Upstream-Status: Inappropriate[wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pykickstart/parser.py | 32 +++++++++++++++++++++++++++++++-
+ 1 file changed, 31 insertions(+), 1 deletion(-)
+
+diff --git a/pykickstart/parser.py b/pykickstart/parser.py
+index e0f4bc9..ec576ce 100644
+--- a/pykickstart/parser.py
++++ b/pykickstart/parser.py
+@@ -54,6 +54,26 @@ STATE_COMMANDS = "commands"
+ 
+ ver = version.DEVEL
+ 
++import logging
++log = logging.getLogger("anaconda")
++
++import inspect
++import threading
++_private_ks_lock = threading.RLock()
++
++class KsLock(object):
++    def __enter__(self):
++        log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
++        _private_ks_lock.acquire()
++        return _private_ks_lock
++
++    def __exit__(self, exc_type, exc_val, exc_tb):
++        log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
++        _private_ks_lock.release()
++
++
++_ks_lock = KsLock()
++
+ def _preprocessStateMachine (lineIter):
+     l = None
+     lineno = 0
+@@ -723,6 +743,10 @@ class KickstartParser:
+         self._stateMachine (i)
+ 
+     def readKickstart(self, f, reset=True, username=None, password=None):
++        with _ks_lock:
++            self._readKickstart(f, reset=reset, username=username, password=password)
++
++    def _readKickstart(self, f, reset=True, username=None, password=None):
+         """Process a kickstart file, given by the filename f."""
+         if reset:
+             self._reset()
+@@ -746,7 +770,13 @@ class KickstartParser:
+         i = 0
+         while i < 45:
+             try:
+-                s = urlread(f, timeout=2, username=username, password=password)
++                log.info("urlread %s" % f)
++                s = urlread(f,
++                            timeout=2,
++                            username=username,
++                            password=password,
++                            ssl_verify_host=False,
++                            ssl_verify_peer=False)
+                 break
+             except grabber.URLGrabError, e:
+                 # Continue while timeout or couldn't connect
+-- 
+2.8.1
+

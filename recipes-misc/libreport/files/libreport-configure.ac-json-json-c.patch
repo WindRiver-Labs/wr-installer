@@ -1,0 +1,30 @@
+From b75394b3af3c95411f7cb25a6f628da1b432cf7c Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Fri, 17 Apr 2015 02:22:26 -0700
+Subject: [PATCH] configure.ac: json -> json-c
+
+The json's pc file is renamed to json-c.
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ configure.ac |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index d7ff7b1..892529a 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -76,7 +76,7 @@ PKG_CHECK_MODULES([XMLRPC], [xmlrpc])
+ PKG_CHECK_MODULES([XMLRPC_CLIENT], [xmlrpc_client])
+ PKG_CHECK_MODULES([CURL], [libcurl])
+ PKG_CHECK_MODULES([GNOME_KEYRING], [gnome-keyring-1])
+-PKG_CHECK_MODULES([JSON_C], [json])
++PKG_CHECK_MODULES([JSON_C], [json-c])
+ PKG_CHECK_MODULES([RPM], [rpm])
+ 
+ # Just PKG_CHECK_MODULES([PYTHON], [python]) works only with python2.7+
+-- 
+1.7.1
+

@@ -1,0 +1,47 @@
+From 905fd03626f3f5970e6348e729aa7f5dca5028c8 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 Aug 2016 06:46:52 -0400
+Subject: [PATCH] live install supports kickstart
+
+While live install, WRLinux does not support harddrive,
+use cdrom to replace
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ anaconda              | 2 +-
+ pyanaconda/install.py | 4 ++++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/anaconda b/anaconda
+index b0389ef..ebea268 100755
+--- a/anaconda
++++ b/anaconda
+@@ -1033,7 +1033,7 @@ if __name__ == "__main__":
+     # execute) that now.  Otherwise, load in defaults from kickstart files
+     # shipped with the installation media.
+     ksdata = None
+-    if opts.ksfile and not opts.liveinst:
++    if opts.ksfile:
+         flags.automatedInstall = True
+         flags.eject = False
+         ksFiles = [opts.ksfile]
+diff --git a/pyanaconda/install.py b/pyanaconda/install.py
+index e0267e1..8835cf3 100644
+--- a/pyanaconda/install.py
++++ b/pyanaconda/install.py
+@@ -55,6 +55,10 @@ def _writeKS(ksdata):
+     # Do not support network configuration
+     ksdata.network.network = []
+ 
++    # Correct method of live install, use cdrom to replace
++    if ksdata.method.method == "harddrive":
++        ksdata.method.method = "cdrom"
++
+     with open(path, "w") as f:
+         f.write(str(ksdata))
+ 
+-- 
+2.8.1
+

@@ -1,0 +1,77 @@
+From 520b60036d50d627694179d1fb4b437f6fe6b0a0 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Sat, 13 Aug 2016 04:29:25 -0400
+Subject: [PATCH 1/2] storage partition ignore live image
+
+In WRLInux/Yocto, it burns installation iso to usb storage and
+maps to /media/realroot in filesystem, the live image can't be
+used as an install target, and the anaconda storage partition
+should ignore this media which could save lots of time.
+
+On bsp NUC5i3MYBE with 512GB storage, burn installation iso to a
+16GB usb storage, the fix saves 200s.
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ blivet/devicelibs/mpath.py |  4 ++++
+ blivet/devicetree.py       |  4 ++--
+ blivet/util.py             | 13 +++++++++++++
+ 3 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/blivet/devicelibs/mpath.py b/blivet/devicelibs/mpath.py
+index 7bacc52..4c760a1 100644
+--- a/blivet/devicelibs/mpath.py
++++ b/blivet/devicelibs/mpath.py
+@@ -11,6 +11,10 @@ def flush_mpaths():
+         log.error("multipath: some devices could not be flushed")
+ 
+ def is_multipath_member(path):
++    if util.get_realroot_dev() == path:
++        log.info("multipath ignore realroot (%s)" % path)
++        return 0
++
+     return (util.run_program(["multipath", "-c", path]) == 0)
+ 
+ def set_friendly_names(enabled=True):
+diff --git a/blivet/devicetree.py b/blivet/devicetree.py
+index ea18e3d..e382e34 100644
+--- a/blivet/devicetree.py
++++ b/blivet/devicetree.py
+@@ -2263,9 +2263,9 @@ class DeviceTree(object):
+ 
+         # FIXME: the backing dev for the live image can't be used as an
+         # install target.  note that this is a little bit of a hack
+-        # since we're assuming that /run/initramfs/live will exist
++        # since we're assuming that /media/realroot will exist
+         for mnt in open("/proc/mounts").readlines():
+-            if " /run/initramfs/live " not in mnt:
++            if " /media/realroot " not in mnt:
+                 continue
+ 
+             live_device_name = mnt.split()[0].split("/")[-1]
+diff --git a/blivet/util.py b/blivet/util.py
+index c26c216..a9e9dde 100644
+--- a/blivet/util.py
++++ b/blivet/util.py
+@@ -495,3 +495,16 @@ def variable_copy(obj, memo, omit=None, shallow=None, duplicate=None):
+ def get_current_entropy():
+     with open("/proc/sys/kernel/random/entropy_avail", "r") as fobj:
+         return int(fobj.readline())
++
++realroot_dev = ""
++def get_realroot_dev():
++    global realroot_dev
++
++    with program_log_lock:
++        if realroot_dev == "":
++            for mnt in open("/proc/mounts").readlines():
++                if " /media/realroot" in mnt:
++                    realroot_dev = mnt.split()[0]
++                    break
++
++    return realroot_dev
+-- 
+2.8.1
+

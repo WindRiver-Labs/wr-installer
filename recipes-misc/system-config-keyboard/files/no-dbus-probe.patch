@@ -1,0 +1,34 @@
+Index: b/lib/keyboard.py
+===================================================================
+--- a/lib/keyboard.py
++++ b/lib/keyboard.py
+@@ -24,7 +24,6 @@
+ # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ #
+ 
+-import dbus
+ import string
+ import os
+ from subprocess import call
+@@ -41,21 +40,6 @@ class Keyboard():
+         # default to us
+         self.set("us")
+ 
+-        try:
+-            bus = dbus.SystemBus()
+-            hal = dbus.Interface(bus.get_object("org.freedesktop.Hal","/org/freedesktop/Hal/Manager"),"org.freedesktop.Hal.Manager")
+-            kbs = hal.FindDeviceByCapability("input.keyboard")
+-            if len(kbs) == 0:
+-                self.type = "Serial"
+-            else:
+-                self._var ("KEYBOARDTYPE", "pc")
+-            kb = dbus.Interface(bus.get_object("org.freedesktop.Hal", kbs[0]), 'org.freedesktop.Hal.Device')
+-            if kb.GetPropertyString("info.product").startswith("Sun Type"):
+-                self.type == "Sun"
+-                self._var ("KEYBOARDTYPE", "sun")
+-        except:
+-            pass
+-
+     def _get_models(self):
+         return self._mods.get_models()
+     modelDict = property(_get_models)

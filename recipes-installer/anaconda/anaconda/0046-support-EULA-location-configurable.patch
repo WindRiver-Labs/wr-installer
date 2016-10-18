@@ -1,0 +1,70 @@
+From d945abb12e622af84cb9d7e824c02136625f512c Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 19 Aug 2016 01:21:01 -0400
+Subject: [PATCH] support EULA location configurable
+
+Rather than RHEL's hardcode, we support it configurable
+by environment variable EULA_DIR.
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/constants.py              | 3 ++-
+ pyanaconda/ui/gui/hubs/progress.py   | 5 +++--
+ pyanaconda/ui/tui/spokes/progress.py | 2 ++
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/pyanaconda/constants.py b/pyanaconda/constants.py
+index 8ee750f..5624188 100644
+--- a/pyanaconda/constants.py
++++ b/pyanaconda/constants.py
+@@ -20,6 +20,7 @@
+ #
+ 
+ import string
++import os
+ from pyanaconda.i18n import N_
+ 
+ # Use -1 to indicate that the selinux configuration is unset
+@@ -36,7 +37,7 @@ productVersion = product.productVersion
+ productArch = product.productArch
+ bugzillaUrl = product.bugUrl
+ isFinal = product.isFinal
+-eulaLocation = "/usr/share/redhat-release/EULA"
++eulaLocation = os.getenv('EULA_DIR')
+ 
+ # for use in device names, eg: "fedora", "rhel"
+ shortProductName = productName.lower()
+diff --git a/pyanaconda/ui/gui/hubs/progress.py b/pyanaconda/ui/gui/hubs/progress.py
+index 09acc66..4bc3118 100644
+--- a/pyanaconda/ui/gui/hubs/progress.py
++++ b/pyanaconda/ui/gui/hubs/progress.py
+@@ -133,8 +133,9 @@ class ProgressHub(Hub):
+ 
+         iutil.ipmi_report(IPMI_FINISHED)
+ 
+-        self.set_warning(_("Use of this product is subject to the license agreement found at %s") % eulaLocation)
+-        self.window.show_all()
++        if eulaLocation:
++            self.set_warning(_("Use of this product is subject to the license agreement found at %s") % eulaLocation)
++            self.window.show_all()
+ 
+         # kickstart install, continue automatically if reboot or shutdown selected
+         if flags.automatedInstall and self.data.reboot.action in [KS_REBOOT, KS_SHUTDOWN]:
+diff --git a/pyanaconda/ui/tui/spokes/progress.py b/pyanaconda/ui/tui/spokes/progress.py
+index d688909..f31bd4f 100644
+--- a/pyanaconda/ui/tui/spokes/progress.py
++++ b/pyanaconda/ui/tui/spokes/progress.py
+@@ -136,6 +136,8 @@ class ProgressSpoke(StandaloneTUISpoke):
+         return True
+ 
+     def prompt(self, args = None):
++        if not eulaLocation:
++            return(_("\tInstallation complete.  Press return to quit"))
+         return(_("\tUse of this product is subject to the license agreement found at %s\n\n\tInstallation complete.  Press return to quit") % eulaLocation)
+ 
+     def input(self, args, key):
+-- 
+2.8.1
+

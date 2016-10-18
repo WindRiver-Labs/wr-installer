@@ -1,0 +1,48 @@
+From d95e7a1b9c744eb224a946a432e83a19190294c2 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Mon, 11 Apr 2016 05:40:06 -0400
+Subject: [PATCH 05/22] pyanaconda/flags.py: drop selinux module
+
+And we do not use selinux module for wrlinux, so drop it.
+
+The fix is to revert upstream commit
+...
+commit b359e1a011ca71e5431969ae4f12bb847017eaa9
+Author: Chris Lumens <clumens@redhat.com>
+Date:   Wed Aug 10 13:08:26 2011 -0400
+
+    Remove as many of the /selinux path hardcodings as possible (#729563).
+...
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/flags.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/pyanaconda/flags.py b/pyanaconda/flags.py
+index ac774ed..1f94a5c 100644
+--- a/pyanaconda/flags.py
++++ b/pyanaconda/flags.py
+@@ -17,7 +17,7 @@
+ # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ #
+ 
+-import selinux
++import os
+ import shlex
+ import glob
+ from pyanaconda.constants import SELINUX_DEFAULT, CMDLINE_APPEND
+@@ -86,7 +86,7 @@ class Flags(object):
+                   "nombr", "gpt"):
+             self.set_cmdline_bool(f)
+ 
+-        if not selinux.is_selinux_enabled():
++        if not os.path.exists("/selinux/load"):
+             self.selinux = 0
+ 
+ cmdline_files = ['/proc/cmdline', '/run/install/cmdline',
+-- 
+2.8.1
+

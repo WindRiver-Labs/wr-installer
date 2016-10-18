@@ -1,0 +1,13 @@
+Index: anaconda-16.25/pyanaconda/backend.py
+===================================================================
+--- anaconda-16.25.orig/pyanaconda/backend.py
++++ anaconda-16.25/pyanaconda/backend.py
+@@ -49,7 +49,7 @@ class AnacondaBackend:
+         self.modeText = ""
+ 
+         # some backends may not support upgrading
+-        self.supportsUpgrades = True
++        self.supportsUpgrades = False
+         self.supportsPackageSelection = False
+ 
+         # some backends may have a special case for rootfs formatting

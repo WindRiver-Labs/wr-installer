@@ -1,0 +1,246 @@
+From 6e92541ae63a7042ba82fa38d338288fc51fcdba Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Wed, 7 May 2014 17:20:46 +0800
+Subject: [PATCH 2/2] pyanaconda/bootloader.py: EFIGRUB should base on GRUB2
+
+We use grub2 and grub2-efi by default, so the EFIGRUB class should base
+on GRUB2, otherwise it doesn't work. Now we only have EFIGRUB which is
+used for grub2 in fact, we may need both EFRGRUB2 and EFIGRUB if we make
+sure that we can support the grub (and the efi) well.
+
+Upstream-Status: Pending
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/bootloader.py | 208 +++++++++++++++++++++++------------------------
+ 1 file changed, 104 insertions(+), 104 deletions(-)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index bba44f0..890ae8a 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -1358,110 +1358,6 @@ class GRUB(BootLoader):
+         return len(self.bootable_chain_devices) != 0
+ 
+ 
+-class EFIGRUB(GRUB):
+-    packages = ["grub-efi", "efibootmgr"]
+-    can_dual_boot = False
+-    _config_dir = "efi/EFI/BOOT"
+-
+-    stage2_is_valid_stage1 = False
+-    stage2_bootable = False
+-    stage2_max_end_mb = None
+-
+-    def efibootmgr(self, *args, **kwargs):
+-        if kwargs.pop("capture", False):
+-            exec_func = iutil.execWithCapture
+-        else:
+-            exec_func = iutil.execWithRedirect
+-
+-        return exec_func("efibootmgr", list(args), **kwargs)
+-
+-    #
+-    # configuration
+-    #
+-
+-    @property
+-    def efi_product_path(self):
+-        """ The EFI product path.
+-
+-            eg: HD(1,800,64000,faacb4ef-e361-455e-bd97-ca33632550c3)
+-        """
+-        buf = self.efibootmgr("-v", stderr="/dev/tty5", capture=True)
+-        matches = re.search(productName + r'\s+(HD\(.+?\))', buf)
+-        if matches and matches.groups():
+-            return matches.group(1)
+-        return ""
+-
+-    @property
+-    def grub_conf_device_line(self):
+-        return "device %s %s\n" % (self.grub_device_name(self.stage2_device),
+-                                   self.efi_product_path)
+-
+-    #
+-    # installation
+-    #
+-
+-    def remove_efi_boot_target(self, install_root=""):
+-        buf = self.efibootmgr(capture=True)
+-        for line in buf.splitlines():
+-            try:
+-                (slot, _product) = line.split(None, 1)
+-            except ValueError:
+-                continue
+-
+-            if _product == productName:
+-                slot_id = slot[4:8]
+-                # slot_id is hex, we can't use .isint and use this regex:
+-                if not re.match("^[0-9a-fA-F]+$", slot_id):
+-                    log.warning("failed to parse efi boot slot (%s)" % slot)
+-                    continue
+-
+-                rc = self.efibootmgr("-b", slot_id, "-B",
+-                                     root=install_root,
+-                                     stdout="/dev/tty5", stderr="/dev/tty5")
+-                if rc:
+-                    raise BootLoaderError("failed to remove old efi boot entry")
+-
+-    def add_efi_boot_target(self, install_root=""):
+-        boot_efi = self.storage.mountpoints["/boot/efi"]
+-        if boot_efi.type == "partition":
+-            boot_disk = boot_efi.disk
+-            boot_part_num = boot_efi.partedPartition.number
+-        elif boot_efi.type == "mdarray":
+-            # FIXME: I'm just guessing here. This probably needs the full
+-            #        treatment, ie: multiple targets for each member.
+-            boot_disk = boot_efi.parents[0].disk
+-            boot_part_num = boot_efi.parents[0].partedPartition.number
+-        boot_part_num = str(boot_part_num)
+-
+-        rc = self.efibootmgr("-c", "-w", "-L", productName,
+-                             "-d", boot_disk.path, "-p", boot_part_num,
+-                             "-l", "\\EFI\\BOOT\\boot*.efi",
+-                             root=install_root,
+-                             stdout="/dev/tty5", stderr="/dev/tty5")
+-        if rc:
+-            raise BootLoaderError("failed to set new efi boot target")
+-
+-    def install(self, install_root=""):
+-        self.remove_efi_boot_target(install_root=install_root)
+-        self.add_efi_boot_target(install_root=install_root)
+-
+-    def update(self, install_root=""):
+-        self.write(install_root=install_root)
+-
+-    #
+-    # installation
+-    #
+-    def write(self, install_root=""):
+-        """ Write the bootloader configuration and install the bootloader. """
+-        if self.update_only:
+-            self.update(install_root=install_root)
+-            return
+-
+-        sync()
+-        self.stage2_device.format.sync(root=install_root)
+-        self.install(install_root=install_root)
+-        self.write_config(install_root=install_root)
+-
+ class GRUB2(GRUB):
+     """ GRUBv2
+ 
+@@ -1734,6 +1630,110 @@ class GRUB2(GRUB):
+                 raise BootLoaderError("bootloader install failed")
+ 
+ 
++class EFIGRUB(GRUB2):
++    packages = ["grub-efi", "efibootmgr"]
++    can_dual_boot = False
++    _config_dir = "efi/EFI/BOOT"
++
++    stage2_is_valid_stage1 = False
++    stage2_bootable = False
++    stage2_max_end_mb = None
++
++    def efibootmgr(self, *args, **kwargs):
++        if kwargs.pop("capture", False):
++            exec_func = iutil.execWithCapture
++        else:
++            exec_func = iutil.execWithRedirect
++
++        return exec_func("efibootmgr", list(args), **kwargs)
++
++    #
++    # configuration
++    #
++
++    @property
++    def efi_product_path(self):
++        """ The EFI product path.
++
++            eg: HD(1,800,64000,faacb4ef-e361-455e-bd97-ca33632550c3)
++        """
++        buf = self.efibootmgr("-v", stderr="/dev/tty5", capture=True)
++        matches = re.search(productName + r'\s+(HD\(.+?\))', buf)
++        if matches and matches.groups():
++            return matches.group(1)
++        return ""
++
++    @property
++    def grub_conf_device_line(self):
++        return "device %s %s\n" % (self.grub_device_name(self.stage2_device),
++                                   self.efi_product_path)
++
++    #
++    # installation
++    #
++
++    def remove_efi_boot_target(self, install_root=""):
++        buf = self.efibootmgr(capture=True)
++        for line in buf.splitlines():
++            try:
++                (slot, _product) = line.split(None, 1)
++            except ValueError:
++                continue
++
++            if _product == productName:
++                slot_id = slot[4:8]
++                # slot_id is hex, we can't use .isint and use this regex:
++                if not re.match("^[0-9a-fA-F]+$", slot_id):
++                    log.warning("failed to parse efi boot slot (%s)" % slot)
++                    continue
++
++                rc = self.efibootmgr("-b", slot_id, "-B",
++                                     root=install_root,
++                                     stdout="/dev/tty5", stderr="/dev/tty5")
++                if rc:
++                    raise BootLoaderError("failed to remove old efi boot entry")
++
++    def add_efi_boot_target(self, install_root=""):
++        boot_efi = self.storage.mountpoints["/boot/efi"]
++        if boot_efi.type == "partition":
++            boot_disk = boot_efi.disk
++            boot_part_num = boot_efi.partedPartition.number
++        elif boot_efi.type == "mdarray":
++            # FIXME: I'm just guessing here. This probably needs the full
++            #        treatment, ie: multiple targets for each member.
++            boot_disk = boot_efi.parents[0].disk
++            boot_part_num = boot_efi.parents[0].partedPartition.number
++        boot_part_num = str(boot_part_num)
++
++        rc = self.efibootmgr("-c", "-w", "-L", productName,
++                             "-d", boot_disk.path, "-p", boot_part_num,
++                             "-l", "\\EFI\\BOOT\\boot*.efi",
++                             root=install_root,
++                             stdout="/dev/tty5", stderr="/dev/tty5")
++        if rc:
++            raise BootLoaderError("failed to set new efi boot target")
++
++    def install(self, install_root=""):
++        self.remove_efi_boot_target(install_root=install_root)
++        self.add_efi_boot_target(install_root=install_root)
++
++    def update(self, install_root=""):
++        self.write(install_root=install_root)
++
++    #
++    # installation
++    #
++    def write(self, install_root=""):
++        """ Write the bootloader configuration and install the bootloader. """
++        if self.update_only:
++            self.update(install_root=install_root)
++            return
++
++        sync()
++        self.stage2_device.format.sync(root=install_root)
++        self.install(install_root=install_root)
++        self.write_config(install_root=install_root)
++
+ class YabootSILOBase(BootLoader):
+     def write_config_password(self, config):
+         if self.password:
+-- 
+1.8.3.1
+

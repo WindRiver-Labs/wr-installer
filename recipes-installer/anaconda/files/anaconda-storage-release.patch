@@ -1,0 +1,57 @@
+From a7553039cc0fdb43e97dd849d0dd04a4fff15277 Mon Sep 17 00:00:00 2001
+From: Robert Yang <liezhi.yang@windriver.com>
+Date: Sat, 21 Jun 2014 20:51:38 +0800
+Subject: [PATCH] storage/__init__.py: return the proper release name
+
+Our release name is Wind River Linux in both /etc/lsb-release (may not
+exist) and /etc/issue, we have fixed for /etc/issue, now for
+/etc/lsb-release.
+
+Upstream-Status: Inappropriate [WR specific]
+
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+---
+ pyanaconda/storage/__init__.py | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/pyanaconda/storage/__init__.py b/pyanaconda/storage/__init__.py
+index 7d4d94d..2188724 100644
+--- a/pyanaconda/storage/__init__.py
++++ b/pyanaconda/storage/__init__.py
+@@ -1489,6 +1489,7 @@ def getReleaseString(mountpoint):
+         relArch = h['arch']
+         break
+ 
++    wrl_name = "Wind River Linux"
+     filename_lsb = "%s/etc/lsb-release" % mountpoint
+     # Check /etc/issue for Wind River Linux since it may note have /etc/lsb-release.
+     filename_issue = "%s/etc/issue" % mountpoint
+@@ -1498,21 +1499,20 @@ def getReleaseString(mountpoint):
+                 for line in f:
+                     if '=' in line:
+                         (name,value) = line.strip().split('=')
+-                        if name == "DISTRIB_ID":
+-                            relName = value
++                        if name == "DISTRIB_ID" and value == "wrlinux":
++                            relName = wrl_name
+                         if name == "DISTRIB_RELEASE":
+                             relVer = value
+             except (IOError, AttributeError):
+                 relstr = ""
+     elif os.access(filename_issue, os.R_OK):
+-        wrl_name = "Wind River Linux"
+         with open(filename_issue) as f:
+             try:
+                 for line in f:
+                     if wrl_name in line:
+-                        relName= wrl_name
++                        relName = wrl_name
+                         # The line's format is: Wind River Linux 6.0.0.0 \n \l
+-                        relVer = line.split(wrl_name)[1].split('\n')[0]
++                        relVer = line.split(wrl_name)[1].split('\\n')[0]
+             except (IOError, AttributeError):
+                 relstr = ""
+     return (relArch, relName, relVer)
+-- 
+1.8.3.1
+

@@ -1,0 +1,17 @@
+Upstream-Status: Pending
+
+It uses command msgcmp command on host that may cause build failure. Package gettext-native provides it already, so chop the path.
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+
+--- system-config-date-1.10.5/po_rules.mk.orig	2014-05-06 16:44:12.076555368 +0800
++++ system-config-date-1.10.5/po_rules.mk	2014-05-06 16:44:37.796856580 +0800
+@@ -19,7 +19,7 @@
+ PO_MSGFMT		= msgfmt --statistics --verbose
+ PO_INTLTOOLEXTRACT = intltool-extract
+ PO_INTLTOOLMERGE = intltool-merge
+-PO_MSGCMP	= /usr/bin/msgcmp -N --use-untranslated
++PO_MSGCMP	= msgcmp -N --use-untranslated
+ 
+ # What do we need to do
+ PO_POFILES		= $(wildcard po/*.po)

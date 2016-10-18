@@ -1,0 +1,40 @@
+From 34d5329c6b5ac463d596c4f4e809eea444fcfdcd Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 25 May 2016 04:35:04 -0400
+Subject: [PATCH 29/35] do not support repo name check and repo url check
+
+The checking caused unexpected failure occasionally.
+(Click mouse button quickly)
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/spokes/source.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/pyanaconda/ui/gui/spokes/source.py b/pyanaconda/ui/gui/spokes/source.py
+index df8cce1..6d363a3 100644
+--- a/pyanaconda/ui/gui/spokes/source.py
++++ b/pyanaconda/ui/gui/spokes/source.py
+@@ -1350,7 +1350,7 @@ class SourceSpoke(NormalSpoke, GUISpokeInputCheckHandler):
+         repo.name = name
+         self._repoStore.set_value(itr, REPO_NAME_COL, name)
+ 
+-        self._repoNameChecks[repo].update_check_status()
++        #self._repoNameChecks[repo].update_check_status()
+ 
+     def on_repoUrl_changed(self, *args):
+         """ proxy url or protocol changed
+@@ -1367,7 +1367,7 @@ class SourceSpoke(NormalSpoke, GUISpokeInputCheckHandler):
+         else:
+             repo.baseurl = proto + url
+ 
+-        self._repoURLChecks[repo].update_check_status()
++        #self._repoURLChecks[repo].update_check_status()
+ 
+     def on_repoMirrorlistCheckbox_toggled(self, *args):
+         """ mirror state changed
+-- 
+2.8.1
+

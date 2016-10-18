@@ -1,0 +1,46 @@
+From 7d5c8b348b52932448a836099e7e4ea00d995ca8 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 20 May 2015 10:54:20 +0800
+Subject: [PATCH] task_text.py: check the existance of repository
+
+While no repository added, pop a window to mention the user rather than
+generate a exception to break the installation.
+
+Upstream-Status: Inappropriate [WRLinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/textw/task_text.py | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/pyanaconda/textw/task_text.py b/pyanaconda/textw/task_text.py
+index 7724b6e..7e59e09 100644
+--- a/pyanaconda/textw/task_text.py
++++ b/pyanaconda/textw/task_text.py
+@@ -223,6 +223,13 @@ class TaskWindow:
+                     elif reponame not in ct.getSelection() and repo.isEnabled():
+                        self.repos.disable(reponame)
+ 
++                if not self._anyRepoEnabled(self.repos):
++                    msg = "You must have at least one software repository enabled to continue installation."
++                    ButtonChoiceWindow(screen, "No Software Repos Enabled",
++                                       msg, ["Continue"])
++
++                    continue
++
+                 try:
+                     # Smart update
+                     setupRepo(anaconda)
+@@ -313,3 +320,9 @@ class TaskWindow:
+ 
+         return repo
+ 
++    def _anyRepoEnabled(self, repos):
++        for (reponame, repo) in repos.items():
++            if repo.isEnabled():
++                return True
++
++        return False
+-- 
+1.9.1
+

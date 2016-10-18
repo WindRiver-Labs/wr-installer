@@ -1,0 +1,51 @@
+From 322e1c0cd92285d847da8e9a73def8517aa8a299 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 11 Aug 2016 14:00:51 +0800
+Subject: [PATCH] fix parallel compile issue
+
+Rule $(TARGETS) is not necessary, all done in $(SUBDIRS).
+If run $(TARGETS) before $(SUBDIRS), there is a compile failure
+...
+tools/dmraid.c:12:27: fatal error: dmraid/dmraid.h: No such file or directory
+ #include <dmraid/dmraid.h>
+...
+
+$(LIB_EVENTS_SHARED) requires $(LIB_SHARED), add missing dependence.
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ lib/Makefile.in | 2 +-
+ make.tmpl.in    | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/Makefile.in b/lib/Makefile.in
+index a6d5df6..324026a 100644
+--- a/lib/Makefile.in
++++ b/lib/Makefile.in
+@@ -71,7 +71,7 @@ endif
+ all: $(TARGETS)
+ 	@echo $(TARGETS) $(INSTALL_TARGETS)
+ 
+-$(LIB_EVENTS_SHARED):
++$(LIB_EVENTS_SHARED): $(LIB_SHARED)
+ 	$(CC) events/$(LIB_EVENTS_NAME).c $(INCLUDES) $(CFLAGS) $(LDFLAGS) -shared  -Wl,-soname,$(notdir $@).$(DMRAID_LIB_VERSION) -o $@ -ldevmapper -ldevmapper-event $(LIB_SHARED)
+ 
+ .PHONY: install_dmraid_libs remove_dmraid_libs
+diff --git a/make.tmpl.in b/make.tmpl.in
+index b310947..8fc8d7c 100644
+--- a/make.tmpl.in
++++ b/make.tmpl.in
+@@ -105,7 +105,7 @@ SUBDIRS.distclean := $(SUBDIRS:=.distclean)
+ .PHONY: $(SUBDIRS) $(SUBDIRS.install) $(SUBDIRS.clean) $(SUBDIRS.distclean)
+ .PHONY: $(SUBDIRS.remove)
+ 
+-all: $(SUBDIRS) $(TARGETS)
++all: $(SUBDIRS)
+ 
+ install: all $(SUBDIRS.install)
+ 
+-- 
+2.8.1
+
