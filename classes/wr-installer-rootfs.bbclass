@@ -450,8 +450,11 @@ python __anonymous() {
 
     if bb.data.inherits_class('image', d):
         if not d.getVar('INSTALLER_TARGET_BUILD', True):
-            bb.fatal("No INSTALLER_TARGET_BUILD is found, missing --with-installer-target-build ?")
-        elif d.getVar('INSTALLER_TARGET_BUILD', True) == d.getVar('WRL_TOP_BUILD_DIR', True):
+            errmsg = "No INSTALLER_TARGET_BUILD is found,\n"
+            errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-topdir>' to do RPMs install, or\n"
+            errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-image>' to do image copy install"
+            bb.fatal(errmsg)
+        elif d.getVar('INSTALLER_TARGET_BUILD', True) == d.getVar('TOPDIR', True):
             bb.fatal("The INSTALLER_TARGET_BUILD can't be the current dir")
 }
 
