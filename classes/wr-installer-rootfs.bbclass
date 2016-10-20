@@ -266,20 +266,16 @@ wrl_installer_copy_pkgs() {
             bbfatal "PACKAGE_ARCHS or PACKAGE_INSTALL is null, please check $installer_conf"
         fi
     else
-        # Find the DEFAULT_IMAGE....
-        flock $target_build -c " \
-        PSEUDO_UNLOAD=1 make -C $target_build bbc \
-        BBCMD=\"bitbake -e | grep -e '^DEFAULT_IMAGE=.*' > ${BB_LOGFILE}.distro_vals\""
+        # Find target image env location
+        (cd $target_build; \
+            flock $target_build -c \
+            "PSEUDO_UNLOAD=1 bitbake -e ${INSTALLER_TARGET_IMAGE}" | \
+            grep '^T=.*' > ${BB_LOGFILE}.distro_vals);
         eval `cat ${BB_LOGFILE}.distro_vals`
 
-        # Use the DEFAULT_IMAGE to load the rest of the items...
-        # Need the DISTRO
-        echo "DISTRO[unexport] = ''" > ${WORKDIR}/export-distro.conf
-        flock $target_build -c " \
-        PSEUDO_UNLOAD=1 make -C $target_build bbc \
-        BBCMD=\"bitbake -R ${WORKDIR}/export-distro.conf -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | \
-            grep $common_grep -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' -e '^WORKDIR=.*' \
-            -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' > ${BB_LOGFILE}.distro_vals\""
+        eval "cat $T/target_image_env | \
+            grep $common_grep -e '^PN=.*' -e '^SUMMARY=.*' -e '^WORKDIR=.*' \
+            -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' > ${BB_LOGFILE}.distro_vals"
 
         eval `cat ${BB_LOGFILE}.distro_vals`
 
@@ -314,9 +310,9 @@ DISTRO_NAME=$DISTRO_NAME
 DISTRO_VERSION=$DISTRO_VERSION
 
 [Rootfs]
-LIST=$DEFAULT_IMAGE
+LIST=$PN
 
-[$DEFAULT_IMAGE]
+[$PN]
 SUMMARY=$SUMMARY
 DESCRIPTION=$DESCRIPTION
 
