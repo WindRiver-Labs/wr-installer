@@ -447,12 +447,22 @@ python __anonymous() {
         return False
 
     if bb.data.inherits_class('image', d):
-        if not d.getVar('INSTALLER_TARGET_BUILD', True):
+        target_build = d.getVar('INSTALLER_TARGET_BUILD', True)
+        if not target_build:
             errmsg = "No INSTALLER_TARGET_BUILD is found,\n"
-            errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-topdir>' to do RPMs install, or\n"
-            errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-image>' to do image copy install"
+            errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-topdir>' and\n"
+            errmsg += "INSTALLER_TARGET_IMAGE = '<target-image-pn>' to do RPMs\n"
+            errmsg += "install, or\n"
+            errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-image>' to do\n"
+            errmsg += "image copy install"
             bb.fatal(errmsg)
-        elif d.getVar('INSTALLER_TARGET_BUILD', True) == d.getVar('TOPDIR', True):
+        elif target_build == d.getVar('TOPDIR', True):
             bb.fatal("The INSTALLER_TARGET_BUILD can't be the current dir")
+        elif not os.path.exists(target_build):
+            bb.fatal("The INSTALLER_TARGET_BUILD does not exist")
+        elif os.path.isdir(target_build) and not d.getVar('INSTALLER_TARGET_IMAGE', True):
+            errmsg = "The INSTALLER_TARGET_BUILD is a dir, but not found INSTALLER_TARGET_IMAGE,\n"
+            errmsg += "set INSTALLER_TARGET_IMAGE = <target-image-pn>' to do RPMs install"
+            bb.fatal(errmsg)
 }
 
