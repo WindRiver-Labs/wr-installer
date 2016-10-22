@@ -16,6 +16,8 @@ INSTALLER_CONFDIR = "${IMAGE_ROOTFS}/installer-config"
 KICKSTART_FILE ?= ""
 WRL_INSTALLER_CONF ?= ""
 
+WRINSTALL_TARGET_RPMS ?= '${INSTALLER_TARGET_BUILD}/tmp/deploy/rpm'
+
 build_iso_prepend() {
 	install -d ${ISODIR}
 	ln -snf /.discinfo ${ISODIR}/.discinfo
@@ -41,7 +43,7 @@ wrl_installer_setup_local_smart() {
     echo "$installer_default_arch""${TARGET_VENDOR}-${TARGET_OS}" > ${WORKDIR}/distro-tmp/etc/rpm/platform
     mkdir -p ${WORKDIR}/distro-tmp/var/lib/smart
     for arch in $installer_target_archs; do
-        if [ -d "$target_build/bitbake_build/tmp/deploy/rpm/"$arch ] ; then
+        if [ -d "${WRINSTALL_TARGET_RPMS}/"$arch ] ; then
             echo "$arch""-.*-linux.*" >> ${WORKDIR}/distro-tmp/etc/rpm/platform
         fi
     done
@@ -61,7 +63,7 @@ wrl_installer_setup_local_smart() {
         echo $arch
     done | sort | uniq`
     for arch in $archs; do
-        if [ -d "$target_build/bitbake_build/tmp/deploy/rpm/"$arch ] ; then
+        if [ -d "${WRINSTALL_TARGET_RPMS}/"$arch ] ; then
             echo "Note: adding Smart channel $arch"
             smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart channel --add $arch type=rpm-md type=rpm-md baseurl=$target_repo_dir/$arch -y
         fi
@@ -214,7 +216,7 @@ wrl_installer_hardlinktree() {
 }
 
 wrl_installer_copy_local_repos() {
-    if [ -d "$target_build/bitbake_build/tmp/deploy/rpm" ]; then
+    if [ -d "${WRINSTALL_TARGET_RPMS}" ]; then
         echo "Copy rpms from target build to installer image."
         mkdir -p ${IMAGE_ROOTFS}/Packages.$prj_name
 
@@ -230,10 +232,10 @@ wrl_installer_copy_local_repos() {
 
         : > ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
         for arch in $installer_target_archs; do
-            if [ -d "$target_build/bitbake_build/tmp/deploy/rpm/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages.$prj_name/"$arch ]; then
+            if [ -d "${WRINSTALL_TARGET_RPMS}/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages.$prj_name/"$arch ]; then
                 channel_priority=$(expr $channel_priority - 5)
                 echo "$channel_priority $arch" >> ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
-                wrl_installer_hardlinktree "$target_build/bitbake_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
+                wrl_installer_hardlinktree "${WRINSTALL_TARGET_RPMS}/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
             fi
         done
         createrepo --update -q ${IMAGE_ROOTFS}/Packages.$prj_name/
@@ -326,7 +328,7 @@ IMAGE_LINGUAS=${IMAGE_LINGUAS}
 _EOF
     fi
 
-    if [ -d "$target_build/bitbake_build/tmp/deploy/rpm" ]; then
+    if [ -d "${WRINSTALL_TARGET_RPMS}" ]; then
         # Copy local repos while the image is not initramfs
         bpn=${BPN}
         if [ "${bpn##*initramfs}" = "${bpn%%initramfs*}" ]; then
@@ -406,7 +408,7 @@ _EOF
 	            bberror "The image must be ext2, ext3 or ext4"
 	            exit 1
 	        fi
-	    elif [ -d "$target_build/bitbake_build" ]; then
+	    elif [ -d "$target_build" ]; then
 	        wrl_installer_copy_pkgs $target_build $prj_name $installer_conf
 	    else
 	        bberror "Invalid configuration of INSTALLER_TARGET_BUILD: $target_build."
