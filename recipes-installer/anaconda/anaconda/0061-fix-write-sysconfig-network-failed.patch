@@ -1,0 +1,32 @@
+From 13560392134a9e47a875b8c96225283227d7ded6 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Mon, 24 Oct 2016 05:28:01 -0400
+Subject: [PATCH] fix write sysconfig network failed
+
+While target does not have sysconfig, the anaconda should not
+write sysconfig network.
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/network.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/pyanaconda/network.py b/pyanaconda/network.py
+index ad9bd3a..353616e 100644
+--- a/pyanaconda/network.py
++++ b/pyanaconda/network.py
+@@ -1129,6 +1129,9 @@ def usedByFCoE(iface, storage):
+ 
+ def write_sysconfig_network(rootpath, overwrite=False):
+ 
++    if (not os.path.isdir(rootpath + sysconfigDir)):
++        return False
++
+     cfgfile = os.path.normpath(rootpath + networkConfFile)
+     if (os.path.isfile(cfgfile) and not overwrite):
+         return False
+-- 
+2.8.1
+

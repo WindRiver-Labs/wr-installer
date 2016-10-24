@@ -114,6 +114,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0058-force-updating-region-while-city-changes.patch \
            file://0059-timezone-fix-set-US-Alaska-failed.patch \
            file://0060-remove-incorrect-prefix-of-addon-repo-url.patch \
+           file://0061-fix-write-sysconfig-network-failed.patch \
           "
 
 SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
