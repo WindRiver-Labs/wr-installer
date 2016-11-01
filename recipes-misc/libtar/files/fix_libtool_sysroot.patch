@@ -1,10 +1,19 @@
---- libtar-1.2.11/configure.ac	2003-03-03 08:13:37.000000000 +0800
-+++ libtar-1.2.11/configure.ac.new	2012-12-05 17:33:39.641976634 +0800
-@@ -11,6 +11,7 @@
- AC_CONFIG_SRCDIR([lib/libtar.h])
+---
+ configure.ac | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configure.ac b/configure.ac
+index 4623100..1c6b43d 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -13,6 +13,7 @@ AC_CONFIG_MACRO_DIR([autoconf])
+ AM_INIT_AUTOMAKE([dist-bzip2])
  ENCAP_PKG([], [postinstall-encap])
  
 +LT_INIT
  
  dnl ### Load subdirectory modules. ##################################
  PSG_MODULE([compat])
+-- 
+2.8.1
+
