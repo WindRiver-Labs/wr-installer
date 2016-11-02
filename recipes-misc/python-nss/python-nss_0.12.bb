@@ -22,13 +22,11 @@ LIC_FILES_CHKSUM = "file://LICENSE.gpl;md5=751419260aa954499f7abaabaa882bbe \
 file://LICENSE.lgpl;md5=243b725d71bb5df4a1e5920b344b86ad \ 
 file://LICENSE.mpl;md5=4d06cb6baf2fcfbe08cd1165e2a1413a"
 
-PR = "r0"
-
 inherit distutils
 
 CFLAGS += "-fno-strict-aliasing"
 
-SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/security/python-nss/releases/PYNSS_RELEASE_0_12_0/src/python-nss-${PV}.tar.bz2 \
+SRC_URI = "https://ftp.mozilla.org/pub/security/python-nss/releases/PYNSS_RELEASE_0_12_0/src/${BP}.tar.bz2 \
            file://fix-include-dirs.patch \
            file://fix-pynss.patch"
 SRC_URI[md5sum] = "f47ca0cad3504740ba3c8fde11715b29"
