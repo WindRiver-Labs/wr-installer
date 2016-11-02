@@ -7,10 +7,9 @@ LICENSE = "MIT & PSF"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=52f28065af11d69382693b45b5a8eb54 \
                     file://LICENSE-PSF;md5=1c78a5bb3584b353496d5f6f34edb4b2"
 
-PR = "r0"
-
-SRC_URI = "http://iniparse.googlecode.com/files/iniparse-${PV}.tar.gz"
-S = "${WORKDIR}/iniparse-${PV}"
+SRCNAME = "iniparse"
+SRC_URI = "http://pkgs.fedoraproject.org/repo/pkgs/${BPN}/${SRCNAME}-${PV}.tar.gz/5e573e9e9733d97623881ce9bbe5eca6/${SRCNAME}-${PV}.tar.gz"
+S = "${WORKDIR}/${SRCNAME}-${PV}"
 
 inherit distutils
 
