@@ -1,4 +1,4 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/python-smartpm:"
+FILESEXTRAPATHS_prepend_wrlinux-installer := "${THISDIR}/python-smartpm:"
 
 NOREDIRPATCH = ""
 NOREDIRPATCH_class-target = "file://smartpm-noredir.patch"
@@ -6,7 +6,7 @@ NOREDIRPATCH_class-target = "file://smartpm-noredir.patch"
 LIMIT_FREQ_PATCH = ""
 LIMIT_FREQ_PATCH_class-target = "file://limit-status-updating-frequency.patch"
 
-SRC_URI += "${NOREDIRPATCH} \
+SRC_URI_append_wrlinux-installer = " ${NOREDIRPATCH} \
             file://smart-add-query.patch \
             file://smart-enable-proxy-for-rpm-channel.patch \
             file://fix-dbus-failure.patch \

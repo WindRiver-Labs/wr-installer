@@ -570,12 +570,6 @@ class SmartPayload(PackagePayload):
         self._setup = False
 
         self.requiredPackages += ['base-files', 'base-passwd', 'shadow']
-        # Support grub-mkconfig
-        self.requiredPackages += ['sed', 'coreutils', 'busybox']
-        # The extra packages make sure lvm initramfs generation
-        self.requiredPackages += ['ldd', 'gzip', 'iputils']
-        # Support create new user
-        self.requiredPackages += ['shadow']
 
         # base repo caching
         self._base_repo = None

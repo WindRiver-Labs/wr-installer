@@ -1,1 +1,1 @@
-RDEPENDS_${PN} += "python-six"
+RDEPENDS_${PN}_append_wrlinux-installer = " python-six"

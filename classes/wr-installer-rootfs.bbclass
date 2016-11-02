@@ -4,7 +4,7 @@
 # Image generation functions to setup the installer components
 #
 
-RPM_POSTPROCESS_COMMANDS_append = "wrl_installer; "
+RPM_POSTPROCESS_COMMANDS_append = "${@['', 'wrl_installer;']['wrlinux-image-installer' in '${BPN}']}"
 
 INSTPRODUCT ?= "${DISTRO_NAME}"
 INSTVER     ?= "${DISTRO_VERSION}"
@@ -15,6 +15,8 @@ INSTBUGURL  ?= "http://www.windriver.com/"
 INSTALLER_CONFDIR = "${IMAGE_ROOTFS}/installer-config"
 KICKSTART_FILE ?= ""
 WRL_INSTALLER_CONF ?= ""
+
+WRINSTALL_TARGET_RPMS ?= '${INSTALLER_TARGET_BUILD}/tmp/deploy/rpm'
 
 build_iso_prepend() {
 	install -d ${ISODIR}
@@ -41,7 +43,7 @@ wrl_installer_setup_local_smart() {
     echo "$installer_default_arch""${TARGET_VENDOR}-${TARGET_OS}" > ${WORKDIR}/distro-tmp/etc/rpm/platform
     mkdir -p ${WORKDIR}/distro-tmp/var/lib/smart
     for arch in $installer_target_archs; do
-        if [ -d "$target_build/bitbake_build/tmp/deploy/rpm/"$arch ] ; then
+        if [ -d "${WRINSTALL_TARGET_RPMS}/"$arch ] ; then
             echo "$arch""-.*-linux.*" >> ${WORKDIR}/distro-tmp/etc/rpm/platform
         fi
     done
@@ -61,7 +63,7 @@ wrl_installer_setup_local_smart() {
         echo $arch
     done | sort | uniq`
     for arch in $archs; do
-        if [ -d "$target_build/bitbake_build/tmp/deploy/rpm/"$arch ] ; then
+        if [ -d "${WRINSTALL_TARGET_RPMS}/"$arch ] ; then
             echo "Note: adding Smart channel $arch"
             smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart channel --add $arch type=rpm-md type=rpm-md baseurl=$target_repo_dir/$arch -y
         fi
@@ -214,7 +216,7 @@ wrl_installer_hardlinktree() {
 }
 
 wrl_installer_copy_local_repos() {
-    if [ -d "$target_build/bitbake_build/tmp/deploy/rpm" ]; then
+    if [ -d "${WRINSTALL_TARGET_RPMS}" ]; then
         echo "Copy rpms from target build to installer image."
         mkdir -p ${IMAGE_ROOTFS}/Packages.$prj_name
 
@@ -230,10 +232,10 @@ wrl_installer_copy_local_repos() {
 
         : > ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
         for arch in $installer_target_archs; do
-            if [ -d "$target_build/bitbake_build/tmp/deploy/rpm/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages.$prj_name/"$arch ]; then
+            if [ -d "${WRINSTALL_TARGET_RPMS}/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages.$prj_name/"$arch ]; then
                 channel_priority=$(expr $channel_priority - 5)
                 echo "$channel_priority $arch" >> ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
-                wrl_installer_hardlinktree "$target_build/bitbake_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
+                wrl_installer_hardlinktree "${WRINSTALL_TARGET_RPMS}/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
             fi
         done
         createrepo --update -q ${IMAGE_ROOTFS}/Packages.$prj_name/
@@ -266,20 +268,16 @@ wrl_installer_copy_pkgs() {
             bbfatal "PACKAGE_ARCHS or PACKAGE_INSTALL is null, please check $installer_conf"
         fi
     else
-        # Find the DEFAULT_IMAGE....
-        flock $target_build -c " \
-        PSEUDO_UNLOAD=1 make -C $target_build bbc \
-        BBCMD=\"bitbake -e | grep -e '^DEFAULT_IMAGE=.*' > ${BB_LOGFILE}.distro_vals\""
+        # Find target image env location
+        (cd $target_build; \
+            flock $target_build -c \
+            "PSEUDO_UNLOAD=1 bitbake -e ${INSTALLER_TARGET_IMAGE}" | \
+            grep '^T=.*' > ${BB_LOGFILE}.distro_vals);
         eval `cat ${BB_LOGFILE}.distro_vals`
 
-        # Use the DEFAULT_IMAGE to load the rest of the items...
-        # Need the DISTRO
-        echo "DISTRO[unexport] = ''" > ${WORKDIR}/export-distro.conf
-        flock $target_build -c " \
-        PSEUDO_UNLOAD=1 make -C $target_build bbc \
-        BBCMD=\"bitbake -R ${WORKDIR}/export-distro.conf -e $DEFAULT_IMAGE | tee -a ${BB_LOGFILE}.bbc | \
-            grep $common_grep -e '^DEFAULT_IMAGE=.*' -e '^SUMMARY=.*' -e '^WORKDIR=.*' \
-            -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' > ${BB_LOGFILE}.distro_vals\""
+        eval "cat $T/target_image_env | \
+            grep $common_grep -e '^PN=.*' -e '^SUMMARY=.*' -e '^WORKDIR=.*' \
+            -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' > ${BB_LOGFILE}.distro_vals"
 
         eval `cat ${BB_LOGFILE}.distro_vals`
 
@@ -314,9 +312,9 @@ DISTRO_NAME=$DISTRO_NAME
 DISTRO_VERSION=$DISTRO_VERSION
 
 [Rootfs]
-LIST=$DEFAULT_IMAGE
+LIST=$PN
 
-[$DEFAULT_IMAGE]
+[$PN]
 SUMMARY=$SUMMARY
 DESCRIPTION=$DESCRIPTION
 
@@ -330,7 +328,7 @@ IMAGE_LINGUAS=${IMAGE_LINGUAS}
 _EOF
     fi
 
-    if [ -d "$target_build/bitbake_build/tmp/deploy/rpm" ]; then
+    if [ -d "${WRINSTALL_TARGET_RPMS}" ]; then
         # Copy local repos while the image is not initramfs
         bpn=${BPN}
         if [ "${bpn##*initramfs}" = "${bpn%%initramfs*}" ]; then
@@ -410,7 +408,7 @@ _EOF
 	            bberror "The image must be ext2, ext3 or ext4"
 	            exit 1
 	        fi
-	    elif [ -d "$target_build/bitbake_build" ]; then
+	    elif [ -d "$target_build" ]; then
 	        wrl_installer_copy_pkgs $target_build $prj_name $installer_conf
 	    else
 	        bberror "Invalid configuration of INSTALLER_TARGET_BUILD: $target_build."
@@ -449,9 +447,22 @@ python __anonymous() {
         return False
 
     if bb.data.inherits_class('image', d):
-        if not d.getVar('INSTALLER_TARGET_BUILD', True):
-            bb.fatal("No INSTALLER_TARGET_BUILD is found, missing --with-installer-target-build ?")
-        elif d.getVar('INSTALLER_TARGET_BUILD', True) == d.getVar('WRL_TOP_BUILD_DIR', True):
+        target_build = d.getVar('INSTALLER_TARGET_BUILD', True)
+        if not target_build:
+            errmsg = "No INSTALLER_TARGET_BUILD is found,\n"
+            errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-topdir>' and\n"
+            errmsg += "INSTALLER_TARGET_IMAGE = '<target-image-pn>' to do RPMs\n"
+            errmsg += "install, or\n"
+            errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-image>' to do\n"
+            errmsg += "image copy install"
+            bb.fatal(errmsg)
+        elif target_build == d.getVar('TOPDIR', True):
             bb.fatal("The INSTALLER_TARGET_BUILD can't be the current dir")
+        elif not os.path.exists(target_build):
+            bb.fatal("The INSTALLER_TARGET_BUILD does not exist")
+        elif os.path.isdir(target_build) and not d.getVar('INSTALLER_TARGET_IMAGE', True):
+            errmsg = "The INSTALLER_TARGET_BUILD is a dir, but not found INSTALLER_TARGET_IMAGE,\n"
+            errmsg += "set INSTALLER_TARGET_IMAGE = <target-image-pn>' to do RPMs install"
+            bb.fatal(errmsg)
 }
 

@@ -1,11 +1,17 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS_prepend_wrlinux-installer := "${THISDIR}/files:"
 
 PXE_UEFI_GRUB_CONF ?= "grub.cfg"
 PXE_UEFI_GRUB_IMAGE ?= "bootx64-pxe.efi"
 
-SRC_URI += "file://grub.cfg \
+SRC_URI_append_wrlinux-installer = " file://grub.cfg \
 "
-do_deploy_append_class-target() {
+
+do_mkpxeimage() {
+    :
+}
+
+do_mkpxeimage_wrlinux-installer() {
+    cd ${B}
     install -d boot/grub
     if [ -e ${PXE_UEFI_GRUB_CONF} ]; then
         # Use customer's
@@ -28,8 +34,13 @@ do_deploy_append_class-target() {
 
     install -m 644 ${PXE_UEFI_GRUB_IMAGE} ${DEPLOY_DIR_IMAGE}
     rm ${KERNEL_IMAGETYPE} wrlinux-image-installer-initramfs-${MACHINE}.${INITRAMFS_FSTYPES}
-
-    # Install the modules to deploy, and efi_populate will
-    # copy them to grub-efi's search path later
-    make -C grub-core install DESTDIR=${DEPLOYDIR} pkglibdir=""
 }
+
+do_deploy_append_class-target_wrlinux-installer() {
+        # Install the modules to deploy, and efi_populate will
+        # copy them to grub-efi's search path later
+        make -C grub-core install DESTDIR=${DEPLOYDIR} pkglibdir=""
+}
+
+
+addtask do_mkpxeimage after do_install
