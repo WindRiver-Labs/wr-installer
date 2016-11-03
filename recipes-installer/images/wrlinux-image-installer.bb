@@ -5,7 +5,6 @@ DESCRIPTION = "An image with Anaconda support."
 
 LICENSE = "MIT"
 
-PR = "r0"
 
 inherit wrlinux-image
 

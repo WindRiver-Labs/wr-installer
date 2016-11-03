@@ -7,7 +7,6 @@ removal, rebuild and display of properties for ATARAID/DDF1 metadata on \
 Linux >= 2.4 using device-mapper."
 HOMEPAGE = "http://people.redhat.com/heinzm/sw/dmraid"
 LICENSE = "GPLv2+"
-PR = "r0"
 
 DEPENDS = "lvm2"
 RDEPENDS_${PN} = "lvm2"

@@ -11,7 +11,6 @@ inherit pythonnative pkgconfig gettext
 DEPENDS = "lvm2 dmraid python"
 RDEPENDS_${PN} = "lvm2 python-pyparted python"
 
-PR = "r0"
 
 S = "${WORKDIR}/pyblock-${PV}"
 

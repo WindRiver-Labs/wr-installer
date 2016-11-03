@@ -10,7 +10,6 @@ LICENSE = "GPLv2+"
 DEPENDS = "python"
 RDEPENDS = ""
 
-PR = "r0"
 
 # FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
