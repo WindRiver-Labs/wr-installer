@@ -94,26 +94,25 @@ Building the target installer
 
              $ bitbake wrlinux-image-installer
 
-   3.2 Target installer with RPMs
-       3.2.1 Create and build target RPMs in project_1.
-             The output RPMs will be used by project_2 to install on
-             the target.
+   3.2 Package Based Install
+       3.2.1 Setup with wr-installer layer and installer-support template.
+             The same with 3.1.1
 
-             Note: The installer-support template is required for project_1.
+       3.2.2 Build target image in target_build.
+             The same with 3.1.2
 
-             $ configure --enable-board=intel-x86-64 \
-                    --enable-kernel=standard
-                    --enable-rootfs=glibc-std+installer-support
-             $ make all
+       3.2.3 Build installer image in installer_build.
 
-       3.3.2 Create and build the installer image in project_2.
-             Use the configure option --with-installer-target-build to point to
-             root directory of project_1:
+             $ . <wr9-project>/oe-init-build-env <installer_build-dir>
 
-             $ configure --enable-board=intel-x86-64 \
-					--enable-kernel=standard --enable-rootfs=wr-installer \
-					--enable-bootimage=iso --with-installer-target-build=<project_1Dir>
-             $ make all
+             edit local.conf
+             ---
+             DISTRO = 'wrlinux-installer'
+             INSTALLER_TARGET_BUILD = '<target_build-dir>'
+             INSTALLER_TARGET_IMAGE = 'wrlinux-image-glibc-std'
+             ---
+
+             $ bitbake wrlinux-image-installer
 
 4. Install
    4.1 Burn the output ISO to a DVD or dd it to a USB disk, and use it to
