@@ -7,8 +7,8 @@ most of the layers that Wind River Linux provides.
 
 Dependencies
 ------------
-This layer depends on the Wind River Linux version of bitbake, oe-core, wrlinux
-layer, wr-base layer and wrlcompat layer.
+This layer depends on the Wind River Linux version of bitbake, oe-core,
+meta-filesystems, meta-gnome, and wr-base layer.
 
 
 Maintenance
