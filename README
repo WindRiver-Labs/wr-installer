@@ -21,12 +21,35 @@ information on submitting changes.
 Building the target installer
 -----------------------------
 1. Summary
-   The target installer is enabled by passing "--enable-rootfs=wr-installer"
-   to configure. A second option "--with-installer-target-build=<path>"
-   is used to specify the path to the build directory that will supply RPMs
-   to be installed on the target.  If the path is an .ext2, .ext3, or ext4
-   image file, then the installer will copy this image to the target after
-   the disk has been partitioned and formatted.
+   The target installer is enabled by passing "--layers=wr-installer"
+   to setup.sh. There are two images in target installer, one is target
+   image which to be installed to target, another is installer image
+   which to do the installation.
+
+   A target image requires specific components to be compatible with
+   the installer. To install these components set WRTEMPLATE +=
+   'feature/installer-support' in local.conf.
+
+   For installer image, you are not supposed to change the 'DISTRO'
+   setting in target build directory. It may work, but it's not
+   recommended. Instead we should recommend the user run a
+   oe-init-build-env and create a new build directory for the installer.
+   Set DISTRO = 'wrlinux-installer' in local.conf file.
+
+   There are two kinds of installer builds: "Image Based Install" and
+   "Package Based Install". The former is to install a prebuilt image,
+   the latter is to install RPM packages.
+
+   For Image Based Install, set INSTALLER_TARGET_BUILD =
+   '<target-build-image>' in local.conf to specify an .ext2, .ext3,
+   or ext4 image file, then the installer will copy this image to the
+   target.
+
+   For Package Based Install,  set INSTALLER_TARGET_BUILD =
+   '<target-build-topdir>' to specify the path to target build directory
+   that will supply RPMs, and INSTALLER_TARGET_IMAGE = '<target-image-pn>'
+   to specify the image recipe name, then the installer will install its
+   RPMs to the target;
 
 2. Two main use cases
    2.1 Installer image with ext2, ext3 or ext4 image from the target
