@@ -63,27 +63,36 @@ Building the target installer
          board (BSP) configuration should be the same.
 
 3. Examples for the use cases
-   3.1 Target installer with the image
-       3.1.1 Create and build the target image in project_1.
-             The output image(ext3) will be used by project_2 to install
-             on the target.
+   3.1 Image Based Install
+       3.1.1 Setup with wr-installer layer and installer-support template.
 
-             Note: The installer-support template is required for project_1.
+             $ mkdir <wr9-project>
+             $ cd <wr9-project>
+             $ git clone --branch WRLINUX_9_BASE --single-branch \
+                 git://pek-git.wrs.com/git/wrlinux-x
+             $ ./wrlinux-x/setup.sh --machines=[intel-x86-64|qemux86-64] \
+                 --distros=wrlinux --dl-layers \
+                 --layers=wr-installer \
+                 --templates=feature/installer-support
 
-             $ configure --enable-board=intel-x86-64 \
-                 --enable-kernel=standard \
-                 --enable-rootfs=glibc-std+installer-support \
-                 --enable-bootimage=ext3
-             $ make all
+             Note: The machine of qemux86-64 is used for qemu test
 
-       3.2.2 Create and build the installer image in project_2.
-             Use the configure option --with-installer-target-build to
-             point to the ext3 image from the previous step:
-             $ configure --enable-board=intel-x86-64 \
-                 --enable-kernel=standard --enable-rootfs=wr-installer \
-                 --enable-bootimage=iso --with-installer-target-build=\
-                    <project_1>/export/intel-x86-64-glibc-std-standard-dist.ext3
-              $ make all
+       3.1.2 Build target image (such as wrlinux-image-glibc-std) in target_build.
+
+             $ . <wr9-project>/oe-init-build-env <target_build-dir>
+             $ bitbake wrlinux-image-glibc-std
+
+       3.1.3 Build installer image in installer_build.
+
+             $ . <wr9-project>/oe-init-build-env <installer_build-dir>
+
+             edit local.conf
+             ---
+             DISTRO = 'wrlinux-installer'
+             INSTALLER_TARGET_BUILD = '<target_build-dir>/tmp/deploy/images/intel-x86-64/wrlinux-image-glibc-std-intel-x86-64.ext4'
+             ---
+
+             $ bitbake wrlinux-image-installer
 
    3.2 Target installer with RPMs
        3.2.1 Create and build target RPMs in project_1.
