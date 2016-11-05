@@ -246,9 +246,10 @@ wrl_installer_copy_local_repos() {
 wrl_installer_copy_pkgs() {
 
     target_build="$1"
-    prj_name="$2"
-    if [ -n "$3" ]; then
-        installer_conf="$3"
+    target_image="$2"
+    prj_name="$3"
+    if [ -n "$4" ]; then
+        installer_conf="$4"
     else
         installer_conf=""
     fi
@@ -271,7 +272,7 @@ wrl_installer_copy_pkgs() {
         # Find target image env location
         (cd $target_build; \
             flock $target_build -c \
-            "PSEUDO_UNLOAD=1 bitbake -e ${INSTALLER_TARGET_IMAGE}" | \
+            "PSEUDO_UNLOAD=1 bitbake -e $target_image" | \
             grep '^T=.*' > ${BB_LOGFILE}.distro_vals);
         eval `cat ${BB_LOGFILE}.distro_vals`
 
@@ -370,11 +371,13 @@ _EOF
 
     : > ${IMAGE_ROOTFS}/.target_build_list
     counter=0
+    targetimage_counter=0
     for target_build in ${INSTALLER_TARGET_BUILD}; do
         target_build="`readlink -f $target_build`"
         echo "Installer Target Build: $target_build"
         counter=$(expr $counter + 1)
         prj_name="`echo $target_build | sed -e 's#/ *$##g' -e 's#.*/##'`"
+        prj_name="$prj_name-$counter"
 
 	    # Generate .buildstamp
 	    if [ -n "${WRL_INSTALLER_CONF}" ]; then
@@ -402,14 +405,17 @@ _EOF
 	            echo "Image based target install selected."
 	            mkdir -p "${IMAGE_ROOTFS}/LiveOS.$prj_name"
 	            wrl_installer_hardlinktree "$target_build" "${IMAGE_ROOTFS}/LiveOS.$prj_name/rootfs.img"
-	            echo "::`basename $target_build::`" >> ${IMAGE_ROOTFS}/.target_build_list
+	            echo "::$prj_name::" >> ${IMAGE_ROOTFS}/.target_build_list
 	        else
 	            bberror "Unsupported image: $target_build."
 	            bberror "The image must be ext2, ext3 or ext4"
 	            exit 1
 	        fi
 	    elif [ -d "$target_build" ]; then
-	        wrl_installer_copy_pkgs $target_build $prj_name $installer_conf
+	        targetimage_counter=$(expr $targetimage_counter + 1)
+	        target_image="`echo ${INSTALLER_TARGET_IMAGE} | awk '{print $'"$targetimage_counter"'}'`"
+	        echo "Target Image: $target_image"
+	        wrl_installer_copy_pkgs $target_build $target_image $prj_name $installer_conf
 	    else
 	        bberror "Invalid configuration of INSTALLER_TARGET_BUILD: $target_build."
 	        bberror "It must either point to an image (ext2, ext3 or ext4) or to the root of another build directory"
@@ -447,8 +453,8 @@ python __anonymous() {
         return False
 
     if bb.data.inherits_class('image', d):
-        target_build = d.getVar('INSTALLER_TARGET_BUILD', True)
-        if not target_build:
+        target_builds = d.getVar('INSTALLER_TARGET_BUILD', True)
+        if not target_builds:
             errmsg = "No INSTALLER_TARGET_BUILD is found,\n"
             errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-topdir>' and\n"
             errmsg += "INSTALLER_TARGET_IMAGE = '<target-image-pn>' to do RPMs\n"
@@ -456,13 +462,28 @@ python __anonymous() {
             errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-image>' to do\n"
             errmsg += "image copy install"
             bb.fatal(errmsg)
-        elif target_build == d.getVar('TOPDIR', True):
-            bb.fatal("The INSTALLER_TARGET_BUILD can't be the current dir")
-        elif not os.path.exists(target_build):
-            bb.fatal("The INSTALLER_TARGET_BUILD does not exist")
-        elif os.path.isdir(target_build) and not d.getVar('INSTALLER_TARGET_IMAGE', True):
-            errmsg = "The INSTALLER_TARGET_BUILD is a dir, but not found INSTALLER_TARGET_IMAGE,\n"
-            errmsg += "set INSTALLER_TARGET_IMAGE = <target-image-pn>' to do RPMs install"
-            bb.fatal(errmsg)
+
+        count = 0
+        for target_build in target_builds.split():
+            if target_build == d.getVar('TOPDIR', True):
+                bb.fatal("The INSTALLER_TARGET_BUILD can't be the current dir")
+            elif not os.path.exists(target_build):
+                bb.fatal("The %s of INSTALLER_TARGET_BUILD does not exist" % target_build)
+
+            if os.path.isdir(target_build):
+                count += 1
+
+        # While do package management install
+        if count > 0:
+            target_images = d.getVar('INSTALLER_TARGET_IMAGE', True)
+            if not target_images:
+                errmsg = "The INSTALLER_TARGET_BUILD is a dir, but not found INSTALLER_TARGET_IMAGE,\n"
+                errmsg += "set INSTALLER_TARGET_IMAGE = '<target-image-pn>' to do RPMs install"
+                bb.fatal(errmsg)
+
+            elif count != len(target_images.split()):
+                errmsg = "The INSTALLER_TARGET_BUILD has %s build dirs: %s\n" % (count, target_builds)
+                errmsg += "But INSTALLER_TARGET_IMAGE has %s build images: %s\n" % (len(target_images.split()), target_images)
+                bb.fatal(errmsg)
 }
 
