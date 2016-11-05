@@ -229,20 +229,18 @@ Building the target installer
 
 9. Put multiple target builds into one installer image
    9.1 Create and build multiple target build projects.
-       Refer to section 3.1.1 or 3.2.1 on how to configure and build each
-       target project. In this example, the projects are named target_build1,
-       target_build2 and target_build3.
+       Refer to section 3.1.1 on how to setup and build each target project.
+       In this example, the projects are named target_build1, target_build2 and
+       target_build3. The target_build1 and target_build2 are build dirs,
+       target_build3 is ext4 file. Build 'wrlinux-image-glibc-std' in
+       target_build1 and build 'core-image-minimal' in target_build2.
 
-   9.2 Use the configure option --with-installer-target-build to point to
-       "<target_build1>,<target_build2>,<target_build3>", the comma(,)
-       is the separator:
-       $ configure --enable-board=intel-x86-64 \
-            --enable-kernel=standard --enable-rootfs=wr-installer \
-            --enable-bootimage=iso \
-            --with-installer-target-build=\
-            <target_build1>,<target_build2>,<target_build3>
+   9.2 Edit local.conf, use variable INSTALLER_TARGET_BUILD to point to
+       "<target_build1> <target_build2> <target_build3>", and set
+       INSTALLER_TARGET_IMAGE = "wrlinux-image-glibc-std core-image-minimal",
+       the space is the separator:
 
-       $ make all
+       $ bitbake wrlinux-image-installer
 
        Then the installer image will contain all target builds specified,
        including target_build1, target_build2 and target_build3.
@@ -253,7 +251,7 @@ Building the target installer
        =============== Found the following products ===============
        1) DISTRO1    target_build1    DISTRO_NAME1    DISTRO_VERION1
        2) DISTRO2    target_build2    DISTRO_NAME2    DISTRO_VERION2
-       3) DISTRO3    target_build3    DISTRO_NAME3    DISTRO_VERION3
+       3) <target_build3-ext4-file>-3
 
        Please enter your choice (0 to quit):
 
