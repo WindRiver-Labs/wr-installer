@@ -119,17 +119,16 @@ Building the target installer
        boot the target board and start the install.
 
    4.2 Use qemu for testing
+       Build target installer with machine of qemux86-64
+
        Create the qemu disk:
-       $ host-cross/usr/bin/qemu-img create -f qcow hd0.vdisk 5000M
+       $ <build-topdir>/tmp/sysroots/x86_64-linux/usr/bin/qemu-img create -f qcow hd0.vdisk 5000M
 
        Start qemu with installer image:
-       $ make start-target \
-         TOPTS="-m 2048 -cd export/intel-x86-64-installer-standard-dist.iso \
-         -no-kernel -disk hd0.vdisk -gc" EX_TARGET_QEMU_OPTS="-vga vmware \
-         -show-cursor -usb"
+       $ runqemu qemux86-64 wrlinux-image-installer iso slirp qemuparams="hd0.vdisk"
 
-       Add "-vnc :4" to EX_TARGET_QEMU_OPTS to start a VNC capable session.
-       Add "-usbdevice wacom-tablet" to EX_TARGET_QEMU_OPTS to correct mouse
+       Add "-vnc :4" to qemuparams to start a VNC capable session.
+       Add "-usbdevice wacom-tablet" to qemuparams to correct mouse
        pointer position, it works with the Linux 3.14, but does not work with
        Linux 3.17.
 
