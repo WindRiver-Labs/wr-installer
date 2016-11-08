@@ -1,14 +1,7 @@
-From 02102a267812da1b0fa21a7a2aefac3214de8675 Mon Sep 17 00:00:00 2001
+From 728b20f709f3553f7a838ea0db67b0b1d0ac8838 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Wed, 2 Nov 2016 01:06:17 -0400
 Subject: [PATCH] fix parallel compile issue
-
-Rule $(TARGETS) is not necessary, all done in $(SUBDIRS).
-If run $(TARGETS) before $(SUBDIRS), there is a compile failure
-...
-tools/dmraid.c:12:27: fatal error: dmraid/dmraid.h: No such file or directory
- #include <dmraid/dmraid.h>
-...
 
 $(LIB_EVENTS_SHARED) requires $(LIB_SHARED), add missing dependence.
 
@@ -17,8 +10,7 @@ Upstream-Status: Pending
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
  lib/Makefile.in | 2 +-
- make.tmpl.in    | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/lib/Makefile.in b/lib/Makefile.in
 index df3be6e..b71ca92 100644
@@ -33,19 +25,6 @@ index df3be6e..b71ca92 100644
  	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJECTS2) \
  		-shared -Wl,--discard-all -Wl,--no-undefined -Wl,-soname,$(notdir $@) \
  		$(LIB_SHARED) $(DEVMAPPEREVENT_LIBS) $(DEVMAPPER_LIBS) $(PTHREAD_LIBS) $(LIBS)
-diff --git a/make.tmpl.in b/make.tmpl.in
-index 22473d4..645171a 100644
---- a/make.tmpl.in
-+++ b/make.tmpl.in
-@@ -110,7 +110,7 @@ SUBDIRS.distclean := $(SUBDIRS:=.distclean)
- .PHONY: $(SUBDIRS) $(SUBDIRS.install) $(SUBDIRS.clean) $(SUBDIRS.distclean)
- .PHONY: $(SUBDIRS.remove)
- 
--all: $(SUBDIRS) $(TARGETS)
-+all: $(SUBDIRS)
- 
- install: all $(SUBDIRS.install)
- 
 -- 
 2.8.1
 
