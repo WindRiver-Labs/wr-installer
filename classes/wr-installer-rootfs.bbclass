@@ -4,7 +4,7 @@
 # Image generation functions to setup the installer components
 #
 
-RPM_POSTPROCESS_COMMANDS_append = "${@['', 'wrl_installer;']['wrlinux-image-installer' in '${BPN}']}"
+RPM_POSTPROCESS_COMMANDS_append = "wrl_installer;"
 
 INSTPRODUCT ?= "${DISTRO_NAME}"
 INSTVER     ?= "${DISTRO_VERSION}"
