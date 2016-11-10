@@ -355,20 +355,6 @@ ${DISTRO_NAME} ${DISTRO_VERSION}
 ${TARGET_ARCH}
 _EOF
 
-    # The count of INSTALLER_TARGET_BUILD, WRL_INSTALLER_CONF and
-    # KICKSTART_FILE must match when set.
-    cnt_target=$(wrl_installer_get_count ${INSTALLER_TARGET_BUILD})
-    if [ -n "${WRL_INSTALLER_CONF}" ]; then
-        cnt_conf=$(wrl_installer_get_count ${WRL_INSTALLER_CONF})
-        [ $cnt_conf -eq $cnt_target ] || \
-            bbfatal "The count of INSTALLER_TARGET_BUILD and WRL_INSTALLER_CONF not match!"
-    fi
-    if [ -n "${KICKSTART_FILE}" ]; then
-        cnt_ks=$(wrl_installer_get_count ${KICKSTART_FILE})
-        [ $cnt_ks -eq $cnt_target ] || \
-            bbfatal "The count of INSTALLER_TARGET_BUILD and KICKSTART_FILE not match!"
-    fi
-
     : > ${IMAGE_ROOTFS}/.target_build_list
     counter=0
     targetimage_counter=0
@@ -424,14 +410,10 @@ _EOF
 
 	    ks_cfg="${INSTALLER_CONFDIR}/ks.cfg.$prj_name"
 	    if [ -n "${KICKSTART_FILE}" ]; then
-            ks_file="`echo ${KICKSTART_FILE} | awk '{print $'"$counter"'}'`"
-	        if [ -e "$ks_file" ]; then
-                bbnote "Copying kickstart file $ks_file to $ks_cfg ..."
-                mkdir -p ${INSTALLER_CONFDIR}
-                cp $ks_file $ks_cfg
-	        else
-	            bberror "The kickstart file $ks_file doesn't exist!"
-	        fi
+	        ks_file="`echo ${KICKSTART_FILE} | awk '{print $'"$counter"'}'`"
+	        bbnote "Copying kickstart file $ks_file to $ks_cfg ..."
+	        mkdir -p ${INSTALLER_CONFDIR}
+	        cp $ks_file $ks_cfg
 	    fi
     done
 
@@ -485,5 +467,24 @@ python __anonymous() {
                 errmsg = "The INSTALLER_TARGET_BUILD has %s build dirs: %s\n" % (count, target_builds)
                 errmsg += "But INSTALLER_TARGET_IMAGE has %s build images: %s\n" % (len(target_images.split()), target_images)
                 bb.fatal(errmsg)
+
+        # The count of INSTALLER_TARGET_BUILD and WRL_INSTALLER_CONF must match when set.
+        wrlinstaller_confs = d.getVar('WRL_INSTALLER_CONF', True)
+        if wrlinstaller_confs:
+            if len(wrlinstaller_confs.split()) != len(target_builds.split()):
+                bb.fatal("The count of INSTALLER_TARGET_BUILD and WRL_INSTALLER_CONF not match!")
+            for wrlinstaller_conf in wrlinstaller_confs.split():
+                if not os.path.exists(wrlinstaller_conf):
+                    bb.fatal("The installer conf %s in WRL_INSTALLER_CONF doesn't exist!" % wrlinstaller_conf)
+
+        # The count of INSTALLER_TARGET_IMAGE and KICKSTART_FILE must match when set.
+        kickstart_files = d.getVar('KICKSTART_FILE', True)
+        if kickstart_files:
+            if len(kickstart_files.split()) != len(target_builds.split()):
+                bb.fatal("The count of INSTALLER_TARGET_BUILD and KICKSTART_FILE not match!")
+            for kickstart_file in kickstart_files.split():
+                if not os.path.exists(kickstart_file):
+                    bb.fatal("The kickstart file %s in KICKSTART_FILE doesn't exist!" % kickstart_file)
+
 }
 
