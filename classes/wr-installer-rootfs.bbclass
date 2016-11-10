@@ -281,23 +281,23 @@ wrl_installer_copy_pkgs() {
             -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' > ${BB_LOGFILE}.distro_vals"
 
         eval `cat ${BB_LOGFILE}.distro_vals`
-
-        export installer_default_arch="$PACKAGE_ARCH"
-        # Reverse it for priority
-        export installer_default_archs="`for arch in $PACKAGE_ARCHS; do echo $arch; done | tac | tr - _`"
-        installer_target_archs="$installer_default_archs"
-        if [ -n "$MULTILIB_VARIANTS" ]; then
-            export MULTILIB_VARIANTS
-            mlarchs_reversed="`for mlarch in $ALL_MULTILIB_PACKAGE_ARCHS; do echo $mlarch; \
-                done | tac | tr - _`"
-            for arch in $mlarchs_reversed; do
-                if [ "$arch" != "noarch" -a "$arch" != "all" -a "$arch" != "any" ]; then
-                    installer_target_archs="$installer_target_archs lib32_$arch"
-                fi
-            done
-        fi
-        export installer_target_archs
     fi
+
+    export installer_default_arch="$PACKAGE_ARCH"
+    # Reverse it for priority
+    export installer_default_archs="`for arch in $PACKAGE_ARCHS; do echo $arch; done | tac | tr - _`"
+    installer_target_archs="$installer_default_archs"
+    if [ -n "$MULTILIB_VARIANTS" ]; then
+        export MULTILIB_VARIANTS
+        mlarchs_reversed="`for mlarch in $ALL_MULTILIB_PACKAGE_ARCHS; do echo $mlarch; \
+            done | tac | tr - _`"
+        for arch in $mlarchs_reversed; do
+            if [ "$arch" != "noarch" -a "$arch" != "all" -a "$arch" != "any" ]; then
+                installer_target_archs="$installer_target_archs lib32_$arch"
+            fi
+        done
+    fi
+    export installer_target_archs
 
     echo "wrl_installer_setup_local_smart $target_build $WORKDIR/rpms"
     wrl_installer_setup_local_smart $target_build $WORKDIR/rpms
