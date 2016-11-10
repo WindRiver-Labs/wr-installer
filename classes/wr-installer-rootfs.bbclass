@@ -252,14 +252,23 @@ wrl_installer_copy_pkgs() {
         installer_conf=""
     fi
 
-        common_grep="-e '^ALL_MULTILIB_PACKAGE_ARCHS=.*' \
+    common_grep="-e '^ALL_MULTILIB_PACKAGE_ARCHS=.*' \
             -e '^MULTILIB_VARIANTS=.*' -e '^PACKAGE_ARCHS=.*'\
             -e '^PACKAGE_ARCH=.*' -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' \
             -e '^DISTRO=.*' -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
             "
+
+    # Find target image env location: $T, and target rpm repo dir: $WORKDIR/rpms
+    (cd $target_build; \
+        flock $target_build -c \
+        "PSEUDO_UNLOAD=1 bitbake -e $target_image" | \
+        grep -e '^T=.*' -e '^WORKDIR=.*' > ${BB_LOGFILE}.distro_vals);
+    eval `cat ${BB_LOGFILE}.distro_vals`
+
     if [ -f "$installer_conf" ]; then
-        eval `grep -e "^PACKAGE_INSTALL=.*" $common_grep $installer_conf \
-            | sed -e 's/=/="/' -e 's/$/"/'`
+        eval "grep -e \"^PACKAGE_INSTALL=.*\" $common_grep $installer_conf \
+            | sed -e 's/=/=\"/' -e 's/$/\"/' > ${BB_LOGFILE}.distro_vals"
+        eval `cat ${BB_LOGFILE}.distro_vals`
         if [ $? -ne 0 ]; then
             bbfatal "Something is wrong in $installer_conf, please correct it"
         fi
@@ -267,15 +276,8 @@ wrl_installer_copy_pkgs() {
             bbfatal "PACKAGE_ARCHS or PACKAGE_INSTALL is null, please check $installer_conf"
         fi
     else
-        # Find target image env location
-        (cd $target_build; \
-            flock $target_build -c \
-            "PSEUDO_UNLOAD=1 bitbake -e $target_image" | \
-            grep '^T=.*' > ${BB_LOGFILE}.distro_vals);
-        eval `cat ${BB_LOGFILE}.distro_vals`
-
         eval "cat $T/target_image_env | \
-            grep $common_grep -e '^PN=.*' -e '^SUMMARY=.*' -e '^WORKDIR=.*' \
+            grep $common_grep -e '^PN=.*' -e '^SUMMARY=.*' \
             -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' > ${BB_LOGFILE}.distro_vals"
 
         eval `cat ${BB_LOGFILE}.distro_vals`
