@@ -188,12 +188,12 @@ Building the target installer
    process when package based installs, the user can set WRL_INSTALLER_CONF
    in the conf file, for example:
 
-   edit <installer_build_dir>/bitbake_build/conf/local.conf
+   edit local.conf
    WRL_INSTALLER_CONF = "/my/installer.conf"
 
    You can customize the contents of installer.conf when needed, for example,
    add packages that you will like to install, but if you do, you must ensure
-   that the added packages are in the first build (project_1).
+   that the added packages are in the target build (target_build).
 
 6. Perform the kickstart installation
    The installer can support kickstart installs. To do this, use the ks file
