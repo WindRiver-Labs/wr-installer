@@ -297,22 +297,19 @@ Building the target installer
          About PXE config file, there is an example in
          examples/pxe/pxelinux.cfg/default.nfs
 
-11. How to create Large Disk (>2TB) on X86 platform
-    11.1 On X86 platform, for small disk(<2TB), anaconda create msdos
-         partitioned disk by default; if larger than that, it automatically
-         creates GPT partitioned disk; but it has risks on some hosts(Such as
-         Lenovo systems), if you do not want to create GPT disklabels on
-         large disk(>2TB), it provides a boot option 'nogpt', but only 2TB
-         used.
+11. Download file from http/ftp server to target image
+    Add key in kickstart to support downloading file from http/ftp
+    server to target image:
+    'download --dest=[file://dir/filename|/dir/filename] --src=[http url| ftp url]'
 
-    11.2 While you use kickstart to do the installation on large disk, as there
-         must be a biosboot partition for the bootloader to be installed
-         successfully onto a disk that contains a GPT/GUID partition table,
-         which includes disks initialized by anaconda. This partition may be
-         created with the kickstart option 'part biosboot --fstype=biosboot
-         --size=1 --ondisk=sda'. However, in the case that a disk has an
-         existing biosboot partition, adding a "part biosboot" option is
-         unnecessary.
+    Here is the example in kickstart file:
+    ---start---
+    download --dest=/etc/rpm/keys/0x100001 --src=http://128.224.162.159/testkey
+    download --dest=file://etc/rpm/keys/0x100002 --src=http://128.224.162.159/testkey2
+    ---end---
+
+    The file be download to target image (/mnt/image/****). For host image,
+    we could make use of "%pre" section with invoking shell to do that)
 
 12. How to authenticate while downloading kickstart from web server
     12.1 We add boot options 'ksuser' and 'kspasswd'(listed in /proc/cmdline)
@@ -432,20 +429,6 @@ Building the target installer
     ----end----
 
     4. Restart dhcpd and go start PXE UEFI installation.
-
-15 Download file from http/ftp server to target image
-    Add key in kickstart to support downloading file from http/ftp
-    server to target image:
-    'download --dest=[file://dir/filename|/dir/filename] --src=[http url| ftp url]'
-
-    Here is the example in kickstart file:
-    ---start---
-    download --dest=/etc/rpm/keys/0x100001 --src=http://128.224.162.159/testkey
-    download --dest=file://etc/rpm/keys/0x100002 --src=http://128.224.162.159/testkey2
-    ---end---
-
-    The file be download to target image (/mnt/image/****). For host image,
-    we could make use of "%pre" section with invoking shell to do that)
 
 License
 -------
