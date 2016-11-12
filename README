@@ -264,7 +264,7 @@ Building the target installer
              Then target_build1 will use /my/target1.conf and /my/target1.ks,
              target_build2 and target_build3 will work similarly.
 
-10. PXE
+10. BIOS-based PXE (legacy)
     10.1 Preparation
          Refer "Wind River Linux USER GUIDE 6"
          - About Configuring PXE, P422
@@ -336,61 +336,26 @@ Building the target installer
        of the mirror list, be sure to select 'This URL refers to a mirror list'
        checkbox. Then click the 'Done' button to add the mirror list.
 
-14 PXE with UEFI
-    The main difference between UEFI and non-UEFI on PXE is for
-    non-UEFI we use pxelinux.0 which provided by syslinux package
-    as the PXELinux Boot Loader File; but for UEFI, we have to
-    invoke script grub-mkstandalone which provided by grub-efi
-    to generate the PXELinux Boot Loader File. The following
-    introduces how to generate:
+14 UEFI-based PXE
+    The main difference between BIOS-based and UEFI-based on PXE is the former
+    uses pxelinux.0 provided by syslinux package as the PXELinux Boot Loader File;
+    and UEFI-based PXE use a generated bootx64-pxe.efi as PXELinux Boot Loader
+    File. Here is the introduction of bootx64-pxe.efi generation.
 
-    1. Generate in tftp download dir
-    1.1 Copy kernel and initramfs to tftp download dir
-    $ cp export/images/bzImage /srv/tftpboot
-    $ cp export/images/wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz /srv/tftpboot
+    In installer build, after installer image built:
+    1. Configure grub.cfg:
+       1.1 If you are familiar with PXE and grub, set PXE_UEFI_GRUB_CONF to
+           point your own grub.cfg, you could customize it as you wish.
 
-    1.2 Creation of a netboot grub config file
-    $ cd /srv/tftpboot
-    $ mkdir -p boot/grub
-    $ vi boot/grub/grub.cfg
-    ----start----
-    menuentry 'boot serial console'{
-        linux /bzImage LABEL=initrd-install ks=http://128.224.162.194/anaconda-ks.cfg console=ttyS0,115200
-        initrd /wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz
-    }
-    ----end----
+       1.2 Or set APPEND_append = " ks=<url-ks>" in local.conf, it configures a
+           default grub.cfg which tells PXE image where to download the kickstart
+           file.
 
-    1.3 Create a standalone (static) efi image which containing an embedded
-        configuration file, required modules, kernel, initramfs. The
-        grub-mkstandalone and image modules were provided by grub-2.00 which
-        located in bitbake_build/tmp/work/core2-64-wrs-linux/grub-efi/2.00-r2.fix0/grub-2.00/
+    2. Generate UEFI-base PXE image
+    $ bitbake grub-efi -cmkpxeimage
 
-    $ cd /srv/tftpboot
-
-    $ PATH_TO_PROJECT/bitbake_build/tmp/work/core2-64-wrs-linux/grub-efi/2.00-r2.fix0/grub-2.00/grub-mkstandalone \
-         -d PATH_TO_PROJECT/bitbake_build/tmp/work/core2-64-wrs-linux/grub-efi/2.00-r2.fix0/grub-2.00/grub-core/ \
-         --modules="boot linux ext2 fat serial part_msdos part_gpt normal efi_gop iso9660 search tftp net http" \
-         -O x86_64-efi --output=boot/bootx64-pxe.efi \
-          boot/grub/grub.cfg bzImage wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz
-
-    The 'bootx64-pxe.efi' in /srv/tftpboot/boot is the standalone (static) efi image.
-
-    2. Generate in host (2nd) build project dir
-    2.1 Config PXE_UEFI_GRUB_CONF to add customer's grub config file
-    $ cd PATH_TO_PROJECT
-    $ vim local.conf
-    ----start----
-    PXE_UEFI_GRUB_CONF = "/srv/tftpboot/boot/grub/grub.cfg"
-    ----end----
-    If not edit PXE_UEFI_GRUB_CONF, there is a default grub.cfg
-    in wr-installer/recipes-bsp/grub/files/
-
-    2.2 Execute grub-efi's mkpxeimage task
-    $ make grub-efi.mkpxeimage
-    We should invoke the task after all image built(make fs/all)
-
-    2.3 Copy generated bootx64-pxe.efi to tftp download dir
-    $ cp PATH_TO_PROJECT/export/images/bootx64-pxe.efi /srv/tftpboot/boot
+    3 Copy UEFI-base PXE image to tftp download dir
+    $ cp tmp/deploy/images/intel-x86-64/bootx64-pxe.efi /srv/tftpboot/boot
 
     3. Update the DHCP server config
     $ vi /etc/dhcp/dhcpd.conf
