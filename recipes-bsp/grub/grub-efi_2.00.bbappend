@@ -10,7 +10,7 @@ do_mkpxeimage() {
     :
 }
 
-do_mkpxeimage_wrlinux-installer() {
+do_mkpxeimage_class-target_wrlinux-installer() {
     cd ${B}
     install -d boot/grub
     if [ -e ${PXE_UEFI_GRUB_CONF} ]; then
@@ -20,6 +20,7 @@ do_mkpxeimage_wrlinux-installer() {
         install -m 755 ${WORKDIR}/grub.cfg boot/grub/grub.cfg
         # Use default
         sed -i -e "s/@MACHINE@/${MACHINE}/g" \
+               -e "s#@APPEND@#${APPEND}#g" \
                -e "s/@INITRAMFS_FSTYPES@/${INITRAMFS_FSTYPES}/g" \
                -e "s/@KERNEL_IMAGETYPE@/${KERNEL_IMAGETYPE}/g" boot/grub/grub.cfg
     fi
