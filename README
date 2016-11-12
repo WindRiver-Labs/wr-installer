@@ -314,11 +314,10 @@ Building the target installer
 12. How to authenticate while downloading kickstart from web server
     12.1 We add boot options 'ksuser' and 'kspasswd'(listed in /proc/cmdline)
          to support authentication while downloading kickstart from web server.
+         You could integrate them to installer image by set APPEND_append =
+         " ks=<url-ks> ksuser=<username> kspasswd=<password>" in local.conf
 
-    12.2 If authentication failed, it populates a prompt page to give
-         customer another chance to input username/password.
-
-    12.3 Currently, we support basic/digest authentication, which decided by
+    12.2 Currently, we support basic/digest authentication, which decided by
          your web server.
 
 13. How to add the http repository mirror list
