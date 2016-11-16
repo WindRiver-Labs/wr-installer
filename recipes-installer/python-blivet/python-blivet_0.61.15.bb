@@ -21,6 +21,7 @@ SRC_URI = "git://github.com/rhinstaller/blivet;branch=rhel7-branch \
            file://0008-fix-incorrect-timeout-while-system-time-changed.patch \
            file://0009-tweak-btrfs-packages.patch \
            file://0010-invoking-mount-with-infinite-timeout.patch \
+           file://0011-invoking-mkfs.btrfs-with-infinite-timeout.patch \
 "
 
 inherit setuptools pythonnative

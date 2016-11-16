@@ -1,0 +1,31 @@
+From 938fc648c7e1343940550b6ac20f44beb013bbdb Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 16 Nov 2016 01:53:16 -0500
+Subject: [PATCH] invoking mkfs.btrfs with infinite timeout
+
+This large timeout is needed when running on machines with
+lots of disks, or with slow disks.
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ blivet/devicelibs/btrfs.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/blivet/devicelibs/btrfs.py b/blivet/devicelibs/btrfs.py
+index 12612eb..25fedab 100644
+--- a/blivet/devicelibs/btrfs.py
++++ b/blivet/devicelibs/btrfs.py
+@@ -80,7 +80,7 @@ def create_volume(devices, label=None, data=None, metadata=None):
+ 
+     args.extend(devices)
+ 
+-    ret = util.run_program(["mkfs.btrfs"] + args)
++    ret = util.run_program(["mkfs.btrfs"] + args, timeout=-1)
+     if ret:
+         raise BTRFSError(ret)
+ 
+-- 
+2.8.1
+
