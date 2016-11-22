@@ -4,7 +4,7 @@
 # Image generation functions to setup the installer components
 #
 
-RPM_POSTPROCESS_COMMANDS_append = "${@['', 'wrl_installer;']['wrlinux-image-installer' in '${BPN}']}"
+RPM_POSTPROCESS_COMMANDS_append = "wrl_installer;"
 
 INSTPRODUCT ?= "${DISTRO_NAME}"
 INSTVER     ?= "${DISTRO_VERSION}"
@@ -15,8 +15,6 @@ INSTBUGURL  ?= "http://www.windriver.com/"
 INSTALLER_CONFDIR = "${IMAGE_ROOTFS}/installer-config"
 KICKSTART_FILE ?= ""
 WRL_INSTALLER_CONF ?= ""
-
-WRINSTALL_TARGET_RPMS ?= '${INSTALLER_TARGET_BUILD}/tmp/deploy/rpm'
 
 build_iso_prepend() {
 	install -d ${ISODIR}
@@ -43,7 +41,7 @@ wrl_installer_setup_local_smart() {
     echo "$installer_default_arch""${TARGET_VENDOR}-${TARGET_OS}" > ${WORKDIR}/distro-tmp/etc/rpm/platform
     mkdir -p ${WORKDIR}/distro-tmp/var/lib/smart
     for arch in $installer_target_archs; do
-        if [ -d "${WRINSTALL_TARGET_RPMS}/"$arch ] ; then
+        if [ -d "$target_build/tmp/deploy/rpm/"$arch ] ; then
             echo "$arch""-.*-linux.*" >> ${WORKDIR}/distro-tmp/etc/rpm/platform
         fi
     done
@@ -63,7 +61,7 @@ wrl_installer_setup_local_smart() {
         echo $arch
     done | sort | uniq`
     for arch in $archs; do
-        if [ -d "${WRINSTALL_TARGET_RPMS}/"$arch ] ; then
+        if [ -d "$target_build/tmp/deploy/rpm/"$arch ] ; then
             echo "Note: adding Smart channel $arch"
             smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart channel --add $arch type=rpm-md type=rpm-md baseurl=$target_repo_dir/$arch -y
         fi
@@ -216,7 +214,7 @@ wrl_installer_hardlinktree() {
 }
 
 wrl_installer_copy_local_repos() {
-    if [ -d "${WRINSTALL_TARGET_RPMS}" ]; then
+    if [ -d "$target_build/tmp/deploy/rpm" ]; then
         echo "Copy rpms from target build to installer image."
         mkdir -p ${IMAGE_ROOTFS}/Packages.$prj_name
 
@@ -232,10 +230,10 @@ wrl_installer_copy_local_repos() {
 
         : > ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
         for arch in $installer_target_archs; do
-            if [ -d "${WRINSTALL_TARGET_RPMS}/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages.$prj_name/"$arch ]; then
+            if [ -d "$target_build/tmp/deploy/rpm/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages.$prj_name/"$arch ]; then
                 channel_priority=$(expr $channel_priority - 5)
                 echo "$channel_priority $arch" >> ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
-                wrl_installer_hardlinktree "${WRINSTALL_TARGET_RPMS}/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
+                wrl_installer_hardlinktree "$target_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
             fi
         done
         createrepo --update -q ${IMAGE_ROOTFS}/Packages.$prj_name/
@@ -246,21 +244,31 @@ wrl_installer_copy_local_repos() {
 wrl_installer_copy_pkgs() {
 
     target_build="$1"
-    prj_name="$2"
-    if [ -n "$3" ]; then
-        installer_conf="$3"
+    target_image="$2"
+    prj_name="$3"
+    if [ -n "$4" ]; then
+        installer_conf="$4"
     else
         installer_conf=""
     fi
 
-        common_grep="-e '^ALL_MULTILIB_PACKAGE_ARCHS=.*' \
+    common_grep="-e '^ALL_MULTILIB_PACKAGE_ARCHS=.*' \
             -e '^MULTILIB_VARIANTS=.*' -e '^PACKAGE_ARCHS=.*'\
             -e '^PACKAGE_ARCH=.*' -e '^PACKAGE_INSTALL_ATTEMPTONLY=.*' \
             -e '^DISTRO=.*' -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
             "
+
+    # Find target image env location: $T, and target rpm repo dir: $WORKDIR/rpms
+    (cd $target_build; \
+        flock $target_build -c \
+        "PSEUDO_UNLOAD=1 bitbake -e $target_image" | \
+        grep -e '^T=.*' -e '^WORKDIR=.*' > ${BB_LOGFILE}.distro_vals);
+    eval `cat ${BB_LOGFILE}.distro_vals`
+
     if [ -f "$installer_conf" ]; then
-        eval `grep -e "^PACKAGE_INSTALL=.*" $common_grep $installer_conf \
-            | sed -e 's/=/="/' -e 's/$/"/'`
+        eval "grep -e \"^PACKAGE_INSTALL=.*\" $common_grep $installer_conf \
+            | sed -e 's/=/=\"/' -e 's/$/\"/' > ${BB_LOGFILE}.distro_vals"
+        eval `cat ${BB_LOGFILE}.distro_vals`
         if [ $? -ne 0 ]; then
             bbfatal "Something is wrong in $installer_conf, please correct it"
         fi
@@ -268,35 +276,28 @@ wrl_installer_copy_pkgs() {
             bbfatal "PACKAGE_ARCHS or PACKAGE_INSTALL is null, please check $installer_conf"
         fi
     else
-        # Find target image env location
-        (cd $target_build; \
-            flock $target_build -c \
-            "PSEUDO_UNLOAD=1 bitbake -e ${INSTALLER_TARGET_IMAGE}" | \
-            grep '^T=.*' > ${BB_LOGFILE}.distro_vals);
-        eval `cat ${BB_LOGFILE}.distro_vals`
-
         eval "cat $T/target_image_env | \
-            grep $common_grep -e '^PN=.*' -e '^SUMMARY=.*' -e '^WORKDIR=.*' \
+            grep $common_grep -e '^PN=.*' -e '^SUMMARY=.*' \
             -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' > ${BB_LOGFILE}.distro_vals"
 
         eval `cat ${BB_LOGFILE}.distro_vals`
-
-        export installer_default_arch="$PACKAGE_ARCH"
-        # Reverse it for priority
-        export installer_default_archs="`for arch in $PACKAGE_ARCHS; do echo $arch; done | tac | tr - _`"
-        installer_target_archs="$installer_default_archs"
-        if [ -n "$MULTILIB_VARIANTS" ]; then
-            export MULTILIB_VARIANTS
-            mlarchs_reversed="`for mlarch in $ALL_MULTILIB_PACKAGE_ARCHS; do echo $mlarch; \
-                done | tac | tr - _`"
-            for arch in $mlarchs_reversed; do
-                if [ "$arch" != "noarch" -a "$arch" != "all" -a "$arch" != "any" ]; then
-                    installer_target_archs="$installer_target_archs lib32_$arch"
-                fi
-            done
-        fi
-        export installer_target_archs
     fi
+
+    export installer_default_arch="$PACKAGE_ARCH"
+    # Reverse it for priority
+    export installer_default_archs="`for arch in $PACKAGE_ARCHS; do echo $arch; done | tac | tr - _`"
+    installer_target_archs="$installer_default_archs"
+    if [ -n "$MULTILIB_VARIANTS" ]; then
+        export MULTILIB_VARIANTS
+        mlarchs_reversed="`for mlarch in $ALL_MULTILIB_PACKAGE_ARCHS; do echo $mlarch; \
+            done | tac | tr - _`"
+        for arch in $mlarchs_reversed; do
+            if [ "$arch" != "noarch" -a "$arch" != "all" -a "$arch" != "any" ]; then
+                installer_target_archs="$installer_target_archs lib32_$arch"
+            fi
+        done
+    fi
+    export installer_target_archs
 
     echo "wrl_installer_setup_local_smart $target_build $WORKDIR/rpms"
     wrl_installer_setup_local_smart $target_build $WORKDIR/rpms
@@ -328,7 +329,7 @@ IMAGE_LINGUAS=${IMAGE_LINGUAS}
 _EOF
     fi
 
-    if [ -d "${WRINSTALL_TARGET_RPMS}" ]; then
+    if [ -d "$target_build/tmp/deploy/rpm" ]; then
         # Copy local repos while the image is not initramfs
         bpn=${BPN}
         if [ "${bpn##*initramfs}" = "${bpn%%initramfs*}" ]; then
@@ -354,27 +355,15 @@ ${DISTRO_NAME} ${DISTRO_VERSION}
 ${TARGET_ARCH}
 _EOF
 
-    # The count of INSTALLER_TARGET_BUILD, WRL_INSTALLER_CONF and
-    # KICKSTART_FILE must match when set.
-    cnt_target=$(wrl_installer_get_count ${INSTALLER_TARGET_BUILD})
-    if [ -n "${WRL_INSTALLER_CONF}" ]; then
-        cnt_conf=$(wrl_installer_get_count ${WRL_INSTALLER_CONF})
-        [ $cnt_conf -eq $cnt_target ] || \
-            bbfatal "The count of INSTALLER_TARGET_BUILD and WRL_INSTALLER_CONF not match!"
-    fi
-    if [ -n "${KICKSTART_FILE}" ]; then
-        cnt_ks=$(wrl_installer_get_count ${KICKSTART_FILE})
-        [ $cnt_ks -eq $cnt_target ] || \
-            bbfatal "The count of INSTALLER_TARGET_BUILD and KICKSTART_FILE not match!"
-    fi
-
     : > ${IMAGE_ROOTFS}/.target_build_list
     counter=0
+    targetimage_counter=0
     for target_build in ${INSTALLER_TARGET_BUILD}; do
         target_build="`readlink -f $target_build`"
         echo "Installer Target Build: $target_build"
         counter=$(expr $counter + 1)
         prj_name="`echo $target_build | sed -e 's#/ *$##g' -e 's#.*/##'`"
+        prj_name="$prj_name-$counter"
 
 	    # Generate .buildstamp
 	    if [ -n "${WRL_INSTALLER_CONF}" ]; then
@@ -402,14 +391,17 @@ _EOF
 	            echo "Image based target install selected."
 	            mkdir -p "${IMAGE_ROOTFS}/LiveOS.$prj_name"
 	            wrl_installer_hardlinktree "$target_build" "${IMAGE_ROOTFS}/LiveOS.$prj_name/rootfs.img"
-	            echo "::`basename $target_build::`" >> ${IMAGE_ROOTFS}/.target_build_list
+	            echo "::$prj_name::" >> ${IMAGE_ROOTFS}/.target_build_list
 	        else
 	            bberror "Unsupported image: $target_build."
 	            bberror "The image must be ext2, ext3 or ext4"
 	            exit 1
 	        fi
 	    elif [ -d "$target_build" ]; then
-	        wrl_installer_copy_pkgs $target_build $prj_name $installer_conf
+	        targetimage_counter=$(expr $targetimage_counter + 1)
+	        target_image="`echo ${INSTALLER_TARGET_IMAGE} | awk '{print $'"$targetimage_counter"'}'`"
+	        echo "Target Image: $target_image"
+	        wrl_installer_copy_pkgs $target_build $target_image $prj_name $installer_conf
 	    else
 	        bberror "Invalid configuration of INSTALLER_TARGET_BUILD: $target_build."
 	        bberror "It must either point to an image (ext2, ext3 or ext4) or to the root of another build directory"
@@ -418,14 +410,10 @@ _EOF
 
 	    ks_cfg="${INSTALLER_CONFDIR}/ks.cfg.$prj_name"
 	    if [ -n "${KICKSTART_FILE}" ]; then
-            ks_file="`echo ${KICKSTART_FILE} | awk '{print $'"$counter"'}'`"
-	        if [ -e "$ks_file" ]; then
-                bbnote "Copying kickstart file $ks_file to $ks_cfg ..."
-                mkdir -p ${INSTALLER_CONFDIR}
-                cp $ks_file $ks_cfg
-	        else
-	            bberror "The kickstart file $ks_file doesn't exist!"
-	        fi
+	        ks_file="`echo ${KICKSTART_FILE} | awk '{print $'"$counter"'}'`"
+	        bbnote "Copying kickstart file $ks_file to $ks_cfg ..."
+	        mkdir -p ${INSTALLER_CONFDIR}
+	        cp $ks_file $ks_cfg
 	    fi
     done
 
@@ -447,8 +435,8 @@ python __anonymous() {
         return False
 
     if bb.data.inherits_class('image', d):
-        target_build = d.getVar('INSTALLER_TARGET_BUILD', True)
-        if not target_build:
+        target_builds = d.getVar('INSTALLER_TARGET_BUILD', True)
+        if not target_builds:
             errmsg = "No INSTALLER_TARGET_BUILD is found,\n"
             errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-topdir>' and\n"
             errmsg += "INSTALLER_TARGET_IMAGE = '<target-image-pn>' to do RPMs\n"
@@ -456,13 +444,47 @@ python __anonymous() {
             errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-image>' to do\n"
             errmsg += "image copy install"
             bb.fatal(errmsg)
-        elif target_build == d.getVar('TOPDIR', True):
-            bb.fatal("The INSTALLER_TARGET_BUILD can't be the current dir")
-        elif not os.path.exists(target_build):
-            bb.fatal("The INSTALLER_TARGET_BUILD does not exist")
-        elif os.path.isdir(target_build) and not d.getVar('INSTALLER_TARGET_IMAGE', True):
-            errmsg = "The INSTALLER_TARGET_BUILD is a dir, but not found INSTALLER_TARGET_IMAGE,\n"
-            errmsg += "set INSTALLER_TARGET_IMAGE = <target-image-pn>' to do RPMs install"
-            bb.fatal(errmsg)
+
+        count = 0
+        for target_build in target_builds.split():
+            if target_build == d.getVar('TOPDIR', True):
+                bb.fatal("The INSTALLER_TARGET_BUILD can't be the current dir")
+            elif not os.path.exists(target_build):
+                bb.fatal("The %s of INSTALLER_TARGET_BUILD does not exist" % target_build)
+
+            if os.path.isdir(target_build):
+                count += 1
+
+        # While do package management install
+        if count > 0:
+            target_images = d.getVar('INSTALLER_TARGET_IMAGE', True)
+            if not target_images:
+                errmsg = "The INSTALLER_TARGET_BUILD is a dir, but not found INSTALLER_TARGET_IMAGE,\n"
+                errmsg += "set INSTALLER_TARGET_IMAGE = '<target-image-pn>' to do RPMs install"
+                bb.fatal(errmsg)
+
+            elif count != len(target_images.split()):
+                errmsg = "The INSTALLER_TARGET_BUILD has %s build dirs: %s\n" % (count, target_builds)
+                errmsg += "But INSTALLER_TARGET_IMAGE has %s build images: %s\n" % (len(target_images.split()), target_images)
+                bb.fatal(errmsg)
+
+        # The count of INSTALLER_TARGET_BUILD and WRL_INSTALLER_CONF must match when set.
+        wrlinstaller_confs = d.getVar('WRL_INSTALLER_CONF', True)
+        if wrlinstaller_confs:
+            if len(wrlinstaller_confs.split()) != len(target_builds.split()):
+                bb.fatal("The count of INSTALLER_TARGET_BUILD and WRL_INSTALLER_CONF not match!")
+            for wrlinstaller_conf in wrlinstaller_confs.split():
+                if not os.path.exists(wrlinstaller_conf):
+                    bb.fatal("The installer conf %s in WRL_INSTALLER_CONF doesn't exist!" % wrlinstaller_conf)
+
+        # The count of INSTALLER_TARGET_IMAGE and KICKSTART_FILE must match when set.
+        kickstart_files = d.getVar('KICKSTART_FILE', True)
+        if kickstart_files:
+            if len(kickstart_files.split()) != len(target_builds.split()):
+                bb.fatal("The count of INSTALLER_TARGET_BUILD and KICKSTART_FILE not match!")
+            for kickstart_file in kickstart_files.split():
+                if not os.path.exists(kickstart_file):
+                    bb.fatal("The kickstart file %s in KICKSTART_FILE doesn't exist!" % kickstart_file)
+
 }
 

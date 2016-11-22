@@ -27,7 +27,7 @@ IMAGE_LINGUAS = "en-us en-gb"
 LICENSE = "MIT"
 
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
-inherit wrlinux-image
+inherit wrlinux-image wr-installer-rootfs
 
 IMAGE_ROOTFS_SIZE = "8192"
 INITRAMFS_MAXSIZE ?= "1048576"

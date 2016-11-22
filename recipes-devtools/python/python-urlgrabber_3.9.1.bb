@@ -4,7 +4,6 @@ SECTION = "devel/python"
 PRIORITY = "optional"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=68ad62c64cc6c620126241fd429e68fe"
-PR = "r0"
 
 SRC_URI = "http://urlgrabber.baseurl.org/download/urlgrabber-${PV}.tar.gz"
 SRC_URI += "file://urlgrabber-HEAD.patch"

@@ -5,9 +5,8 @@ DESCRIPTION = "An image with Anaconda support."
 
 LICENSE = "MIT"
 
-PR = "r0"
 
-inherit wrlinux-image
+inherit wrlinux-image wr-installer-rootfs
 
 # Support installation from initrd boot
 do_image_complete[depends] += "wrlinux-image-installer-initramfs:do_image_complete"

@@ -5,7 +5,6 @@ HOMEPAGE = "http://git.fedorahosted.org/git/?p=python-meh.git"
 LICENSE = "GPLv2+"
 # yum?
 DEPENDS = "python dbus python-pygobject libglade rpm openssh libnewt"
-PR = "r0"
 
 inherit autotools-brokensep pythonnative
 

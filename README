@@ -7,8 +7,8 @@ most of the layers that Wind River Linux provides.
 
 Dependencies
 ------------
-This layer depends on the Wind River Linux version of bitbake, oe-core, wrlinux
-layer, wr-base layer and wrlcompat layer.
+This layer depends on the Wind River Linux version of bitbake, oe-core,
+meta-filesystems, meta-gnome, and wr-base layer.
 
 
 Maintenance
@@ -21,12 +21,35 @@ information on submitting changes.
 Building the target installer
 -----------------------------
 1. Summary
-   The target installer is enabled by passing "--enable-rootfs=wr-installer"
-   to configure. A second option "--with-installer-target-build=<path>"
-   is used to specify the path to the build directory that will supply RPMs
-   to be installed on the target.  If the path is an .ext2, .ext3, or ext4
-   image file, then the installer will copy this image to the target after
-   the disk has been partitioned and formatted.
+   The target installer is enabled by passing "--layers=wr-installer"
+   to setup.sh. There are two images in target installer, one is target
+   image which to be installed to target, another is installer image
+   which to do the installation.
+
+   A target image requires specific components to be compatible with
+   the installer. To install these components set WRTEMPLATE +=
+   'feature/installer-support' in local.conf.
+
+   For installer image, you are not supposed to change the 'DISTRO'
+   setting in target build directory. It may work, but it's not
+   recommended. Instead we should recommend the user run a
+   oe-init-build-env and create a new build directory for the installer.
+   Set DISTRO = 'wrlinux-installer' in local.conf file.
+
+   There are two kinds of installer builds: "Image Based Install" and
+   "Package Based Install". The former is to install a prebuilt image,
+   the latter is to install RPM packages.
+
+   For Image Based Install, set INSTALLER_TARGET_BUILD =
+   '<target-build-image>' in local.conf to specify an .ext2, .ext3,
+   or ext4 image file, then the installer will copy this image to the
+   target.
+
+   For Package Based Install,  set INSTALLER_TARGET_BUILD =
+   '<target-build-topdir>' to specify the path to target build directory
+   that will supply RPMs, and INSTALLER_TARGET_IMAGE = '<target-image-pn>'
+   to specify the image recipe name, then the installer will install its
+   RPMs to the target;
 
 2. Two main use cases
    2.1 Installer image with ext2, ext3 or ext4 image from the target
@@ -40,65 +63,72 @@ Building the target installer
          board (BSP) configuration should be the same.
 
 3. Examples for the use cases
-   3.1 Target installer with the image
-       3.1.1 Create and build the target image in project_1.
-             The output image(ext3) will be used by project_2 to install
-             on the target.
+   3.1 Image Based Install
+       3.1.1 Setup with wr-installer layer and installer-support template.
 
-             Note: The installer-support template is required for project_1.
+             $ mkdir <wr9-project>
+             $ cd <wr9-project>
+             $ git clone --branch WRLINUX_9_BASE --single-branch \
+                 git://pek-git.wrs.com/git/wrlinux-x
+             $ ./wrlinux-x/setup.sh --machines=[intel-x86-64|qemux86-64] \
+                 --distros=wrlinux --dl-layers \
+                 --layers=wr-installer \
+                 --templates=feature/installer-support
 
-             $ configure --enable-board=intel-x86-64 \
-                 --enable-kernel=standard \
-                 --enable-rootfs=glibc-std+installer-support \
-                 --enable-bootimage=ext3
-             $ make all
+             Note: The machine of qemux86-64 is used for qemu test
 
-       3.2.2 Create and build the installer image in project_2.
-             Use the configure option --with-installer-target-build to
-             point to the ext3 image from the previous step:
-             $ configure --enable-board=intel-x86-64 \
-                 --enable-kernel=standard --enable-rootfs=wr-installer \
-                 --enable-bootimage=iso --with-installer-target-build=\
-                    <project_1>/export/intel-x86-64-glibc-std-standard-dist.ext3
-              $ make all
+       3.1.2 Build target image (such as wrlinux-image-glibc-std) in target_build.
 
-   3.2 Target installer with RPMs
-       3.2.1 Create and build target RPMs in project_1.
-             The output RPMs will be used by project_2 to install on
-             the target.
+             $ . <wr9-project>/oe-init-build-env <target_build-dir>
+             $ bitbake wrlinux-image-glibc-std
 
-             Note: The installer-support template is required for project_1.
+       3.1.3 Build installer image in installer_build.
 
-             $ configure --enable-board=intel-x86-64 \
-                    --enable-kernel=standard
-                    --enable-rootfs=glibc-std+installer-support
-             $ make all
+             $ . <wr9-project>/oe-init-build-env <installer_build-dir>
 
-       3.3.2 Create and build the installer image in project_2.
-             Use the configure option --with-installer-target-build to point to
-             root directory of project_1:
+             edit local.conf
+             ---
+             DISTRO = 'wrlinux-installer'
+             INSTALLER_TARGET_BUILD = '<target_build-dir>/tmp/deploy/images/intel-x86-64/wrlinux-image-glibc-std-intel-x86-64.ext4'
+             ---
 
-             $ configure --enable-board=intel-x86-64 \
-					--enable-kernel=standard --enable-rootfs=wr-installer \
-					--enable-bootimage=iso --with-installer-target-build=<project_1Dir>
-             $ make all
+             $ bitbake wrlinux-image-installer
+
+   3.2 Package Based Install
+       3.2.1 Setup with wr-installer layer and installer-support template.
+             The same with 3.1.1
+
+       3.2.2 Build target image in target_build.
+             The same with 3.1.2
+
+       3.2.3 Build installer image in installer_build.
+
+             $ . <wr9-project>/oe-init-build-env <installer_build-dir>
+
+             edit local.conf
+             ---
+             DISTRO = 'wrlinux-installer'
+             INSTALLER_TARGET_BUILD = '<target_build-dir>'
+             INSTALLER_TARGET_IMAGE = 'wrlinux-image-glibc-std'
+             ---
+
+             $ bitbake wrlinux-image-installer
 
 4. Install
    4.1 Burn the output ISO to a DVD or dd it to a USB disk, and use it to
        boot the target board and start the install.
 
    4.2 Use qemu for testing
+       Build target installer with machine of qemux86-64
+
        Create the qemu disk:
-       $ host-cross/usr/bin/qemu-img create -f qcow hd0.vdisk 5000M
+       $ <build-topdir>/tmp/sysroots/x86_64-linux/usr/bin/qemu-img create -f qcow hd0.vdisk 5000M
 
        Start qemu with installer image:
-       $ make start-target \
-         TOPTS="-m 2048 -cd export/intel-x86-64-installer-standard-dist.iso \
-         -no-kernel -disk hd0.vdisk -gc" EX_TARGET_QEMU_OPTS="-vga vmware \
-         -show-cursor -usb"
+       $ runqemu qemux86-64 wrlinux-image-installer iso slirp qemuparams="hd0.vdisk"
 
-       Add "-vnc :4" to EX_TARGET_QEMU_OPTS to start a VNC capable session.
-       Add "-usbdevice wacom-tablet" to EX_TARGET_QEMU_OPTS to correct mouse
+       Add "-vnc :4" to qemuparams to start a VNC capable session.
+       Add "-usbdevice wacom-tablet" to qemuparams to correct mouse
        pointer position, it works with the Linux 3.14, but does not work with
        Linux 3.17.
 
@@ -158,12 +188,12 @@ Building the target installer
    process when package based installs, the user can set WRL_INSTALLER_CONF
    in the conf file, for example:
 
-   edit <installer_build_dir>/bitbake_build/conf/local.conf
+   edit local.conf
    WRL_INSTALLER_CONF = "/my/installer.conf"
 
    You can customize the contents of installer.conf when needed, for example,
    add packages that you will like to install, but if you do, you must ensure
-   that the added packages are in the first build (project_1).
+   that the added packages are in the target build (target_build).
 
 6. Perform the kickstart installation
    The installer can support kickstart installs. To do this, use the ks file
@@ -179,39 +209,29 @@ Building the target installer
 7. About Grub version
    The current installer only supports grub 2.
 
-8. Upgrade an existed OS rather than fresh install
-   Note: Only the installer which contains the RPMs can do the upgrade, you
-         can't use the installer which contains the image to upgrade an
-         existed OS.
+8. How to create RPM metadata in build
+   bitbake package-index
 
-   Note: The previous build and current build must use the same PRSever,
-         otherwise you can't do the upgrade, which means that the previous
-         project_1 and the current project_1 must use the same PRSever.
-         Refer to the Wind River Linux User's Guide on how to setup the PRSever.
-
-   Note: You can only upgrade the same rootfs, for example, upgrade the old
-         glibc-std to new glibc-std, otherwise the upgrade may fail.
-
-   To perform an upgrade, boot the target machine with the new ISO, select
-   "Upgrade Existing Installation" rather than "Fresh Installation", then the
-   existed OS will be upgraded.
+   There are multiple repodata in deploy dir:
+   $ find tmp/deploy/rpm/ -name repodata
+   tmp/deploy/rpm/corei7_64/repodata
+   tmp/deploy/rpm/intel_x86_64/repodata
+   tmp/deploy/rpm/all/repodata
 
 9. Put multiple target builds into one installer image
    9.1 Create and build multiple target build projects.
-       Refer to section 3.1.1 or 3.2.1 on how to configure and build each
-       target project. In this example, the projects are named target_build1,
-       target_build2 and target_build3.
+       Refer to section 3.1.1 on how to setup and build each target project.
+       In this example, the projects are named target_build1, target_build2 and
+       target_build3. The target_build1 and target_build2 are build dirs,
+       target_build3 is ext4 file. Build 'wrlinux-image-glibc-std' in
+       target_build1 and build 'core-image-minimal' in target_build2.
 
-   9.2 Use the configure option --with-installer-target-build to point to
-       "<target_build1>,<target_build2>,<target_build3>", the comma(,)
-       is the separator:
-       $ configure --enable-board=intel-x86-64 \
-            --enable-kernel=standard --enable-rootfs=wr-installer \
-            --enable-bootimage=iso \
-            --with-installer-target-build=\
-            <target_build1>,<target_build2>,<target_build3>
+   9.2 Edit local.conf, use variable INSTALLER_TARGET_BUILD to point to
+       "<target_build1> <target_build2> <target_build3>", and set
+       INSTALLER_TARGET_IMAGE = "wrlinux-image-glibc-std core-image-minimal",
+       the space is the separator:
 
-       $ make all
+       $ bitbake wrlinux-image-installer
 
        Then the installer image will contain all target builds specified,
        including target_build1, target_build2 and target_build3.
@@ -222,7 +242,7 @@ Building the target installer
        =============== Found the following products ===============
        1) DISTRO1    target_build1    DISTRO_NAME1    DISTRO_VERION1
        2) DISTRO2    target_build2    DISTRO_NAME2    DISTRO_VERION2
-       3) DISTRO3    target_build3    DISTRO_NAME3    DISTRO_VERION3
+       3) <target_build3-ext4-file>-3
 
        Please enter your choice (0 to quit):
 
@@ -244,12 +264,7 @@ Building the target installer
              Then target_build1 will use /my/target1.conf and /my/target1.ks,
              target_build2 and target_build3 will work similarly.
 
-       NOTE: You must use ISO level 3 if the ISO size is larger then 4 GB, add
-             the following line into your local.conf
-             (bitbake_build/conf/local.conf) file:
-             MKISOFS_OPTIONS_append = " -iso-level 3"
-
-10. PXE
+10. BIOS-based PXE (legacy)
     10.1 Preparation
          Refer "Wind River Linux USER GUIDE 6"
          - About Configuring PXE, P422
@@ -282,110 +297,65 @@ Building the target installer
          About PXE config file, there is an example in
          examples/pxe/pxelinux.cfg/default.nfs
 
-11. How to create Large Disk (>2TB) on X86 platform
-    11.1 On X86 platform, for small disk(<2TB), anaconda create msdos
-         partitioned disk by default; if larger than that, it automatically
-         creates GPT partitioned disk; but it has risks on some hosts(Such as
-         Lenovo systems), if you do not want to create GPT disklabels on
-         large disk(>2TB), it provides a boot option 'nogpt', but only 2TB
-         used.
+11. Download file from http/ftp server to target image
+    Add key in kickstart to support downloading file from http/ftp
+    server to target image:
+    'download --dest=[file://dir/filename|/dir/filename] --src=[http url| ftp url]'
 
-    11.2 While you use kickstart to do the installation on large disk, as there
-         must be a biosboot partition for the bootloader to be installed
-         successfully onto a disk that contains a GPT/GUID partition table,
-         which includes disks initialized by anaconda. This partition may be
-         created with the kickstart option 'part biosboot --fstype=biosboot
-         --size=1 --ondisk=sda'. However, in the case that a disk has an
-         existing biosboot partition, adding a "part biosboot" option is
-         unnecessary.
+    Here is the example in kickstart file:
+    ---start---
+    download --dest=/etc/rpm/keys/0x100001 --src=http://128.224.162.159/testkey
+    download --dest=file://etc/rpm/keys/0x100002 --src=http://128.224.162.159/testkey2
+    ---end---
+
+    The file be download to target image (/mnt/image/****). For host image,
+    we could make use of "%pre" section with invoking shell to do that)
 
 12. How to authenticate while downloading kickstart from web server
     12.1 We add boot options 'ksuser' and 'kspasswd'(listed in /proc/cmdline)
          to support authentication while downloading kickstart from web server.
+         You could integrate them to installer image by set APPEND_append =
+         " ks=<url-ks> ksuser=<username> kspasswd=<password>" in local.conf
 
-    12.2 If authentication failed, it populates a prompt page to give
-         customer another chance to input username/password.
-
-    12.3 Currently, we support basic/digest authentication, which decided by
+    12.2 Currently, we support basic/digest authentication, which decided by
          your web server.
 
 13. How to add the http repository mirror list
     1. Create the mirror list file, the format is the same as the output of
-    invoking "smart channel --show", you should make sure the channels/
-    repositories listed in the file are correct:
+    invoking "smart mirror --show", you should make sure the mirror listed
+    in the file are correct:
     ...
-    [qemux86_64]
-    type = rpm-md
-    priority = 55
-    baseurl = http://10.0.2.2/feeds/rpm/qemux86_64
-
-    [x86_64]
-    type = rpm-md
-    priority = 50
-    baseurl = http://10.0.2.2/feeds/rpm/x86_64
+    http://origin.url/some/path/
+        http://mirror.url/another/path/
+        http://some.mirror.url/to/the/same/content/
     ...
 
     2. Next, place the mirror list file on the web server.
 
     3. When starting anaconda, choose to add an http repository, input the URL
-       of the mirror list, be sure to select the 'URL is a mirror list' checkbox.
-       Then click the 'ok' button to add the mirror list.
+       of the mirror list, be sure to select 'This URL refers to a mirror list'
+       checkbox. Then click the 'Done' button to add the mirror list.
 
-14 PXE with UEFI
-    The main difference between UEFI and non-UEFI on PXE is for
-    non-UEFI we use pxelinux.0 which provided by syslinux package
-    as the PXELinux Boot Loader File; but for UEFI, we have to
-    invoke script grub-mkstandalone which provided by grub-efi
-    to generate the PXELinux Boot Loader File. The following
-    introduces how to generate:
+14 UEFI-based PXE
+    The main difference between BIOS-based and UEFI-based on PXE is the former
+    uses pxelinux.0 provided by syslinux package as the PXELinux Boot Loader File;
+    and UEFI-based PXE use a generated bootx64-pxe.efi as PXELinux Boot Loader
+    File. Here is the introduction of bootx64-pxe.efi generation.
 
-    1. Generate in tftp download dir
-    1.1 Copy kernel and initramfs to tftp download dir
-    $ cp export/images/bzImage /srv/tftpboot
-    $ cp export/images/wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz /srv/tftpboot
+    In installer build, after installer image built:
+    1. Configure grub.cfg:
+       1.1 If you are familiar with PXE and grub, set PXE_UEFI_GRUB_CONF to
+           point your own grub.cfg, you could customize it as you wish.
 
-    1.2 Creation of a netboot grub config file
-    $ cd /srv/tftpboot
-    $ mkdir -p boot/grub
-    $ vi boot/grub/grub.cfg
-    ----start----
-    menuentry 'boot serial console'{
-        linux /bzImage LABEL=initrd-install ks=http://128.224.162.194/anaconda-ks.cfg console=ttyS0,115200
-        initrd /wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz
-    }
-    ----end----
+       1.2 Or set APPEND_append = " ks=<url-ks>" in local.conf, it configures a
+           default grub.cfg which tells PXE image where to download the kickstart
+           file.
 
-    1.3 Create a standalone (static) efi image which containing an embedded
-        configuration file, required modules, kernel, initramfs. The
-        grub-mkstandalone and image modules were provided by grub-2.00 which
-        located in bitbake_build/tmp/work/core2-64-wrs-linux/grub-efi/2.00-r2.fix0/grub-2.00/
+    2. Generate UEFI-base PXE image
+    $ bitbake grub-efi -cmkpxeimage
 
-    $ cd /srv/tftpboot
-
-    $ PATH_TO_PROJECT/bitbake_build/tmp/work/core2-64-wrs-linux/grub-efi/2.00-r2.fix0/grub-2.00/grub-mkstandalone \
-         -d PATH_TO_PROJECT/bitbake_build/tmp/work/core2-64-wrs-linux/grub-efi/2.00-r2.fix0/grub-2.00/grub-core/ \
-         --modules="boot linux ext2 fat serial part_msdos part_gpt normal efi_gop iso9660 search tftp net http" \
-         -O x86_64-efi --output=boot/bootx64-pxe.efi \
-          boot/grub/grub.cfg bzImage wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz
-
-    The 'bootx64-pxe.efi' in /srv/tftpboot/boot is the standalone (static) efi image.
-
-    2. Generate in host (2nd) build project dir
-    2.1 Config PXE_UEFI_GRUB_CONF to add customer's grub config file
-    $ cd PATH_TO_PROJECT
-    $ vim local.conf
-    ----start----
-    PXE_UEFI_GRUB_CONF = "/srv/tftpboot/boot/grub/grub.cfg"
-    ----end----
-    If not edit PXE_UEFI_GRUB_CONF, there is a default grub.cfg
-    in wr-installer/recipes-bsp/grub/files/
-
-    2.2 Execute grub-efi's mkpxeimage task
-    $ make grub-efi.mkpxeimage
-    We should invoke the task after all image built(make fs/all)
-
-    2.3 Copy generated bootx64-pxe.efi to tftp download dir
-    $ cp PATH_TO_PROJECT/export/images/bootx64-pxe.efi /srv/tftpboot/boot
+    3 Copy UEFI-base PXE image to tftp download dir
+    $ cp tmp/deploy/images/intel-x86-64/bootx64-pxe.efi /srv/tftpboot/boot
 
     3. Update the DHCP server config
     $ vi /etc/dhcp/dhcpd.conf
@@ -417,34 +387,6 @@ Building the target installer
     ----end----
 
     4. Restart dhcpd and go start PXE UEFI installation.
-
-15 Download file from http/ftp server to target image
-    Add key in kickstart to support downloading file from http/ftp
-    server to target image:
-    'download --dest=[file://dir/filename|/dir/filename] --src=[http url| ftp url]'
-
-    Here is the example in kickstart file:
-    ---start---
-    download --dest=/etc/rpm/keys/0x100001 --src=http://128.224.162.159/testkey
-    download --dest=file://etc/rpm/keys/0x100002 --src=http://128.224.162.159/testkey2
-    ---end---
-
-    The file be download to target image (/mnt/image/****). For host image,
-    we could make use of "%pre" section with invoking shell to do that)
-
-16 How to create RPM metadata in build
-   make package-index
-
-   or
-
-   make bbs
-   bitbake package-index
-
-   There are multiple repodata in deploy dir:
-   $ find export/RPMS/ -name repodata
-   export/RPMS/all/repodata
-   export/RPMS/corei7_64/repodata
-   export/RPMS/intel_x86_64/repodata
 
 License
 -------
