@@ -59,6 +59,9 @@ do_configure_append () {
     PACKAGE_VERSION_MINOR=$(grep 'PACKAGE_VERSION_MINOR' ${STAGING_DATADIR}//${MLPREFIX}xserver-xorg-source/include/do-not-use-config.h | cut -d\  -f3)
 
     xserverpatch="${S}/unix/xserver$PACKAGE_VERSION_MAJOR$PACKAGE_VERSION_MINOR.patch"
+    if [ -e $xserverpatch ]; then
+        patch -p1 -b --suffix .vnc < $xserverpatch
+    fi
     while [ ! -e $xserverpatch ]; do
         [ "$PACKAGE_VERSION_MINOR" = "0" ] && break
         PACKAGE_VERSION_MINOR=`expr $PACKAGE_VERSION_MINOR - 1`
