@@ -132,6 +132,11 @@ Building the target installer
        pointer position, it works with the Linux 3.14, but does not work with
        Linux 3.17.
 
+       Start qemu with installed target:
+       $ runqemu qemux86-64 wrlinux-image-installer iso slirp qemuparams="hd0.vdisk -boot order=c"
+
+       Add "-boot order=c" to qemuparams to boot from hard disk.
+
    4.3 Use virtualbox for testing
        4.3.1 Prepare virtualbox
              Take Ubuntu 14.04 for example, the virtualbox is 4.3.10
