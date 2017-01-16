@@ -45,11 +45,14 @@ EXTRA_OECONF = "--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \
         --enable-systemd-logind=no \
         --disable-xinerama \
 "
-do_configure_append () {
+
+do_patch[depends] += "xserver-xorg:do_populate_sysroot"
+do_patch[postfuncs] += "do_patch_xserver"
+do_patch_xserver() {
+    cd ${S}
     cp -r ${STAGING_DATADIR}/${MLPREFIX}xserver-xorg-source/* unix/xserver
     sed -i "s:malloc(rgnSize)):(pixman_region16_data_t*)malloc(rgnSize)):g" unix/xserver/include/regionstr.h
 
-    olddir=`pwd`
     cd unix/xserver
     for all in `find . -type f -perm -001`; do
         chmod -x "$all"
@@ -68,6 +71,11 @@ do_configure_append () {
         xserverpatch="${S}/unix/xserver$PACKAGE_VERSION_MAJOR$PACKAGE_VERSION_MINOR.patch"
         patch -p1 -b --suffix .vnc < $xserverpatch
     done
+}
+
+do_configure_append () {
+    olddir=`pwd`
+    cd unix/xserver
 
     rm -rf aclocal-copy/
     rm -f aclocal.m4
