@@ -11,7 +11,7 @@ B = "${S}"
 
 SRCREV = "f8bdb0f48ba455088a401313829bae4f59842d17"
 PV = "0.3.1+git${SRCPV}"
-SRC_URI = "git://github.com/engla/keybinder.git;branch=master \
+SRC_URI = "git://github.com/engla/keybinder.git;branch=keybinder-legacy \
 "
 
 RDEPENDS_${PN} = "gtk+"
