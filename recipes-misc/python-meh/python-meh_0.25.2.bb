@@ -4,7 +4,9 @@ exceptions."
 HOMEPAGE = "http://git.fedorahosted.org/git/?p=python-meh.git"
 LICENSE = "GPLv2+"
 # yum?
-DEPENDS = "python dbus python-pygobject libglade rpm openssh libnewt"
+DEPENDS = "python dbus python-pygobject libglade \
+           rpm openssh libnewt gettext-native \
+"
 
 inherit autotools-brokensep pythonnative
 
