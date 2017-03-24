@@ -24,9 +24,6 @@ ALLOW_EMPTY_${PN} = "1"
 FILEMANAGER ?= "pcmanfm"
 FILEMANAGER_mips ?= ""
 
-# xserver-common, x11-common
-VIRTUAL-RUNTIME_xserver_common ?= "x11-common"
-
 # xserver-nodm-init, anaconda-init
 VIRTUAL-RUNTIME_graphical_init_manager ?= "anaconda-init"
 
@@ -48,5 +45,5 @@ RDEPENDS_packagegroup-installer-x11-anaconda = "\
     adwaita-icon-theme \
     pango \
     pango-modules \
-    createrepo"
+    createrepo-c"
 
