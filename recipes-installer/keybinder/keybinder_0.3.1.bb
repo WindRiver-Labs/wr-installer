@@ -2,7 +2,9 @@ DESCRIPTION = "keybinder is a library for registering global key bindings, for g
 HOMEPAGE = "https://github.com/engla/keybinder"
 LICENSE = "GPLv2"
 SECTION = "devel/lib"
-DEPENDS = "gtk+3 gobject-introspection-native"
+DEPENDS = "gtk+3 gobject-introspection-native \
+           gtk+ \
+"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f"
 
