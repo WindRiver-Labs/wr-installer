@@ -6,7 +6,7 @@ HOMEPAGE = "http://www.tigervnc.com/"
 LICENSE = "GPLv2+"
 SECTION = "x11/utils"
 # DEPENDS = "virtual/libx11 libxext"
-DEPENDS = "xserver-xorg gnutls jpeg libxtst"
+DEPENDS = "xserver-xorg gnutls jpeg libxtst gettext-native fltk"
 RDEPENDS_${PN} = "chkconfig coreutils hicolor-icon-theme"
 
 LIC_FILES_CHKSUM = "file://LICENCE.TXT;md5=75b02c2872421380bbd47781d2bd75d3"
@@ -16,13 +16,12 @@ S = "${WORKDIR}/git"
 inherit autotools cmake
 B = "${S}"
 
-SRCREV = "5a727f25990d05c9a1f85457b45d6aed66409cb3"
+SRCREV = "480943caf0803bedeb96c64e39568a1139737c4f"
 
-SRC_URI = "git://github.com/TigerVNC/tigervnc.git;branch=1.6-branch \
+SRC_URI = "git://github.com/TigerVNC/tigervnc.git;branch=1.8-branch \
            file://disable_vncviewer.patch \
            file://remove_includedir.patch \
            file://add-fPIC-option-to-COMPILE_FLAGS.patch \
-           file://support-xserver-xorg-1.18.patch \
 "
 
 EXTRA_OECONF = "--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \
@@ -62,15 +61,14 @@ do_patch_xserver() {
     PACKAGE_VERSION_MINOR=$(grep 'PACKAGE_VERSION_MINOR' ${STAGING_DATADIR}//${MLPREFIX}xserver-xorg-source/include/do-not-use-config.h | cut -d\  -f3)
 
     xserverpatch="${S}/unix/xserver$PACKAGE_VERSION_MAJOR$PACKAGE_VERSION_MINOR.patch"
-    if [ -e $xserverpatch ]; then
-        patch -p1 -b --suffix .vnc < $xserverpatch
-    fi
     while [ ! -e $xserverpatch ]; do
         [ "$PACKAGE_VERSION_MINOR" = "0" ] && break
         PACKAGE_VERSION_MINOR=`expr $PACKAGE_VERSION_MINOR - 1`
         xserverpatch="${S}/unix/xserver$PACKAGE_VERSION_MAJOR$PACKAGE_VERSION_MINOR.patch"
-        patch -p1 -b --suffix .vnc < $xserverpatch
     done
+    echo "Apply $xserverpatch"
+    patch -p1 -b --suffix .vnc < $xserverpatch
+
 }
 
 do_configure_append () {
