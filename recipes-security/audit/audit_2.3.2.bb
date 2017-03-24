@@ -25,7 +25,7 @@ INITSCRIPT_PARAMS = "defaults"
 SRC_URI[md5sum] = "4e8d065b5cc16b77b9b61e93a9ed160e"
 SRC_URI[sha256sum] = "8872e0b5392888789061db8034164305ef0e1b34543e1e7004d275f039081d29"
 
-DEPENDS += "python tcp-wrappers libcap-ng linux-libc-headers (>= 2.6.30)"
+DEPENDS += "python tcp-wrappers libcap-ng linux-libc-headers (>= 2.6.30) swig-native"
 
 EXTRA_OECONF += "--without-prelude \
 	--with-libwrap \
