@@ -7,7 +7,9 @@ a series of steps that allows for easier configuration of the machine."
 HOMEPAGE = "http://fedoraproject.org/wiki/FirstBoot"
 LICENSE = "GPLv2+"
 
-DEPENDS = "python"
+DEPENDS = "python \
+           gettext-native \
+"
 RDEPENDS = ""
 
 
