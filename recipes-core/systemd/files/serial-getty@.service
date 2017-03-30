@@ -22,9 +22,9 @@ Before=getty.target
 IgnoreOnIsolate=yes
 
 [Service]
-Environment=TERM=xterm HOME=/root PATH=/usr/bin:/bin:/sbin:/usr/sbin LANG=en_US.UTF-8
+Environment=TERM=xterm HOME=@ROOT_HOME@ PATH=/usr/bin:/bin:/sbin:/usr/sbin LANG=en_US.UTF-8
 ExecStart=-/sbin/agetty -8 --keep-baud  -n -l /bin/bash -o '--login' %I @BAUDRATE@ $TERM
-WorkingDirectory=/root
+WorkingDirectory=@ROOT_HOME@
 Type=idle
 Restart=always
 RestartSec=0

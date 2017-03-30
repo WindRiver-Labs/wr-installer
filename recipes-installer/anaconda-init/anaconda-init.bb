@@ -53,7 +53,8 @@ do_install() {
                ${D}${systemd_unitdir}/system
 
 
-    sed -i -e 's,@SBINDIR@,${sbindir},g' ${D}${systemd_unitdir}/system/anaconda-init.service
+    sed -i -e 's,@SBINDIR@,${sbindir},g' -e 's,@ROOT_HOME@,${ROOT_HOME},g' ${D}${systemd_unitdir}/system/anaconda-init.service \
+                                                                           ${D}${systemd_unitdir}/system/anaconda-init-screen@.service
     if [ "${ROOTLESS_X}" = "1" ] ; then
         install -d ${D}/etc/X11
         install Xusername ${D}/etc/X11

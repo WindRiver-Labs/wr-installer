@@ -5,7 +5,7 @@ After=anaconda-init.target anaconda-init.service
 
 [Service]
 Type=idle
-WorkingDirectory=/root
+WorkingDirectory=@ROOT_HOME@
 Environment=LANG=en_US.UTF-8
 ExecStart=/usr/bin/screen -x anaconda-init
 StandardInput=tty
