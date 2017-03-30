@@ -27,162 +27,6 @@ build_iso_append() {
 	implantisomd5 ${IMGDEPLOYDIR}/${IMAGE_NAME}.iso
 }
 
-# Code below is copied and adapted from package_rpm.bbclass implementation
-wrl_installer_setup_local_smart() {
-
-    target_build=$1
-    target_repo_dir=$2
-
-    # Need to configure RPM/Smart so we can get a full pkglist from the distro
-    rm -rf ${WORKDIR}/distro-tmp
-    mkdir -p ${WORKDIR}/distro-tmp/tmp
-
-    mkdir -p ${WORKDIR}/distro-tmp/etc/rpm
-    echo "$installer_default_arch""${TARGET_VENDOR}-${TARGET_OS}" > ${WORKDIR}/distro-tmp/etc/rpm/platform
-    mkdir -p ${WORKDIR}/distro-tmp/var/lib/smart
-    for arch in $installer_target_archs; do
-        if [ -d "$target_build/tmp/deploy/rpm/"$arch ] ; then
-            echo "$arch""-.*-linux.*" >> ${WORKDIR}/distro-tmp/etc/rpm/platform
-        fi
-    done
-
-    # Configure internal RPM environment when using Smart
-    export RPM_ETCRPM=${WORKDIR}/distro-tmp/etc/rpm
-
-    mkdir -p ${WORKDIR}/distro-tmp/${rpmlibdir}
-    rpm --root ${WORKDIR}/distro-tmp --dbpath /var/lib/rpm -qa > /dev/null
-
-    smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart config --set rpm-root=${WORKDIR}/distro-tmp
-    smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart config --set rpm-dbpath=${rpmlibdir}
-    smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart config --set rpm-extra-macros._var=${localstatedir}
-    smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart config --set rpm-extra-macros._tmppath=/tmp
-
-    archs=`for arch in $installer_target_archs ; do
-        echo $arch
-    done | sort | uniq`
-    for arch in $archs; do
-        if [ -d "$target_build/tmp/deploy/rpm/"$arch ] ; then
-            echo "Note: adding Smart channel $arch"
-            smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart channel --add $arch type=rpm-md type=rpm-md baseurl=$target_repo_dir/$arch -y
-        fi
-    done
-
-    # Dump a list of all available packages
-    [ ! -e ${WORKDIR}/distro-tmp/tmp/fullpkglist.query ] && smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart query --output ${WORKDIR}/distro-tmp/tmp/fullpkglist.query
-}
-
-wrl_installer_translate_oe_to_smart() {
-
-    target_build=$1
-    shift
-
-    # Start the package translation...
-    pkgs_to_install=""
-    not_found=""
-    for pkg in "$@" ; do
-        new_pkg="$pkg"
-        for i in $installer_target_archs; do
-            set $i
-            shift
-            subst=${pkg#${MULTILIB_VARIANTS}-}
-            if [ "$subst" != "$pkg" ]; then
-                while [ -n "$1" ]; do
-                    arch="$1"
-                    shift
-                    if grep -q '^'$subst'-[^-]*-[^-]*@'$arch'$' ${WORKDIR}/distro-tmp/tmp/fullpkglist.query ; then
-                        new_pkg="$subst@$arch"
-                        # First found is best match
-                        break
-                    fi
-                done
-                if [ "$pkg" = "$new_pkg" ]; then
-                    # Failed to translate, package not found!
-                    not_found="$not_found $pkg"
-                    continue
-                fi
-            fi
-        done
-        # Apparently not a multilib package...
-        if [ "$pkg" = "$new_pkg" ]; then
-            for arch in $installer_default_archs; do
-                if grep -q '^'$pkg'-[^-]*-[^-]*@'$arch'$' ${WORKDIR}/distro-tmp/tmp/fullpkglist.query ; then
-                    new_pkg="$pkg@$arch"
-                    # First found is best match
-                    break
-                fi
-            done
-            if [ "$pkg" = "$new_pkg" ]; then
-                # Failed to translate, package not found!
-                not_found="$not_found $pkg"
-                continue
-            fi
-        fi
-        #echo "$pkg -> $new_pkg" >&2
-        pkgs_to_install="${pkgs_to_install} ${new_pkg}"
-    done
-
-    # Parse the not_found items and see if they were dependencies (RPROVIDES)
-    # Follow the parsing example above...
-    for pkg in $not_found ; do
-        new_pkg="$pkg"
-        smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart query --provides=$pkg --output ${WORKDIR}/distro-tmp/tmp/provide.query
-        grep '^[^@ ]*@[^@]*$' ${WORKDIR}/distro-tmp/tmp/provide.query | sed -e 's,\(.*\)-[^-]*-[^-]*\(@[^@]*\)$,\1\2,' > ${WORKDIR}/distro-tmp/tmp/provide.query.list || :
-        prov=`echo $pkgs_to_install | xargs -n 1 echo | grep -f ${WORKDIR}/distro-tmp/tmp/provide.query.list || :`
-        if [ -n "$prov" ]; then
-            # Nothing to do, already in the list
-            #echo "Skipping $pkg -> $prov, already in install set" >&2
-            continue
-        fi
-        for i in $installer_target_archs; do
-            set $i
-            shift
-            subst=${pkg#${MULTILIB_VARIANTS}-}
-            if [ "$subst" != "$pkg" ]; then
-                feeds=$@
-                smart --data-dir=${WORKDIR}/distro-tmp/var/lib/smart query --provides=$subst --output ${WORKDIR}/distro-tmp/tmp/provide.query
-                grep '^[^@ ]*@[^@]*$' ${WORKDIR}/distro-tmp/tmp/provide.query | sed -e 's,\(.*\)-[^-]*-[^-]*\(@[^@]*\)$,\1\2,' > ${WORKDIR}/distro-tmp/tmp/provide.query.list || :
-                while [ -n "$1" ]; do
-                    arch="$1"
-                    arch=`echo "$arch" | tr - _`
-                    shift
-                    # Select first found, we don't know if one is better then another...
-                    prov=`grep '^[^@ ]*@'$arch'$' ${WORKDIR}/distro-tmp/tmp/provide.query.list | head -n 1`
-                    if [ -n "$prov" ]; then
-                        new_pkg=$prov
-                        break
-                    fi
-                done
-                if [ "$pkg" = "$new_pkg" ]; then
-                    # Failed to translate, package not found!
-                    echo "$pkg not found in the $mlib feeds ($feeds)." >&2
-                    continue
-                fi
-            fi
-        done
-        # Apparently not a multilib package...
-        if [ "$pkg" = "$new_pkg" ]; then
-            for arch in $installer_default_archs; do
-                # Select first found, we don't know if one is better then another...
-                prov=`grep '^[^@ ]*@'$arch'$' ${WORKDIR}/distro-tmp/tmp/provide.query.list | head -n 1`
-                if [ -n "$prov" ]; then
-                    new_pkg=$prov
-                    break
-                fi
-            done
-            if [ "$pkg" = "$new_pkg" ]; then
-                # Failed to translate, package not found!
-                echo "$pkg not found in the base feeds ($installer_default_archs)." >&2
-                really_not_found="$really_not_found $pkg"
-                continue
-            fi
-        fi
-        #echo "$pkg -> $new_pkg" >&2
-        pkgs_to_install="${pkgs_to_install} ${new_pkg}"
-    done
-    echo "really_not_found = $really_not_found" >&2
-    export pkgs_to_install
-}
-
 # Check WRL_INSTALLER_CONF and copy it to
 # ${IMAGE_ROOTFS}/.buildstamp.$prj_name when exists
 wrl_installer_copy_buildstamp() {
@@ -236,7 +80,7 @@ wrl_installer_copy_local_repos() {
                 wrl_installer_hardlinktree "$target_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
             fi
         done
-        createrepo --update -q ${IMAGE_ROOTFS}/Packages.$prj_name/
+        createrepo_c --update -q ${IMAGE_ROOTFS}/Packages.$prj_name/
     fi
 }
 
@@ -299,12 +143,6 @@ wrl_installer_copy_pkgs() {
     fi
     export installer_target_archs
 
-    echo "wrl_installer_setup_local_smart $target_build $WORKDIR/rpms"
-    wrl_installer_setup_local_smart $target_build $WORKDIR/rpms
-    wrl_installer_translate_oe_to_smart $target_build $PACKAGE_INSTALL
-    install="$pkgs_to_install"
-    wrl_installer_translate_oe_to_smart $target_build $PACKAGE_INSTALL_ATTEMPTONLY
-    install_attemptonly="$pkgs_to_install"
     # Save the vars to .buildstamp when no installer_conf
     if [ ! -f "$installer_conf" ]; then
         cat >> ${IMAGE_ROOTFS}/.buildstamp.$prj_name <<_EOF
@@ -319,8 +157,8 @@ LIST=$PN
 SUMMARY=$SUMMARY
 DESCRIPTION=$DESCRIPTION
 
-PACKAGE_INSTALL=$install
-PACKAGE_INSTALL_ATTEMPTONLY=$install_attemptonly
+PACKAGE_INSTALL=$PACKAGE_INSTALL
+PACKAGE_INSTALL_ATTEMPTONLY=$PACKAGE_INSTALL_ATTEMPTONLY
 ALL_MULTILIB_PACKAGE_ARCHS=$ALL_MULTILIB_PACKAGE_ARCHS
 MULTILIB_VARIANTS=$MULTILIB_VARIANTS
 PACKAGE_ARCHS=$PACKAGE_ARCHS
