@@ -10,13 +10,13 @@ RDEPENDS_${PN} = "python libnewt-python"
 
 S = "${WORKDIR}/git"
 SRC_URI = "git://github.com/rhinstaller/pykickstart.git;protocol=https;branch=rhel7-branch \
-           file://parser.py-retry-to-invoke-urlread-with-timeout.patch \
-           file://support-authentication-for-kickstart.patch \
-           file://tweak-native-language-support.patch \
-           file://0001-pykickstart-parser.py-add-lock-for-readKickstart-and.patch \
-           file://0002-add-comments-of-shutdown-for-user.patch \
+           file://0001-parser.py-retry-to-invoke-urlread-with-timeout.patch \
+           file://0002-support-authentication-for-kickstart.patch \
+           file://0003-tweak-native-language-support.patch \
+           file://0004-pykickstart-parser.py-add-lock-for-readKickstart-and.patch \
+           file://0005-add-comments-of-shutdown-for-user.patch \
            "
-SRCREV = "73c9df14d539f2b59a356d8316675a6b7afbf4ac"
+SRCREV = "1dafd3f3daca0d446f09d431634ff20d0a8d73c7"
 
 inherit pythonnative gettext
 

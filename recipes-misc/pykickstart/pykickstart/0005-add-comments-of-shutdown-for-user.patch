@@ -1,7 +1,7 @@
-From bcf6b13576096bdc87acb08e9bfa611a20e50d73 Mon Sep 17 00:00:00 2001
+From 0ad6bd661ce28fbf132b3fb00c0d9227dd018ab7 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Wed, 28 Sep 2016 21:43:25 -0400
-Subject: [PATCH] add comments of shutdown for user
+Subject: [PATCH 5/5] add comments of shutdown for user
 
 While neither shutdown or reboot in ks file, add comments of shutdown
 for user.
@@ -14,7 +14,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 2 insertions(+)
 
 diff --git a/pykickstart/commands/reboot.py b/pykickstart/commands/reboot.py
-index 4f9257b..0c1ab44 100644
+index 4f9257b..4882311 100644
 --- a/pykickstart/commands/reboot.py
 +++ b/pykickstart/commands/reboot.py
 @@ -36,6 +36,8 @@ class FC3_Reboot(KickstartCommand):
@@ -27,5 +27,5 @@ index 4f9257b..0c1ab44 100644
          return retval
  
 -- 
-2.8.1
+2.7.4
 

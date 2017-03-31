@@ -1,7 +1,7 @@
-From 9c66272049f17d80f7fc6d0dbe1daec42949d497 Mon Sep 17 00:00:00 2001
+From 34ef461c6b45e483d5f0ae3b359e5ff87e3ddee6 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Thu, 14 Apr 2016 01:31:30 -0400
-Subject: [PATCH] support authentication for kickstart
+Date: Fri, 31 Mar 2017 14:35:25 +0800
+Subject: [PATCH 2/5] support authentication for kickstart
 
 While download kickstart file from web server,
 we support basic/digest authentication.
@@ -52,7 +52,7 @@ index 168c6f8..3cafae8 100644
 +        return self.value
 +
 diff --git a/pykickstart/parser.py b/pykickstart/parser.py
-index 5d1dfdd..e0f4bc9 100644
+index bd41d42..a41afa4 100644
 --- a/pykickstart/parser.py
 +++ b/pykickstart/parser.py
 @@ -42,7 +42,7 @@ import urlgrabber.grabber as grabber
@@ -62,9 +62,9 @@ index 5d1dfdd..e0f4bc9 100644
 -from pykickstart.errors import KickstartError, KickstartParseError, KickstartValueError, formatErrorMsg
 +from pykickstart.errors import KickstartError, KickstartParseError, KickstartValueError, formatErrorMsg, KickstartAuthError
  from pykickstart.ko import KickstartObject
- from pykickstart.sections import PackageSection, PreScriptSection, PreInstallScriptSection, PostScriptSection, TracebackScriptSection, NullSection
- 
-@@ -722,7 +722,7 @@ class KickstartParser:
+ from pykickstart.sections import PackageSection, PreScriptSection, PreInstallScriptSection, \
+                                  PostScriptSection, TracebackScriptSection, OnErrorScriptSection, \
+@@ -726,7 +726,7 @@ class KickstartParser:
          i = PutBackIterator(s.splitlines(True) + [""])
          self._stateMachine (i)
  
@@ -73,7 +73,7 @@ index 5d1dfdd..e0f4bc9 100644
          """Process a kickstart file, given by the filename f."""
          if reset:
              self._reset()
-@@ -746,7 +746,7 @@ class KickstartParser:
+@@ -750,7 +750,7 @@ class KickstartParser:
          i = 0
          while i < 45:
              try:
@@ -82,7 +82,7 @@ index 5d1dfdd..e0f4bc9 100644
                  break
              except grabber.URLGrabError, e:
                  # Continue while timeout or couldn't connect
-@@ -755,6 +755,11 @@ class KickstartParser:
+@@ -759,6 +759,11 @@ class KickstartParser:
                      # Continue the loop
                      i+=1
                      sleep(1)
@@ -95,5 +95,5 @@ index 5d1dfdd..e0f4bc9 100644
                  else:
                      raise KickstartError, formatErrorMsg(0, msg=_("Unable to open input kickstart file: %s") % e.strerror)
 -- 
-1.9.1
+2.7.4
 

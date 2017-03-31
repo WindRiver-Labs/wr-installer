@@ -1,7 +1,7 @@
-From af0f4dfa9e2021a6999d385bcaf729b4aa6536dc Mon Sep 17 00:00:00 2001
+From 8fefa72c3ea175a21977c62cb2e36a7e31f9873d Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Mon, 11 Apr 2016 08:19:07 +0000
-Subject: [PATCH] tweak native language support
+Subject: [PATCH 3/5] tweak native language support
 
 Only support en_GB.
 
@@ -133,5 +133,5 @@ index 3612076..e93bdd7 100644
  
  </config>
 -- 
-2.5.0
+2.7.4
 

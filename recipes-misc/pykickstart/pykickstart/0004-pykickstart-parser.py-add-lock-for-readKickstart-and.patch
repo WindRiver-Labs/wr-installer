@@ -1,8 +1,8 @@
-From cc0a6a70ed5505c7f85316d8a93485e939bc035a Mon Sep 17 00:00:00 2001
+From cbd78ea1684343156bd5d17683efcf28bcb7a210 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Fri, 26 Aug 2016 03:52:59 -0400
-Subject: [PATCH] pykickstart/parser.py: add lock for readKickstart and support
- https without certification
+Subject: [PATCH 4/5] pykickstart/parser.py: add lock for readKickstart and
+ support https without certification
 
 - Add lock for readKickstart to fix race issue
 
@@ -16,10 +16,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 31 insertions(+), 1 deletion(-)
 
 diff --git a/pykickstart/parser.py b/pykickstart/parser.py
-index e0f4bc9..ec576ce 100644
+index a41afa4..a18909e 100644
 --- a/pykickstart/parser.py
 +++ b/pykickstart/parser.py
-@@ -54,6 +54,26 @@ STATE_COMMANDS = "commands"
+@@ -56,6 +56,26 @@ STATE_COMMANDS = "commands"
  
  ver = version.DEVEL
  
@@ -46,7 +46,7 @@ index e0f4bc9..ec576ce 100644
  def _preprocessStateMachine (lineIter):
      l = None
      lineno = 0
-@@ -723,6 +743,10 @@ class KickstartParser:
+@@ -727,6 +747,10 @@ class KickstartParser:
          self._stateMachine (i)
  
      def readKickstart(self, f, reset=True, username=None, password=None):
@@ -57,7 +57,7 @@ index e0f4bc9..ec576ce 100644
          """Process a kickstart file, given by the filename f."""
          if reset:
              self._reset()
-@@ -746,7 +770,13 @@ class KickstartParser:
+@@ -750,7 +774,13 @@ class KickstartParser:
          i = 0
          while i < 45:
              try:
@@ -73,5 +73,5 @@ index e0f4bc9..ec576ce 100644
              except grabber.URLGrabError, e:
                  # Continue while timeout or couldn't connect
 -- 
-2.8.1
+2.7.4
 
