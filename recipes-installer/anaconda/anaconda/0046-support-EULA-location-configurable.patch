@@ -1,7 +1,7 @@
-From d945abb12e622af84cb9d7e824c02136625f512c Mon Sep 17 00:00:00 2001
+From a3bca46cb242744e6349c4d321981814d3b51d3b Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Fri, 19 Aug 2016 01:21:01 -0400
-Subject: [PATCH] support EULA location configurable
+Subject: [PATCH 46/62] support EULA location configurable
 
 Rather than RHEL's hardcode, we support it configurable
 by environment variable EULA_DIR.
@@ -16,7 +16,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  3 files changed, 7 insertions(+), 3 deletions(-)
 
 diff --git a/pyanaconda/constants.py b/pyanaconda/constants.py
-index 8ee750f..5624188 100644
+index bf18288..8986a64 100644
 --- a/pyanaconda/constants.py
 +++ b/pyanaconda/constants.py
 @@ -20,6 +20,7 @@
@@ -37,7 +37,7 @@ index 8ee750f..5624188 100644
  # for use in device names, eg: "fedora", "rhel"
  shortProductName = productName.lower()
 diff --git a/pyanaconda/ui/gui/hubs/progress.py b/pyanaconda/ui/gui/hubs/progress.py
-index 09acc66..4bc3118 100644
+index 09acc66..189dd06 100644
 --- a/pyanaconda/ui/gui/hubs/progress.py
 +++ b/pyanaconda/ui/gui/hubs/progress.py
 @@ -133,8 +133,9 @@ class ProgressHub(Hub):
@@ -53,10 +53,10 @@ index 09acc66..4bc3118 100644
          # kickstart install, continue automatically if reboot or shutdown selected
          if flags.automatedInstall and self.data.reboot.action in [KS_REBOOT, KS_SHUTDOWN]:
 diff --git a/pyanaconda/ui/tui/spokes/progress.py b/pyanaconda/ui/tui/spokes/progress.py
-index d688909..f31bd4f 100644
+index 1feeb08..d0269f7 100644
 --- a/pyanaconda/ui/tui/spokes/progress.py
 +++ b/pyanaconda/ui/tui/spokes/progress.py
-@@ -136,6 +136,8 @@ class ProgressSpoke(StandaloneTUISpoke):
+@@ -138,6 +138,8 @@ class ProgressSpoke(StandaloneTUISpoke):
          return True
  
      def prompt(self, args = None):
@@ -66,5 +66,5 @@ index d688909..f31bd4f 100644
  
      def input(self, args, key):
 -- 
-2.8.1
+2.7.4
 

@@ -1,7 +1,7 @@
-From a8c384b4f5bff80acae23f42a6a9fa343b399d61 Mon Sep 17 00:00:00 2001
+From 68c3fd02d0a61b5935112a05e90165a463b2629b Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Wed, 20 Jul 2016 01:48:11 -0400
-Subject: [PATCH] revert commits to support reboot for live installs
+Subject: [PATCH 40/62] revert commits to support reboot for live installs
 
 This reverts commit ab9d579a27cb9f102b5ea9e215c70334dc5e88fc.
 
@@ -36,7 +36,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  2 files changed, 1 insertion(+), 9 deletions(-)
 
 diff --git a/anaconda b/anaconda
-index 7a1edf5..abea0f7 100755
+index cb3edde..4b65adc 100755
 --- a/anaconda
 +++ b/anaconda
 @@ -86,8 +86,7 @@ def exitHandler(rebootData, storage, payload, exitCode=None):
@@ -68,5 +68,5 @@ index 31a5c79..09acc66 100644
          self._progressLabel = self.builder.get_object("progressLabel")
          self._progressNotebook = self.builder.get_object("progressNotebook")
 -- 
-2.8.1
+2.7.4
 

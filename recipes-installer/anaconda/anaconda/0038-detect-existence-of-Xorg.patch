@@ -1,7 +1,7 @@
-From a7f07dfa35b9964c360a147796078fc65a764cd5 Mon Sep 17 00:00:00 2001
+From 0c1d8a11ee40a02042d2637a90a670b9ceec533b Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 14 Jul 2016 05:34:18 -0400
-Subject: [PATCH] detect existence of Xorg
+Subject: [PATCH 38/62] detect existence of Xorg
 
 Detect the existence of Xorg before start it.
 
@@ -13,7 +13,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/anaconda b/anaconda
-index 0feda9d..7a1edf5 100755
+index 1d06c4c..cb3edde 100755
 --- a/anaconda
 +++ b/anaconda
 @@ -44,7 +44,7 @@ if ("debug=1" in proc_cmdline) or ("debug" in proc_cmdline):
@@ -51,5 +51,5 @@ index 0feda9d..7a1edf5 100755
      iutil.startX(["Xorg", "-br", "-logfile", "/tmp/X.log",
                    ":%s" % constants.X_DISPLAY_NUMBER, "vt7", "-s", "1440", "-ac",
 -- 
-2.8.1
+2.7.4
 

@@ -1,7 +1,7 @@
-From f2013c2a30c032ea184ce11343c3039ec8de4b68 Mon Sep 17 00:00:00 2001
+From d6da51c9f16ba321826899857c6da380dfb13adc Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 21 Apr 2016 21:36:39 -0400
-Subject: [PATCH 13/22] improve thread monitor
+Subject: [PATCH 13/62] improve thread monitor
 
 Set thread name, it is easy to monitor thread status by ps
 
@@ -51,5 +51,5 @@ index eea1da6..0867e7b 100644
              self._fatal = kwargs.pop("fatal")
          else:
 -- 
-2.8.1
+2.7.4
 

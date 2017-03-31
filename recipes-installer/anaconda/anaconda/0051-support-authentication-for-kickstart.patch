@@ -1,7 +1,7 @@
-From af35fb8ad6e1d4e9e2427b357ef798b6b2ef3c82 Mon Sep 17 00:00:00 2001
+From be6f1ea1dfb797d3acd21e89db9937094b9f8ca5 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Fri, 11 Nov 2016 22:02:03 -0500
-Subject: [PATCH] support authentication for kickstart
+Date: Fri, 31 Mar 2017 13:56:55 +0800
+Subject: [PATCH 51/62] support authentication for kickstart
 
 We add option 'ksuser' and 'kspasswd' in /proc/cmdline to support
 authentication while downloading kickstart from web server.
@@ -23,7 +23,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  2 files changed, 45 insertions(+), 7 deletions(-)
 
 diff --git a/pyanaconda/flags.py b/pyanaconda/flags.py
-index 1f94a5c..fe75f83 100644
+index ea6c8f7..c24e870 100644
 --- a/pyanaconda/flags.py
 +++ b/pyanaconda/flags.py
 @@ -70,6 +70,11 @@ class Flags(object):
@@ -38,7 +38,7 @@ index 1f94a5c..fe75f83 100644
          # nosave options
          self.nosave_input_ks = False
          self.nosave_output_ks = False
-@@ -86,6 +91,12 @@ class Flags(object):
+@@ -90,6 +95,12 @@ class Flags(object):
                    "nombr", "gpt"):
              self.set_cmdline_bool(f)
  
@@ -52,21 +52,21 @@ index 1f94a5c..fe75f83 100644
              self.selinux = 0
  
 diff --git a/pyanaconda/kickstart.py b/pyanaconda/kickstart.py
-index f6b2fef..0a4f083 100644
+index 1deeccd..c6d8470 100644
 --- a/pyanaconda/kickstart.py
 +++ b/pyanaconda/kickstart.py
-@@ -65,7 +65,7 @@ from pyanaconda.bootloader import GRUB2, get_bootloader
- 
+@@ -69,7 +69,7 @@ from pyanaconda import screen_access
  from pykickstart.constants import CLEARPART_TYPE_NONE, FIRSTBOOT_SKIP, FIRSTBOOT_RECONFIG, KS_SCRIPT_POST, KS_SCRIPT_PRE, \
                                    KS_SCRIPT_TRACEBACK, KS_SCRIPT_PREINSTALL, SELINUX_DISABLED, SELINUX_ENFORCING, SELINUX_PERMISSIVE
+ from pykickstart.base import BaseHandler
 -from pykickstart.errors import formatErrorMsg, KickstartError, KickstartValueError
 +from pykickstart.errors import formatErrorMsg, KickstartError, KickstartValueError, KickstartAuthError
  from pykickstart.parser import KickstartParser
- from pykickstart.base import KickstartCommand, BaseData
- from pykickstart.options import KSOptionParser
-@@ -1947,12 +1947,39 @@ class AnacondaKSHandler(superclass):
+ from pykickstart.parser import Script as KSScript
+ from pykickstart.sections import NullSection, PackageSection, PostScriptSection, PreScriptSection, PreInstallScriptSection, \
+@@ -1962,12 +1962,39 @@ class AnacondaKSHandler(superclass):
      def __str__(self):
-         return superclass.__str__(self) + "\n" +  str(self.addons)
+         return superclass.__str__(self) + "\n" + str(self.addons) + str(self.anaconda)
  
 -class AnacondaPreParser(KickstartParser):
 -    # A subclass of KickstartParser that only looks for %pre scripts and
@@ -107,8 +107,8 @@ index f6b2fef..0a4f083 100644
  
      def handleCommand (self, lineno, args):
          pass
-@@ -1966,17 +1993,17 @@ class AnacondaPreParser(KickstartParser):
-         self.registerSection(NullSection(self.handler, sectionOpen="%addon"))
+@@ -1983,17 +2010,17 @@ class AnacondaPreParser(KickstartParser):
+         self.registerSection(NullSection(self.handler.anaconda, sectionOpen="%anaconda"))
  
  
 -class AnacondaKSParser(KickstartParser):
@@ -129,5 +129,5 @@ index f6b2fef..0a4f083 100644
      def setupSections(self):
          self.registerSection(PreScriptSection(self.handler, dataObj=self.scriptClass))
 -- 
-2.8.1
+2.7.4
 

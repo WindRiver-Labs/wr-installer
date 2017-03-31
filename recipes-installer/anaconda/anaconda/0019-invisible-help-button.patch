@@ -1,7 +1,7 @@
-From 1074dfe8a8ea1a9139e1b6bc49ab39b9c5bc62e2 Mon Sep 17 00:00:00 2001
+From 6075587c6a548679db8d91d665a4dedcfdac9445 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Wed, 10 Aug 2016 03:39:16 -0400
-Subject: [PATCH] invisible help button
+Subject: [PATCH 19/62] invisible help button
 
 WRLinux do not support help button, so we should not display it.
 
@@ -28,5 +28,5 @@ index 7395e38..e646d45 100644
      /* Add the style data to widgets with stylesheets */
      anaconda_widget_apply_stylesheet(win->priv->name_label, "BaseWindow-name-label");
 -- 
-2.8.1
+2.7.4
 

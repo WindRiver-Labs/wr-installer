@@ -1,7 +1,7 @@
-From ed90397119848ba2cd80985467c102ba0f4fa285 Mon Sep 17 00:00:00 2001
+From b4660948b9f2ce46a2726ca8b775b531edc18131 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Wed, 13 Apr 2016 23:15:58 -0400
-Subject: [PATCH 10/22] tweak for testing
+Subject: [PATCH 10/62] tweak for testing
 
 - use terminal vt7 to display X
 
@@ -15,7 +15,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/anaconda b/anaconda
-index 773cc72..d682a82 100755
+index 8ae562d..ef68750 100755
 --- a/anaconda
 +++ b/anaconda
 @@ -120,7 +120,7 @@ def startX11():
@@ -27,7 +27,7 @@ index 773cc72..d682a82 100755
                    "-nolisten", "tcp", "-dpi", "96",
                    "-noreset"], output_redirect=xfd)
  
-@@ -152,7 +152,7 @@ def doExtraX11Actions(runres):
+@@ -161,7 +161,7 @@ def doExtraX11Actions(runres):
  
      set_x_resolution(runres)
  
@@ -37,5 +37,5 @@ index 773cc72..d682a82 100755
  def setupPythonUpdates():
      from distutils.sysconfig import get_python_lib
 -- 
-2.8.1
+2.7.4
 

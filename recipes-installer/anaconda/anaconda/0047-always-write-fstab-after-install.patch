@@ -1,7 +1,7 @@
-From 571b1d90386a9208d4c03b129f02f5f2d2816df5 Mon Sep 17 00:00:00 2001
+From 9304c1b632491e6600f44da951b3ccb4cbcf9262 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Mon, 22 Aug 2016 08:31:45 -0400
-Subject: [PATCH] always write fstab after install
+Subject: [PATCH 47/62] always write fstab after install
 
 Always write fstab after instal, make sure the generated
 /etc/fstab not overwritten by the one from package install.
@@ -14,10 +14,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 1 insertion(+), 5 deletions(-)
 
 diff --git a/pyanaconda/install.py b/pyanaconda/install.py
-index f5cacd0..0af5578 100644
+index 8dd872e..47eba22 100644
 --- a/pyanaconda/install.py
 +++ b/pyanaconda/install.py
-@@ -190,10 +190,6 @@ def doInstall(storage, payload, ksdata, instClass):
+@@ -198,10 +198,6 @@ def doInstall(storage, payload, ksdata, instClass):
                                                              wait_for_entropy=entropy_wait_clbk)
  
      turnOnFilesystems(storage, mountOnly=flags.flags.dirInstall, callbacks=callbacks_reg)
@@ -28,7 +28,7 @@ index f5cacd0..0af5578 100644
  
      # Run %pre-install scripts with the filesystem mounted and no packages
      with progress_report(_("Running pre-installation scripts")):
-@@ -237,7 +233,7 @@ def doInstall(storage, payload, ksdata, instClass):
+@@ -245,7 +241,7 @@ def doInstall(storage, payload, ksdata, instClass):
      payload.preInstall(packages=packages, groups=payload.languageGroups())
      payload.install()
  
@@ -38,5 +38,5 @@ index f5cacd0..0af5578 100644
              blivet.setSysroot(iutil.getTargetPhysicalRoot(),
                                iutil.getSysroot())
 -- 
-2.8.1
+2.7.4
 

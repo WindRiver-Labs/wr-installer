@@ -1,7 +1,7 @@
-From 2da9f1a3cbdf6c472d7072d2d518c56e0a710a26 Mon Sep 17 00:00:00 2001
+From 1f29355926b56f18bdccaf3de2ce2381e01056c9 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Fri, 15 Apr 2016 09:06:22 -0400
-Subject: [PATCH 09/22] anaconda: disable ntp
+Subject: [PATCH 09/62] anaconda: disable ntp
 
 The systemd has timesyncd to replace anaconda's NTP(Network Time Protocal).
 
@@ -12,10 +12,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 9 deletions(-)
 
 diff --git a/anaconda b/anaconda
-index 4d63186..773cc72 100755
+index 488656a..8ae562d 100755
 --- a/anaconda
 +++ b/anaconda
-@@ -871,7 +871,6 @@ if __name__ == "__main__":
+@@ -884,7 +884,6 @@ if __name__ == "__main__":
  
      from pyanaconda import vnc
      from pyanaconda import kickstart
@@ -23,7 +23,7 @@ index 4d63186..773cc72 100755
      from pyanaconda import keyboard
      from pyanaconda.iutil import ProxyString, ProxyStringError
  
-@@ -1284,14 +1283,6 @@ if __name__ == "__main__":
+@@ -1333,14 +1332,6 @@ if __name__ == "__main__":
          geoloc.init_geolocation(provider_id=provider_id)
          geoloc.refresh()
  
@@ -39,5 +39,5 @@ index 4d63186..773cc72 100755
      # shape with the new UI code.
      anaconda._intf.setup(ksdata)
 -- 
-2.8.1
+2.7.4
 

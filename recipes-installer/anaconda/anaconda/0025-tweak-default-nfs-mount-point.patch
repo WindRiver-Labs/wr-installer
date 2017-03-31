@@ -1,7 +1,7 @@
-From 7a8c35ddd9ac93d492f39612af88ccd89c378b81 Mon Sep 17 00:00:00 2001
+From a57e7224d5329d7356d18934a90310c0b7c084e3 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 19 May 2016 22:28:14 -0400
-Subject: [PATCH 25/35] tweak default nfs mount point
+Subject: [PATCH 25/62] tweak default nfs mount point
 
 Tweak nfs mount point of base repository to "/media/source".
 
@@ -13,7 +13,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/pyanaconda/constants.py b/pyanaconda/constants.py
-index 742012b..8ee750f 100644
+index a12fe6f..bf18288 100644
 --- a/pyanaconda/constants.py
 +++ b/pyanaconda/constants.py
 @@ -56,7 +56,7 @@ DRACUT_REPODIR = MOUNT_DIR + "/Packages"
@@ -26,5 +26,5 @@ index 742012b..8ee750f 100644
  
  # NOTE: this should be LANG_TERRITORY.CODESET, e.g. en_US.UTF-8
 -- 
-2.8.1
+2.7.4
 

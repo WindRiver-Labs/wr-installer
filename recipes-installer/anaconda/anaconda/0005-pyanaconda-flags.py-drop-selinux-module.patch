@@ -1,7 +1,7 @@
-From d95e7a1b9c744eb224a946a432e83a19190294c2 Mon Sep 17 00:00:00 2001
+From 86d6a69c329bf58f21806345af31615bbfd62412 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Mon, 11 Apr 2016 05:40:06 -0400
-Subject: [PATCH 05/22] pyanaconda/flags.py: drop selinux module
+Date: Fri, 31 Mar 2017 13:22:20 +0800
+Subject: [PATCH 05/62] pyanaconda/flags.py: drop selinux module
 
 And we do not use selinux module for wrlinux, so drop it.
 
@@ -22,7 +22,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/pyanaconda/flags.py b/pyanaconda/flags.py
-index ac774ed..1f94a5c 100644
+index 8a97f95..ea6c8f7 100644
 --- a/pyanaconda/flags.py
 +++ b/pyanaconda/flags.py
 @@ -17,7 +17,7 @@
@@ -33,8 +33,8 @@ index ac774ed..1f94a5c 100644
 +import os
  import shlex
  import glob
- from pyanaconda.constants import SELINUX_DEFAULT, CMDLINE_APPEND
-@@ -86,7 +86,7 @@ class Flags(object):
+ from pyanaconda.constants import SELINUX_DEFAULT, CMDLINE_APPEND, ANACONDA_ENVIRON
+@@ -90,7 +90,7 @@ class Flags(object):
                    "nombr", "gpt"):
              self.set_cmdline_bool(f)
  
@@ -44,5 +44,5 @@ index ac774ed..1f94a5c 100644
  
  cmdline_files = ['/proc/cmdline', '/run/install/cmdline',
 -- 
-2.8.1
+2.7.4
 

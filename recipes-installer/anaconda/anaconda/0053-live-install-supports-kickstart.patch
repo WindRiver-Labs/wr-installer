@@ -1,7 +1,7 @@
-From 905fd03626f3f5970e6348e729aa7f5dca5028c8 Mon Sep 17 00:00:00 2001
+From 1b090b2e8c4b2865101119a2938ee4c402523aea Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Fri, 26 Aug 2016 06:46:52 -0400
-Subject: [PATCH] live install supports kickstart
+Date: Fri, 31 Mar 2017 14:01:22 +0800
+Subject: [PATCH 53/62] live install supports kickstart
 
 While live install, WRLinux does not support harddrive,
 use cdrom to replace
@@ -15,23 +15,23 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  2 files changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/anaconda b/anaconda
-index b0389ef..ebea268 100755
+index 94e1268..0fe39a3 100755
 --- a/anaconda
 +++ b/anaconda
-@@ -1033,7 +1033,7 @@ if __name__ == "__main__":
+@@ -1047,7 +1047,7 @@ if __name__ == "__main__":
      # execute) that now.  Otherwise, load in defaults from kickstart files
      # shipped with the installation media.
      ksdata = None
 -    if opts.ksfile and not opts.liveinst:
 +    if opts.ksfile:
-         flags.automatedInstall = True
-         flags.eject = False
-         ksFiles = [opts.ksfile]
+         if not os.path.exists(opts.ksfile):
+             stdoutLog.error("Kickstart file %s is missing.", opts.ksfile)
+             iutil.ipmi_report(constants.IPMI_ABORTED)
 diff --git a/pyanaconda/install.py b/pyanaconda/install.py
-index e0267e1..8835cf3 100644
+index c0fc98e..7b72fe0 100644
 --- a/pyanaconda/install.py
 +++ b/pyanaconda/install.py
-@@ -55,6 +55,10 @@ def _writeKS(ksdata):
+@@ -56,6 +56,10 @@ def _writeKS(ksdata):
      # Do not support network configuration
      ksdata.network.network = []
  
@@ -43,5 +43,5 @@ index e0267e1..8835cf3 100644
          f.write(str(ksdata))
  
 -- 
-2.8.1
+2.7.4
 

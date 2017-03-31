@@ -1,7 +1,7 @@
-From d3ac57423af346ff6e4529e3aa6b7dbf18b85322 Mon Sep 17 00:00:00 2001
+From b5b5fa43355b432414f336a1795f49709d2dd388 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Fri, 26 Aug 2016 03:28:26 -0400
-Subject: [PATCH 1/2] support to get kickstart from network
+Subject: [PATCH 50/62] support to get kickstart from network
 
 We support http/https/ftp protocol to get kickstart file
 
@@ -13,10 +13,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/anaconda b/anaconda
-index abea0f7..b0389ef 100755
+index 4b65adc..94e1268 100755
 --- a/anaconda
 +++ b/anaconda
-@@ -1047,8 +1047,12 @@ if __name__ == "__main__":
+@@ -1066,8 +1066,12 @@ if __name__ == "__main__":
          ksFiles = ["/tmp/updates/interactive-defaults.ks",
                     "/usr/share/anaconda/interactive-defaults.ks"]
  
@@ -31,5 +31,5 @@ index abea0f7..b0389ef 100755
  
          kickstart.preScriptPass(ks)
 -- 
-2.8.1
+2.7.4
 

@@ -1,7 +1,7 @@
-From f6c5f0c3429ab7304339ddf1dab55fcde78f1156 Mon Sep 17 00:00:00 2001
+From 36bea815e49f21957302aff1a27340bc097ff44b Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 11 Jun 2015 15:43:20 +0800
-Subject: [PATCH 03/22] widgets/Makefile.am: do not compile doc
+Subject: [PATCH 03/62] widgets/Makefile.am: do not compile doc
 
 Upstream-Status: Inappropriate [wrlinux specific]
 
@@ -24,5 +24,5 @@ index 7afcf19..be28f54 100644
  MAINTAINERCLEANFILES = Makefile.in aclocal.m4 config.guess config.h.in config.sub \
  	configure depcomp install-sh ltmain.sh missing py-compile \
 -- 
-2.8.1
+2.7.4
 

@@ -1,7 +1,7 @@
-From 668cdb3418dec5191d1334278eddb6b53ee56649 Mon Sep 17 00:00:00 2001
+From babea3fd61275d479e91ef58c85728054f368289 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Wed, 13 Apr 2016 23:16:17 -0400
-Subject: [PATCH 06/22] geoloc.py: support https
+Subject: [PATCH 06/62] geoloc.py: support https
 
 ...
 13:04:28,029 DEBUG anaconda: Geoloc: URLError for Fedora GeoIP API lookup:
@@ -41,5 +41,5 @@ index 7b8dc0d..e7e31e6 100644
                  json_reply = json.load(reply)
                  territory = json_reply.get("country_code", None)
 -- 
-2.8.1
+2.7.4
 

@@ -1,7 +1,7 @@
-From 90760c309c567b746d602edf4ea4af3282b29050 Mon Sep 17 00:00:00 2001
+From d95e68d74cd3d4369e0dcdaae32a44fb4ec7c573 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Tue, 9 Aug 2016 05:46:31 -0400
-Subject: [PATCH] dynamic detect workable locale
+Date: Fri, 31 Mar 2017 13:26:58 +0800
+Subject: [PATCH 08/62] dynamic detect workable locale
 
 Previously we hardcoded to only support en-gb and en-us,
 
@@ -50,12 +50,12 @@ index 51a3e4f..229cb99 100644
 +
 +    return _all_locales
 diff --git a/pyanaconda/ui/gui/spokes/lib/lang_locale_handler.py b/pyanaconda/ui/gui/spokes/lib/lang_locale_handler.py
-index 1874647..50b4b99 100644
+index 1b1f180..8c3adf5 100644
 --- a/pyanaconda/ui/gui/spokes/lib/lang_locale_handler.py
 +++ b/pyanaconda/ui/gui/spokes/lib/lang_locale_handler.py
-@@ -146,6 +146,9 @@ class LangLocaleHandler(object):
-         self._localeStore.clear()
+@@ -159,6 +159,9 @@ class LangLocaleHandler(object):
          locales = localization.get_language_locales(lang)
+         locales = self._filter_locales(lang, locales)
          for locale in locales:
 +            if locale not in localization.list_all_locales():
 +                continue
@@ -64,10 +64,10 @@ index 1874647..50b4b99 100644
                               localization.get_native_name(locale),
                               locale)
 diff --git a/pyanaconda/ui/tui/spokes/langsupport.py b/pyanaconda/ui/tui/spokes/langsupport.py
-index b959de4..062227d 100644
+index d569858..fbf758f 100644
 --- a/pyanaconda/ui/tui/spokes/langsupport.py
 +++ b/pyanaconda/ui/tui/spokes/langsupport.py
-@@ -73,7 +73,7 @@ class LangSpoke(FirstbootSpokeMixIn, NormalTUISpoke):
+@@ -81,7 +81,7 @@ class LangSpoke(FirstbootSpokeMixIn, NormalTUISpoke):
  
          if args:
              self._window += [TextWidget(_("Available locales"))]
@@ -77,5 +77,5 @@ index b959de4..062227d 100644
              self._window += [TextWidget(_("Available languages"))]
              displayed = [TextWidget(z) for z in self._langs]
 -- 
-2.8.1
+2.7.4
 

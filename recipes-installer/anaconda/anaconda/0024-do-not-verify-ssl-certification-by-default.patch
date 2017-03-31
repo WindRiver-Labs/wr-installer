@@ -1,7 +1,7 @@
-From 707ff026050f68d6416285402dce439bc08dfc16 Mon Sep 17 00:00:00 2001
+From c95f2d6098ab6578c9a28b924eac87262c6ec3a5 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 19 May 2016 22:24:08 -0400
-Subject: [PATCH 24/35] do not verify ssl certification by default
+Subject: [PATCH 24/62] do not verify ssl certification by default
 
 It is helpful for development that use private certification.
 
@@ -13,10 +13,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/anaconda b/anaconda
-index e03bd66..ea69210 100755
+index f64c262..1d06c4c 100755
 --- a/anaconda
 +++ b/anaconda
-@@ -282,7 +282,7 @@ def parseArguments(argv=None, boot_cmdline=None):
+@@ -293,7 +293,7 @@ def parseArguments(argv=None, boot_cmdline=None):
                      help=help_parser.help_text("repo"))
      ap.add_argument("--stage2", dest="stage2", default=None, metavar="STAGE2_URL",
                      help=help_parser.help_text("stage2"))
@@ -26,5 +26,5 @@ index e03bd66..ea69210 100755
      ap.add_argument("--liveinst", action="store_true", default=False,
                      help=help_parser.help_text("liveinst"))
 -- 
-2.8.1
+2.7.4
 

@@ -1,7 +1,7 @@
-From 474a2c352ae88283a645c2e455091e1f6661885b Mon Sep 17 00:00:00 2001
+From 33c0ff963f3089d15d742529cf2ad1d149440150 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Mon, 9 May 2016 05:53:13 -0400
-Subject: [PATCH 21/22] do not support spinner
+Subject: [PATCH 21/62] do not support spinner
 
 It did not support spinner very well, so drop it.
 
@@ -75,5 +75,5 @@ index 7fb4f77..31a5c79 100644
 -        self._spinner.show()
 -        self._spinner.start()
 -- 
-2.8.1
+2.7.4
 

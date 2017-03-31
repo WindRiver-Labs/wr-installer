@@ -1,7 +1,7 @@
-From ee59b2ed166b98a1275a7bb90f5781d5b4eaabd8 Mon Sep 17 00:00:00 2001
+From 6732170a5e2b4b6d42c954e4edcfd4d6dc269fa4 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Mon, 18 Apr 2016 03:32:25 -0400
-Subject: [PATCH 12/22] use png icon to replace svg icon
+Subject: [PATCH 12/62] use png icon to replace svg icon
 
 WRLinux does not support svg display very well,
 so we use png to workaround.
@@ -41,5 +41,5 @@ index 445f9c2..505f836 100644
          g_free(file);
          if (!emblem_icon) {
 -- 
-2.8.1
+2.7.4
 

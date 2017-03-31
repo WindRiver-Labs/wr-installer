@@ -1,7 +1,7 @@
-From 1d3d8c6964c45c6e91691a74c056abdbdf84fc1b Mon Sep 17 00:00:00 2001
+From b8da56079aa5a1e36788cb6d52f7230ee64eeebd Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Thu, 5 May 2016 04:38:26 -0400
-Subject: [PATCH 18/22] kickstart: disable Authconfig/AutoPart/Timezone
+Date: Fri, 31 Mar 2017 13:36:44 +0800
+Subject: [PATCH 18/62] kickstart: disable Authconfig/AutoPart/Timezone
 
 We do not support kickstart for now
 
@@ -9,14 +9,14 @@ Upstream-Status: Inappropriate [wrlinux specific]
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
- pyanaconda/kickstart.py | 108 ++++--------------------------------------------
- 1 file changed, 7 insertions(+), 101 deletions(-)
+ pyanaconda/kickstart.py | 147 +++---------------------------------------------
+ 1 file changed, 7 insertions(+), 140 deletions(-)
 
 diff --git a/pyanaconda/kickstart.py b/pyanaconda/kickstart.py
-index 2a1e40b..8de9210 100644
+index 480380b..1deeccd 100644
 --- a/pyanaconda/kickstart.py
 +++ b/pyanaconda/kickstart.py
-@@ -268,29 +268,10 @@ class Authconfig(commands.authconfig.FC3_Authconfig):
+@@ -239,29 +239,10 @@ class Authconfig(commands.authconfig.FC3_Authconfig):
          self.packages = []
  
      def setup(self):
@@ -48,7 +48,7 @@ index 2a1e40b..8de9210 100644
  
  class AutoPart(commands.autopart.RHEL7_AutoPart):
      def parse(self, args):
-@@ -651,41 +632,10 @@ class Firewall(commands.firewall.F20_Firewall):
+@@ -693,41 +674,10 @@ class Firewall(commands.firewall.F20_Firewall):
          self.packages = []
  
      def setup(self):
@@ -93,17 +93,14 @@ index 2a1e40b..8de9210 100644
  
  class Firstboot(commands.firstboot.FC3_Firstboot):
      def setup(self, *args):
-@@ -1621,54 +1571,10 @@ class SshKey(commands.sshkey.F22_SshKey):
- 
- class Timezone(commands.timezone.F18_Timezone):
+@@ -1716,93 +1666,10 @@ class Timezone(commands.timezone.RHEL7_Timezone):
      def __init__(self, *args):
--        commands.timezone.F18_Timezone.__init__(self, *args)
--
+         commands.timezone.RHEL7_Timezone.__init__(self, *args)
+ 
 -        self._added_chrony = False
 -        self._enabled_chrony = False
 -        self._disabled_chrony = False
-+        commands.timezone.F18_Timezone.__init__(self, *args, nontp=False)
- 
+-
      def setup(self, ksdata):
 -        # do not install and use NTP package
 -        if self.nontp or NTP_PACKAGE in ksdata.packages.excludedList:
@@ -146,10 +143,52 @@ index 2a1e40b..8de9210 100644
 -                    not NTP_SERVICE in ksdata.services.disabled:
 -                ksdata.services.enabled.append(NTP_SERVICE)
 -                self._enabled_chrony = True
+-
++        pass
+     def execute(self, *args):
+-        # write out timezone configuration
+-        if not timezone.is_valid_timezone(self.timezone):
+-            # this should never happen, but for pity's sake
+-            log.warning("Timezone %s set in kickstart is not valid, falling "\
+-                        "back to default (America/New_York).", self.timezone)
+-            self.timezone = "America/New_York"
+-
+-        timezone.write_timezone_config(self, iutil.getSysroot())
+-
+-        # write out NTP configuration (if set)
+-        if not self.nontp and self.ntpservers:
+-            chronyd_out_path = os.path.normpath(iutil.getSysroot() + ntp.CHRONY_CONFIG_FILE)
+-            ntpd_out_path = os.path.normpath(iutil.getSysroot() + ntp.NTP_CONFIG_FILE)
+-            if os.path.exists(chronyd_out_path):
+-                log.debug("Modifying installed chrony configuration")
+-                try:
+-                    ntp.save_servers_to_config(self.ntpservers, conf_file_path=chronyd_out_path)
+-                except ntp.NTPconfigError as ntperr:
+-                    log.warning("Failed to save NTP configuration for chrony: %s", ntperr)
+-            else:
+-                log.debug("Creating chrony configuration based on the "
+-                          "configuration from installation environment")
+-                try:
+-                    ntp.save_servers_to_config(self.ntpservers,
+-                                               conf_file_path=ntp.CHRONY_CONFIG_FILE,
+-                                               out_file_path=chronyd_out_path)
+-                except ntp.NTPconfigError as ntperr:
+-                    log.warning("Failed to save NTP configuration without chrony package: %s", ntperr)
+-
+-            if os.path.exists(ntpd_out_path):
+-                log.debug("Modifying installed ntpd configuration")
+-                try:
+-                    ntp.save_servers_to_config(self.ntpservers, conf_file_path=ntpd_out_path)
+-                except ntp.NTPconfigError as ntperr:
+-                    log.warning("Failed to save NTP configuration for ntpd: %s", ntperr)
+-            # This is special customer request when the ntp is installed so there is no point
+-            # in creating conf file from NTP from installation environment.
+-            else:
+-                log.debug("ntpd configuration isn't created because the package wasn't installed")
 +        pass
  
-     def execute(self, *args):
-         # write out timezone configuration
+ class User(commands.user.F19_User):
+     def execute(self, storage, ksdata, instClass, users):
 -- 
-2.8.1
+2.7.4
 

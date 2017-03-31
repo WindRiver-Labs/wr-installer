@@ -1,7 +1,7 @@
-From 6c8f9f121108fd5401a8063a972e822bd239e173 Mon Sep 17 00:00:00 2001
+From 5a08a45b17c764361259bdcfb166c15dc8552dbb Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Tue, 19 Jul 2016 04:36:06 -0400
-Subject: [PATCH] fix write network conf failed while liveinst
+Subject: [PATCH 39/62] fix write network conf failed while liveinst
 
 While liveinst, the network conf writing will overwrite copy
 "/etc/resolv.conf" to "/mnt/sysimage/etc/resolv.conf". But in
@@ -18,10 +18,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 7 insertions(+)
 
 diff --git a/pyanaconda/network.py b/pyanaconda/network.py
-index 35488dc..ad9bd3a 100644
+index 2e5e10d..a9c80a4 100644
 --- a/pyanaconda/network.py
 +++ b/pyanaconda/network.py
-@@ -1005,6 +1005,13 @@ def copyFileToPath(fileName, destPath='', overwrite=False):
+@@ -1077,6 +1077,13 @@ def copyFileToPath(fileName, destPath='', overwrite=False):
          return False
      if not os.path.isdir(os.path.dirname(destfile)):
          iutil.mkdirChain(os.path.dirname(destfile))
@@ -36,5 +36,5 @@ index 35488dc..ad9bd3a 100644
      return True
  
 -- 
-2.8.1
+2.7.4
 

@@ -1,7 +1,7 @@
-From cac8b479c497c6086c514981330b3a9d8515b7e7 Mon Sep 17 00:00:00 2001
+From 468060ee35f46cf691fb8de6df9c90c0097a064f Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 28 Apr 2016 05:38:42 -0400
-Subject: [PATCH 15/22] tweak detect kernel version
+Subject: [PATCH 15/62] tweak detect kernel version
 
 According kernel layout in oe-core, tweak the detection
 rather than using redhat's.
@@ -15,10 +15,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  2 files changed, 27 insertions(+), 37 deletions(-)
 
 diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
-index 7feb08e..efcff4e 100644
+index d3402fd..d9a34ec 100644
 --- a/pyanaconda/bootloader.py
 +++ b/pyanaconda/bootloader.py
-@@ -2332,13 +2332,22 @@ def get_bootloader():
+@@ -2331,13 +2331,22 @@ def get_bootloader():
  
  def writeSysconfigKernel(storage, version, instClass):
      # get the name of the default kernel package based on the version
@@ -48,7 +48,7 @@ index 7feb08e..efcff4e 100644
  
      try:
          import rpm
-@@ -2346,6 +2355,7 @@ def writeSysconfigKernel(storage, version, instClass):
+@@ -2345,6 +2354,7 @@ def writeSysconfigKernel(storage, version, instClass):
          log.error("failed to import rpm python module")
          return
  
@@ -56,7 +56,7 @@ index 7feb08e..efcff4e 100644
      ts = rpm.TransactionSet(iutil.getSysroot())
      mi = ts.dbMatch('basenames', kernel_file)
      try:
-@@ -2415,7 +2425,7 @@ def writeBootLoader(storage, payload, instClass, ksdata):
+@@ -2414,7 +2424,7 @@ def writeBootLoader(storage, payload, instClass, ksdata):
          return
  
      # get a list of installed kernel packages
@@ -66,10 +66,10 @@ index 7feb08e..efcff4e 100644
          log.warning("no kernel was installed -- boot loader config unchanged")
          return
 diff --git a/pyanaconda/packaging/__init__.py b/pyanaconda/packaging/__init__.py
-index f31c916..dc96c4c 100644
+index 36a6eb3..683b2a0 100644
 --- a/pyanaconda/packaging/__init__.py
 +++ b/pyanaconda/packaging/__init__.py
-@@ -356,18 +356,14 @@ class Payload(object):
+@@ -413,18 +413,14 @@ class Payload(object):
          self.data.packages.excludedList.append(pkgid)
  
      def _updateKernelVersionList(self):
@@ -95,7 +95,7 @@ index f31c916..dc96c4c 100644
  
          # Store regular and rescue kernels separately
          self._kernelVersionList = (
-@@ -792,23 +788,7 @@ class PackagePayload(Payload):
+@@ -867,23 +863,7 @@ class PackagePayload(Payload):
  
      @property
      def kernelPackages(self):
@@ -120,7 +120,7 @@ index f31c916..dc96c4c 100644
  
      @property
      def rpmMacros(self):
-@@ -1007,7 +987,7 @@ class PackagePayload(Payload):
+@@ -1082,7 +1062,7 @@ class PackagePayload(Payload):
              sslverify = not (method.noverifyssl or flags.noverifyssl)
          elif method.method == "cdrom" or (checkmount and not method.method):
              # Did dracut leave the DVD or NFS mounted for us?
@@ -130,5 +130,5 @@ index f31c916..dc96c4c 100644
              if device and not self.install_device:
                  self.install_device = storage.devicetree.getDeviceByPath(device)
 -- 
-2.8.1
+2.7.4
 

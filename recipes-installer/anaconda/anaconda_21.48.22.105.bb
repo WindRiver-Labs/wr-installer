@@ -118,7 +118,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=rhel7-bra
            file://0062-pyanaconda-ui-gui-utils.py-tweak-mouse-arrow.patch \
           "
 
-SRCREV = "1e5f44b5fd76489bbd95dba4e04f30939a71426b"
+SRCREV = "e13db9e6abc038adfd094c850b3376c6c01a7b83"
 SRC_URI[anaconda-po.md5sum] = "dfdb1546cc18c9ec0a6673ccc3d35098"
 SRC_URI[anaconda-po.sha256sum] = "a3421e067c82e435fc626142c77d91b94d514fe3fd7f3b429b22706876ac306a"
 
@@ -127,6 +127,7 @@ FILES_${PN}-staticdev += "${PYTHON_SITEPACKAGES_DIR}/pyanaconda/_isys.a"
 FILES_${PN} = "/lib ${libdir} ${sysconfdir} ${bindir} ${sbindir} ${libexecdir} \
               ${datadir}/anaconda ${datadir}/applications ${datadir}/glade \
               ${PYTHON_SITEPACKAGES_DIR}/pyanaconda ${PYTHON_SITEPACKAGES_DIR}/log_picker \
+              ${datadir}/themes \
 "
 FILES_${PN}-misc = "/usr/lib"
 PACKAGES += "${PN}-misc"

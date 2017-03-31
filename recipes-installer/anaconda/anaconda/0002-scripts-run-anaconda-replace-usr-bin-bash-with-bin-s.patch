@@ -1,7 +1,7 @@
-From dda9e7e52f966ece8a58d139a9961df6234c1638 Mon Sep 17 00:00:00 2001
+From 9a055c56cf24441129d3d7537608480f2e0203d0 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 11 Jun 2015 17:44:25 +0800
-Subject: [PATCH 02/22] scripts/run-anaconda: replace /usr/bin/bash with
+Subject: [PATCH 02/62] scripts/run-anaconda: replace /usr/bin/bash with
  /bin/sh
 
 Upstream-Status: Inappropriate [wrlinux specific]
@@ -22,5 +22,5 @@ index d31f70c..142ceb9 100755
  # Quick script to attach to tmux where anaconda is running
  #
 -- 
-2.8.1
+2.7.4
 

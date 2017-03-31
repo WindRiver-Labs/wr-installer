@@ -1,7 +1,7 @@
-From f0e38db01465c865fd3fd842992af7229849efa3 Mon Sep 17 00:00:00 2001
+From 76665fa145f773c76296a9d69cde8175c77d3b42 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Sun, 17 Apr 2016 03:58:18 -0400
-Subject: [PATCH 11/22] tweak auditd invoking dir
+Subject: [PATCH 11/62] tweak auditd invoking dir
 
 Upstream-Status: Inappropriate [wrlinux specific]
 
@@ -11,10 +11,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/anaconda b/anaconda
-index d682a82..b122ca8 100755
+index ef68750..12c3b35 100755
 --- a/anaconda
 +++ b/anaconda
-@@ -995,7 +995,7 @@ if __name__ == "__main__":
+@@ -1009,7 +1009,7 @@ if __name__ == "__main__":
      if can_touch_runtime_system("start audit daemon"):
          # auditd will turn into a daemon and exit. Ignore startup errors
          try:
@@ -24,5 +24,5 @@ index d682a82..b122ca8 100755
              pass
  
 -- 
-2.8.1
+2.7.4
 

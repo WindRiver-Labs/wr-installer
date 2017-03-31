@@ -1,7 +1,8 @@
-From 85c3fd9b4c82e53bd46f8d3ee1af73adc939b977 Mon Sep 17 00:00:00 2001
+From 0474e25522e00f3f6f0f8f164f959ebd180a1e6a Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Fri, 26 Aug 2016 05:36:54 -0400
-Subject: [PATCH] support downloading file from http/ftp server to target image
+Date: Fri, 31 Mar 2017 13:59:01 +0800
+Subject: [PATCH 52/62] support downloading file from http/ftp server to target
+ image
 
 Add key in kickstart to support downloading file from http/ftp server to target image,
 'download --dest=[file://dir/filename|/dir/filename] --src=[http url| ftp url]'
@@ -22,16 +23,20 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 Rebase from WRL8 to WRL9
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+
+Rebase from WRL9 to WRL10
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
  pyanaconda/install.py   |  1 +
  pyanaconda/kickstart.py | 97 +++++++++++++++++++++++++++++++++++++++++++++++++
  2 files changed, 98 insertions(+)
 
 diff --git a/pyanaconda/install.py b/pyanaconda/install.py
-index 38642cd..e0267e1 100644
+index baf3f33..c0fc98e 100644
 --- a/pyanaconda/install.py
 +++ b/pyanaconda/install.py
-@@ -93,6 +93,7 @@ def doConfiguration(storage, payload, ksdata, instClass):
+@@ -94,6 +94,7 @@ def doConfiguration(storage, payload, ksdata, instClass):
          ksdata.firewall.execute(storage, ksdata, instClass)
          ksdata.xconfig.execute(storage, ksdata, instClass)
          ksdata.skipx.execute(storage, ksdata, instClass)
@@ -40,19 +45,19 @@ index 38642cd..e0267e1 100644
      if willWriteNetwork:
          with progress_report(_("Writing network configuration")):
 diff --git a/pyanaconda/kickstart.py b/pyanaconda/kickstart.py
-index 5ce9015..eb30957 100644
+index c6d8470..93a50ba 100644
 --- a/pyanaconda/kickstart.py
 +++ b/pyanaconda/kickstart.py
-@@ -67,6 +67,8 @@ from pykickstart.constants import CLEARPART_TYPE_NONE, FIRSTBOOT_SKIP, FIRSTBOOT
-                                   KS_SCRIPT_TRACEBACK, KS_SCRIPT_PREINSTALL, SELINUX_DISABLED, SELINUX_ENFORCING, SELINUX_PERMISSIVE
+@@ -71,6 +71,8 @@ from pykickstart.constants import CLEARPART_TYPE_NONE, FIRSTBOOT_SKIP, FIRSTBOOT
+ from pykickstart.base import BaseHandler
  from pykickstart.errors import formatErrorMsg, KickstartError, KickstartValueError, KickstartAuthError
  from pykickstart.parser import KickstartParser
 +from pykickstart.base import KickstartCommand, BaseData
 +from pykickstart.options import KSOptionParser
  from pykickstart.parser import Script as KSScript
- from pykickstart.sections import NullSection, PackageSection, PostScriptSection, PreScriptSection, PreInstallScriptSection, TracebackScriptSection
- from pykickstart.version import returnClassForVersion, RHEL7
-@@ -1754,6 +1756,99 @@ class Upgrade(commands.upgrade.F20_Upgrade):
+ from pykickstart.sections import NullSection, PackageSection, PostScriptSection, PreScriptSection, PreInstallScriptSection, \
+                                  OnErrorScriptSection, TracebackScriptSection
+@@ -1808,6 +1810,99 @@ class Upgrade(commands.upgrade.F20_Upgrade):
          iutil.ipmi_report(IPMI_ABORTED)
          sys.exit(1)
  
@@ -150,9 +155,9 @@ index 5ce9015..eb30957 100644
 +
 +
  ###
- ### HANDLERS
+ ### %anaconda Section
  ###
-@@ -1798,6 +1893,7 @@ commandMap = {
+@@ -1907,6 +2002,7 @@ commandMap = {
          "volgroup": VolGroup,
          "xconfig": XConfig,
          "zfcp": ZFCP,
@@ -160,7 +165,7 @@ index 5ce9015..eb30957 100644
  }
  
  dataMap = {
-@@ -1807,6 +1903,7 @@ dataMap = {
+@@ -1916,6 +2012,7 @@ dataMap = {
          "RaidData": RaidData,
          "RepoData": RepoData,
          "VolGroupData": VolGroupData,
@@ -169,5 +174,5 @@ index 5ce9015..eb30957 100644
  
  superclass = returnClassForVersion(RHEL7)
 -- 
-2.8.1
+2.7.4
 

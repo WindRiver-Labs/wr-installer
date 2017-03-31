@@ -1,7 +1,7 @@
-From 2e30b38120f5cb3d6331297561ea9490735b1dfe Mon Sep 17 00:00:00 2001
+From 628dc20d864e2aeb3ca47839892da5a9683187c5 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Sun, 11 Sep 2016 21:52:30 -0400
-Subject: [PATCH] timezone: fix set US/Alaska failed
+Subject: [PATCH 59/62] timezone: fix set US/Alaska failed
 
 Make sure the existence of dir.
 ------
@@ -34,5 +34,5 @@ index a33d3e6..2e51d39 100644
  
      if not os.access(rooted_tz_file, os.R_OK):
 -- 
-2.8.1
+2.7.4
 

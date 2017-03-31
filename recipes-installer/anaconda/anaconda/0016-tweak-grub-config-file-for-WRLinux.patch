@@ -1,7 +1,7 @@
-From a0b6cdfb9fea0f9c7c7f7fc5d14e26129da2d247 Mon Sep 17 00:00:00 2001
+From e75c1254840f4cff16be127100deb8c8d9503258 Mon Sep 17 00:00:00 2001
 From: Mark Hatle <mark.hatle@windriver.com>
 Date: Thu, 5 May 2016 04:02:25 -0400
-Subject: [PATCH 16/22] tweak grub config file for WRLinux
+Subject: [PATCH 16/62] tweak grub config file for WRLinux
 
 Upstream-Status: Inappropriate [wrlinux specific]
 
@@ -11,10 +11,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 13 insertions(+), 6 deletions(-)
 
 diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
-index efcff4e..d9df6c4 100644
+index d9a34ec..f51510d 100644
 --- a/pyanaconda/bootloader.py
 +++ b/pyanaconda/bootloader.py
-@@ -1498,14 +1498,21 @@ class GRUB2(GRUB):
+@@ -1499,14 +1499,21 @@ class GRUB2(GRUB):
  
          defaults = open(defaults_file, "w+")
          defaults.write("GRUB_TIMEOUT=%d\n" % self.timeout)
@@ -43,5 +43,5 @@ index efcff4e..d9df6c4 100644
          # this is going to cause problems for systems containing multiple
          # linux installations or even multiple boot entries with different
 -- 
-2.8.1
+2.7.4
 

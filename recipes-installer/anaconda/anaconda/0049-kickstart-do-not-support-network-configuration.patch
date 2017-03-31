@@ -1,7 +1,7 @@
-From ae3eb896140026ae9987133b13740bac28891d41 Mon Sep 17 00:00:00 2001
+From cc4468c7760641e810d0008dbab1e798f380f4f2 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Fri, 26 Aug 2016 01:33:45 -0400
-Subject: [PATCH] kickstart do not support network configuration
+Subject: [PATCH 49/62] kickstart do not support network configuration
 
 Upstream-Status: Inappropriate [wrlinux specific]
 
@@ -11,10 +11,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 3 insertions(+)
 
 diff --git a/pyanaconda/install.py b/pyanaconda/install.py
-index 0bc33bd..38642cd 100644
+index 47eba22..baf3f33 100644
 --- a/pyanaconda/install.py
 +++ b/pyanaconda/install.py
-@@ -52,6 +52,9 @@ def _writeKS(ksdata):
+@@ -53,6 +53,9 @@ def _writeKS(ksdata):
      if ksdata.method.method == "url" and not ksdata.method.url.startswith("https://"):
          ksdata.method.noverifyssl = False
  
@@ -25,5 +25,5 @@ index 0bc33bd..38642cd 100644
          f.write(str(ksdata))
  
 -- 
-2.8.1
+2.7.4
 

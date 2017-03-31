@@ -1,7 +1,7 @@
-From 1327eafc5750006064538e54bf514b064beb1f8f Mon Sep 17 00:00:00 2001
+From fd6492efa93ca2c5094959c677b6d3354c212fa9 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Thu, 14 Apr 2016 04:46:50 -0400
-Subject: [PATCH 07/22] comment out Keybinder
+Date: Fri, 31 Mar 2017 13:23:46 +0800
+Subject: [PATCH 07/62] comment out Keybinder
 
 It caused run time failed:
 ...
@@ -18,7 +18,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/pyanaconda/ui/gui/__init__.py b/pyanaconda/ui/gui/__init__.py
-index 76d025b..35fc54c 100644
+index e1997ca..8352f7d 100644
 --- a/pyanaconda/ui/gui/__init__.py
 +++ b/pyanaconda/ui/gui/__init__.py
 @@ -23,7 +23,7 @@ import meh.ui.gui
@@ -29,18 +29,18 @@ index 76d025b..35fc54c 100644
 +from gi.repository import Gdk, Gtk, AnacondaWidgets, GdkPixbuf, GLib, GObject
  
  from pyanaconda.i18n import _
- from pyanaconda.constants import IPMI_ABORTED
-@@ -153,8 +153,8 @@ class GUIObject(common.UIObject):
-         self.builder.connect_signals(self)
+ from pyanaconda import product, iutil, constants
+@@ -382,8 +382,8 @@ class MainWindow(Gtk.Window):
+         self._saved_help_button_label = _("Help!")
  
          # Keybinder from GI needs to be initialized before use
 -        Keybinder.init()
--        Keybinder.bind("<Shift>Print", self._handlePrntScreen, [])
+-        Keybinder.bind("<Shift>Print", self._handle_print_screen, [])
 +        #Keybinder.init()
-+        #Keybinder.bind("<Shift>Print", self._handlePrntScreen, [])
++        #Keybinder.bind("<Shift>Print", self._handle_print_screen, [])
  
-         self._automaticEntry = False
-         self._autostepRunning = False
+         self._screenshot_index = 0
+ 
 -- 
-2.8.1
+2.7.4
 

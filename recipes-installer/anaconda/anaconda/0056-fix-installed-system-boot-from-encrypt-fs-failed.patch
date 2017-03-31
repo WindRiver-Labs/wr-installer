@@ -1,7 +1,7 @@
-From 5628ad8ec199db32f4bdd652dc6956730a67d22c Mon Sep 17 00:00:00 2001
+From 5587fe372305288bc427c85bb9409bf95cc1cfcb Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
-Date: Mon, 5 Sep 2016 10:26:51 -0400
-Subject: [PATCH] fix installed system boot from encrypt fs failed
+Date: Fri, 31 Mar 2017 14:07:45 +0800
+Subject: [PATCH 56/62] fix installed system boot from encrypt fs failed
 
 While using cryptsetup to encrypt filesystem, it failed to boot
 installed system.
@@ -30,11 +30,11 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 2 insertions(+)
 
 diff --git a/pyanaconda/install.py b/pyanaconda/install.py
-index 1973460..ba3a4f8 100644
+index 2fca486..e6f02fd 100644
 --- a/pyanaconda/install.py
 +++ b/pyanaconda/install.py
-@@ -116,6 +116,8 @@ def doConfiguration(storage, payload, ksdata, instClass):
-         ksdata.addons.execute(storage, ksdata, instClass, u)
+@@ -117,6 +117,8 @@ def doConfiguration(storage, payload, ksdata, instClass):
+         ksdata.addons.execute(storage, ksdata, instClass, u, payload)
  
      with progress_report(_("Generating initramfs")):
 +        with open(iutil.getSysroot() + "/etc/dracut.conf.d/cryptsetup.conf", "w") as fobj:
@@ -43,5 +43,5 @@ index 1973460..ba3a4f8 100644
  
      if willRunRealmd:
 -- 
-2.8.1
+2.7.4
 

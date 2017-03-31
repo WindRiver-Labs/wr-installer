@@ -1,7 +1,7 @@
-From 5a8f234097de17b7d2e4156fe5606414101be37b Mon Sep 17 00:00:00 2001
+From 73192c5c06b0f174472b74e7fb4ce5abf7b0c990 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Mon, 4 Jul 2016 04:36:09 -0400
-Subject: [PATCH] support timezone setting
+Subject: [PATCH 34/62] support timezone setting
 
 - If selected timezone does not exist in target,
   try to make a copy from host
@@ -71,5 +71,5 @@ index 956c33e..a33d3e6 100644
  def save_hw_clock(timezone):
      """
 -- 
-2.8.1
+2.7.4
 
