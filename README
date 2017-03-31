@@ -22,49 +22,49 @@ Building the target installer
 -----------------------------
 1. Summary
    The target installer is enabled by passing "--layers=wr-installer"
-   to setup.sh. There are two images in target installer, one is target
-   image which to be installed to target, another is installer image
-   which to do the installation.
+   to setup.sh. There are two images in target installer, one is a target
+   image to be installed to the target, the other is an installer image
+   which does the installation.
 
-   A target image requires specific components to be compatible with
+   A target image requires that specific components be compatible with
    the installer. To install these components set WRTEMPLATE +=
    'feature/installer-support' in local.conf.
 
-   For installer image, you are not supposed to change the 'DISTRO'
-   setting in target build directory. It may work, but it's not
-   recommended. Instead we should recommend the user run a
-   oe-init-build-env and create a new build directory for the installer.
-   Set DISTRO = 'wrlinux-installer' in local.conf file.
+   You should not change the 'DISTRO' for the installer image
+   setting in the target build directory. It may work, but is not
+   recommended. Instead, run an oe-init-build-env and create a new build
+   directory for the installer. Set DISTRO = 'wrlinux-installer' in your
+   local.conf file.
 
    There are two kinds of installer builds: "Image Based Install" and
-   "Package Based Install". The former is to install a prebuilt image,
-   the latter is to install RPM packages.
+   "Package Based Install". The former is used to install a prebuilt image,
+   the latter is used to install RPM packages.
 
-   For Image Based Install, set INSTALLER_TARGET_BUILD =
+   For the Image Based Install, set INSTALLER_TARGET_BUILD =
    '<target-build-image>' in local.conf to specify an .ext2, .ext3,
-   or ext4 image file, then the installer will copy this image to the
+   or ext4 image file. The installer will copy this image to the
    target.
 
-   For Package Based Install,  set INSTALLER_TARGET_BUILD =
+   For the Package Based Install, set INSTALLER_TARGET_BUILD =
    '<target-build-topdir>' to specify the path to target build directory
    that will supply RPMs, and INSTALLER_TARGET_IMAGE = '<target-image-pn>'
-   to specify the image recipe name, then the installer will install its
-   RPMs to the target;
+   to specify the image recipe name. The installer will install its
+   RPMs to the target.
 
 2. Two main use cases
    2.1 Installer image with ext2, ext3 or ext4 image from the target
-       build to be copied to local disk.
+       build to be copied to a local disk.
 
    2.2 Installer image with RPMs from the target build to be installed
-       to local disk.
+       to a local disk.
 
-   Note: Each option requires two builds, one is for the target build,
-         the other one is for the installer itself. The build and installer
+   Note: Each option requires two builds, one for the target build,
+         the other for the installer itself. The build and installer
          board (BSP) configuration should be the same.
 
 3. Examples for the use cases
    3.1 Image Based Install
-       3.1.1 Setup with wr-installer layer and installer-support template.
+       3.1.1 Set up with the wr-installer layer and installer-support template.
 
              $ mkdir <wr9-project>
              $ cd <wr9-project>
@@ -75,14 +75,14 @@ Building the target installer
                  --layers=wr-installer \
                  --templates=feature/installer-support
 
-             Note: The machine of qemux86-64 is used for qemu test
+             Note: The machine type qemux86-64 is used for qemu test
 
-       3.1.2 Build target image (such as wrlinux-image-glibc-std) in target_build.
+       3.1.2 Build the target image (such as wrlinux-image-glibc-std) in target_build.
 
              $ . <wr9-project>/oe-init-build-env <target_build-dir>
              $ bitbake wrlinux-image-glibc-std
 
-       3.1.3 Build installer image in installer_build.
+       3.1.3 Build the installer image in installer_build.
 
              $ . <wr9-project>/oe-init-build-env <installer_build-dir>
 
@@ -95,13 +95,13 @@ Building the target installer
              $ bitbake wrlinux-image-installer
 
    3.2 Package Based Install
-       3.2.1 Setup with wr-installer layer and installer-support template.
-             The same with 3.1.1
+       3.2.1 Set up with wr-installer layer and installer-support template.
+             The same as with 3.1.1, above.
 
-       3.2.2 Build target image in target_build.
-             The same with 3.1.2
+       3.2.2 Build the target image in target_build.
+             The same as with 3.1.2, above.
 
-       3.2.3 Build installer image in installer_build.
+       3.2.3 Build the installer image in installer_build.
 
              $ . <wr9-project>/oe-init-build-env <installer_build-dir>
 
@@ -116,10 +116,10 @@ Building the target installer
 
 4. Install
    4.1 Burn the output ISO to a DVD or dd it to a USB disk, and use it to
-       boot the target board and start the install.
+       boot the target board and start the installation.
 
    4.2 Use qemu for testing
-       Build target installer with machine of qemux86-64
+       Build the target installer with machine type qemux86-64.
 
        Create the qemu disk:
        $ <build-topdir>/tmp/sysroots/x86_64-linux/usr/bin/qemu-img create -f qcow hd0.vdisk 5000M
@@ -129,20 +129,20 @@ Building the target installer
 
        Add "-vnc :4" to qemuparams to start a VNC capable session.
        Add "-usbdevice wacom-tablet" to qemuparams to correct mouse
-       pointer position, it works with the Linux 3.14, but does not work with
+       pointer position. This works with the Linux 3.14, but not with
        Linux 3.17.
 
-       Start qemu with installed target:
+       Start qemu with the installed target:
        $ runqemu qemux86-64 wrlinux-image-installer iso slirp qemuparams="hd0.vdisk -boot order=c"
 
-       Add "-boot order=c" to qemuparams to boot from hard disk.
+       Add "-boot order=c" to qemuparams to boot from a hard disk.
 
-   4.3 Use virtualbox for testing
-       4.3.1 Prepare virtualbox
-             Take Ubuntu 14.04 for example, the virtualbox is 4.3.10
+   4.3 Use VirtualBox for testing
+       4.3.1 Prepare VirtualBox
+             Using Ubuntu 14.04 for example, the VirtualBox version is 4.3.10
              sudo apt-get install virtualbox
 
-       4.3.2 Create virtual machine
+       4.3.2 Create a virtual machine
              'New'-> Name:***
                      Type:Linux
                      Version:Linux 2.6/3.x(64 bit)
@@ -152,72 +152,72 @@ Building the target installer
              'Next'-> Dynamically allocated
              'Next'-> File location and size
 
-       4.3.3 Add ISO storage to virtual machine
-             Select newly created virtual machine
+       4.3.3 Add ISO storage to the virtual machine
+             Select the newly created virtual machine
              'Setting'-> 'Storage'-> 'Controller:IDE'->
              'Empty'->'CD/DVD Drive: IDE Primary Master'->
              'Choose a virtual CD/DVD disk file'->
              'export/intel-x86-64-installer-standard-dist.iso'
 
-       4.3.4 Config net for virtual machine
-             Select newly created virtual machine
+       4.3.4 Configure the network for the virtual machine
+             Select the newly created virtual machine
              'Setting'-> 'Network'-> Attached to: Bridged Adapter
                                      Name: eth0
 
-       4.3.5 Add serial port to virtual machine
-             Select newly created virtual machine
+       4.3.5 Add a serial port to the virtual machine
+             Select the newly created virtual machine
              'Setting'-> 'Serial Ports'-> 'Port 1'->
              'Enable Serial Port'-> Port Number: COM1
                                     Port Mode: Host Pipe
                                     Create Pipe
                                     Port/File Path: /tmp/pipe
 
-       4.3.6 Use minicom to connect virtual machine's serial port
+       4.3.6 Use minicom to connect the virtual machine's serial port
              sudo minicom -s
              'Serial port setup'->
              'A -    Serial Device      : unix#/tmp/pipe'->
              'Exit'
 
-       4.3.7 Start virtual machine
-             Select newly created virtual machine-> 'Start'
+       4.3.7 Start the virtual machine
+             Select the newly created virtual machine-> 'Start'
 
-             After the installation finished, delete ISO storage and
-             start virtual machine again to check the installed target.
+             After the installation finishes, delete the ISO storage and
+             start the virtual machine again to check the installed target.
 
-   4.4 Need 1G memory size at least
+   4.4 Need at least 1 GB memory
        While starting qemu/virtualbox/vmware for testing, please make
-       sure virtual machine has 1G memory at least.
+       sure the virtual machine has at least 1 GB of memory.
 
 5. Use custom installer.conf
    The second build can use installer.conf to help speed up the build
-   process when package based installs, the user can set WRL_INSTALLER_CONF
-   in the conf file, for example:
+   process for package-based installs. You can set WRL_INSTALLER_CONF
+   in your local.conf file, for example:
 
    edit local.conf
    WRL_INSTALLER_CONF = "/my/installer.conf"
 
    You can customize the contents of installer.conf when needed, for example,
-   add packages that you will like to install, but if you do, you must ensure
+   to add packages that you want to install. If you do, you must ensure
    that the added packages are in the target build (target_build).
 
 6. Perform the kickstart installation
-   The installer can support kickstart installs. To do this, use the ks file
+   The installer supports kickstart installs. To do this, use the ks file
    from /root/anaconda-ks.cfg after the installation and edit it for later
-   installs. You can specify the ks file by setting KICKSTART_FILE in the conf
-   file, for example:
+   installs. You can specify the ks file by setting KICKSTART_FILE in your
+   local.conf file, for example:
 
    KICKSTART_FILE = "/my/anaconda-ks.cfg"
 
-   Then the second build will take it and start the kickstart installs
-   by default when you start the target with installer image.
+   The second build will use this to start the kickstart installs
+   by default when you start the target with the installer image.
 
 7. About Grub version
    The current installer only supports grub 2.
 
-8. How to create RPM metadata in build
+8. How to create RPM metadata in the build
    bitbake package-index
 
-   There are multiple repodata in deploy dir:
+   There are multiple instances of repodata in the deploy dir:
    $ find tmp/deploy/rpm/ -name repodata
    tmp/deploy/rpm/corei7_64/repodata
    tmp/deploy/rpm/intel_x86_64/repodata
@@ -225,24 +225,24 @@ Building the target installer
 
 9. Put multiple target builds into one installer image
    9.1 Create and build multiple target build projects.
-       Refer to section 3.1.1 on how to setup and build each target project.
+       Refer to section 3.1.1 on how to set up and build each target project.
        In this example, the projects are named target_build1, target_build2 and
-       target_build3. The target_build1 and target_build2 are build dirs,
+       target_build3. The target_build1 and target_build2 are build directories,
        target_build3 is ext4 file. Build 'wrlinux-image-glibc-std' in
        target_build1 and build 'core-image-minimal' in target_build2.
 
-   9.2 Edit local.conf, use variable INSTALLER_TARGET_BUILD to point to
+   9.2 Edit local.conf, using the variable INSTALLER_TARGET_BUILD to point to
        "<target_build1> <target_build2> <target_build3>", and set
-       INSTALLER_TARGET_IMAGE = "wrlinux-image-glibc-std core-image-minimal",
-       the space is the separator:
+       INSTALLER_TARGET_IMAGE = "wrlinux-image-glibc-std core-image-minimal"
+       (the space is the separator):
 
        $ bitbake wrlinux-image-installer
 
-       Then the installer image will contain all target builds specified,
+       The installer image will then contain all the target builds specified,
        including target_build1, target_build2 and target_build3.
 
        When you boot the installer image, you will get a selection menu:
-       NOTE: target_buildX is the basename of project
+       NOTE: target_buildX is the basename of the project.
 
        =============== Found the following products ===============
        1) DISTRO1    target_build1    DISTRO_NAME1    DISTRO_VERION1
@@ -259,7 +259,7 @@ Building the target installer
              projects.
              For example, if you want to use WRL_INSTALLER_CONF or
              KICKSTART_FILE for target_build1, target_build2 and
-             target_build3, set each of the three in the conf file.
+             target_build3, set each of the three in the .conf file.
 
              WRL_INSTALLER_CONF = "/my/target1.conf /my/target2.conf \
                                     /my/target3.conf"
@@ -271,63 +271,63 @@ Building the target installer
 
 10. BIOS-based PXE (legacy)
     10.1 Preparation
-         Refer "Wind River Linux USER GUIDE 6"
-         - About Configuring PXE, P422
-         - Configuring PXE, P424
-         - Configuring DHCP, P427
-         - Configuring DHCP for PXE, P428
-         - Configuring NFS, P430
-         - Configuring TFTP, P431
+         Refer to the following topics in the Wind River Linux Platform Developer's Guide, 9:
+         - PXE Boot Process Workflow
+         - Configuring PXE
+         - Configuring DHCP
+         - Configuring DHCP for PXE
 
-         The PXELinux Boot Loader File pxelinux.0 located in syslinux package,
-         you could directly copy it to the tftp download dir.
+         The PXELinux Boot Loader File pxelinux.0 is located in the syslinux package.
+         You could copy it directly to the tftp download directory.
 
-         Copy kernel (bzImage) to tftp download dir. In ISO, it named vmlinuz.
+         Copy the kernel (bzImage) to the tftp download directory. In ISO, it is 
+         named vmlinuz.
 
     10.2 initrd boot
-         Use recipe wrlinux-image-installer-initramfs to support initrd boot,
-         please copy initramfs (wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz)
-         to tftp download dir.
+         Use the recipe wrlinux-image-installer-initramfs to support initrd boot.
+         Copy initramfs (wrlinux-image-installer-initramfs-intel-x86-64.cpio.gz)
+         to the tftp download dir.
 
-         We must add param "LABEL=initrd-install" to PXE config file.
+         Add the parameter "LABEL=initrd-install" to the PXE config file.
          There is an example in examples/pxe/pxelinux.cfg/default.initramfs
 
     10.3 initrd boot with kickstart
-         Based on 10.2 initrd boot, we should prepare a kickstart file on
-         web server, and add param "ks=http://webserver_ip/anaconda-ks.cfg"
-         to PXE config file.
-         There is an example in examples/pxe/pxelinux.cfg/default.initramfs_ks
+         Based on 10.2 initrd boot, prepare a kickstart file on the web
+         server, and add the parameter "ks=http://webserver_ip/anaconda-ks.cfg" to 
+         the PXE config file. There is an example in
+         examples/pxe/pxelinux.cfg/default.initramfs_ks
 
     10.4 nfs boot
-         About PXE config file, there is an example in
+         For the PXE config file, there is an example in
          examples/pxe/pxelinux.cfg/default.nfs
 
-11. Download file from http/ftp server to target image
-    Add key in kickstart to support downloading file from http/ftp
-    server to target image:
+11. Download the file from the http/ftp server to the target image
+    Add a key in kickstart to support downloading the file from the http/ftp
+    server to the target image:
     'download --dest=[file://dir/filename|/dir/filename] --src=[http url| ftp url]'
 
-    Here is the example in kickstart file:
+    Here is an example for a kickstart file:
     ---start---
     download --dest=/etc/rpm/keys/0x100001 --src=http://128.224.162.159/testkey
     download --dest=file://etc/rpm/keys/0x100002 --src=http://128.224.162.159/testkey2
     ---end---
 
-    The file be download to target image (/mnt/image/****). For host image,
-    we could make use of "%pre" section with invoking shell to do that)
+    The file will be downloaded to the target image (/mnt/image/****). For the host 
+    image, we could make use of the "%pre" section to invoke the shell to do that.
 
 12. How to authenticate while downloading kickstart from web server
-    12.1 We add boot options 'ksuser' and 'kspasswd'(listed in /proc/cmdline)
-         to support authentication while downloading kickstart from web server.
-         You could integrate them to installer image by set APPEND_append =
-         " ks=<url-ks> ksuser=<username> kspasswd=<password>" in local.conf
+    12.1 Add the boot options 'ksuser' and 'kspasswd'(listed in /proc/cmdline)
+         to support authentication while downloading kickstart from the web
+         server. You could integrate them into the installer image by setting
+         APPEND_append =" ks=<url-ks> ksuser=<username> kspasswd=<password>" in
+         local.conf
 
-    12.2 Currently, we support basic/digest authentication, which decided by
+    12.2 Currently, we support basic/digest authentication, which is selected on
          your web server.
 
 13. How to add the http repository mirror list
     1. Create the mirror list file, the format is the same as the output of
-    invoking "smart mirror --show", you should make sure the mirror listed
+    the command "smart mirror --show". You should make sure the mirrors listed
     in the file are correct:
     ...
     http://origin.url/some/path/
@@ -342,27 +342,29 @@ Building the target installer
        checkbox. Then click the 'Done' button to add the mirror list.
 
 14 UEFI-based PXE
-    The main difference between BIOS-based and UEFI-based on PXE is the former
-    uses pxelinux.0 provided by syslinux package as the PXELinux Boot Loader File;
-    and UEFI-based PXE use a generated bootx64-pxe.efi as PXELinux Boot Loader
-    File. Here is the introduction of bootx64-pxe.efi generation.
+    The main difference between BIOS-based and UEFI-based on PXE is that the former
+    uses pxelinux.0 provided by the syslinux package as the PXELinux Boot Loader File,
+    while UEFI-based PXE uses a generated bootx64-pxe.efi as the PXELinux Boot Loader
+    File.
 
-    In installer build, after installer image built:
+    The following is an introduction to bootx64-pxe.efi generation.
+
+    In the installer build, after the installer image has been  built:
     1. Configure grub.cfg:
        1.1 If you are familiar with PXE and grub, set PXE_UEFI_GRUB_CONF to
-           point your own grub.cfg, you could customize it as you wish.
+           point to your own grub.cfg file. You can customize it as you wish.
 
-       1.2 Or set APPEND_append = " ks=<url-ks>" in local.conf, it configures a
-           default grub.cfg which tells PXE image where to download the kickstart
-           file.
+       1.2 Or set APPEND_append = " ks=<url-ks>" to local.conf. This configures a
+           default grub.cfg that tells the PXE image where to download the kickstart
+           file from.
 
-    2. Generate UEFI-base PXE image
+    2. Generate the UEFI-base PXE image
     $ bitbake grub-efi -cmkpxeimage
 
-    3 Copy UEFI-base PXE image to tftp download dir
+    3 Copy the UEFI-base PXE image to the tftp download directory:
     $ cp tmp/deploy/images/intel-x86-64/bootx64-pxe.efi /srv/tftpboot/boot
 
-    3. Update the DHCP server config
+    3. Update the DHCP server configuration:
     $ vi /etc/dhcp/dhcpd.conf
     ----start----
     option space PXE;
@@ -391,11 +393,11 @@ Building the target installer
     }
     ----end----
 
-    4. Restart dhcpd and go start PXE UEFI installation.
+    4. Restart dhcpd and start the PXE UEFI installation.
 
 License
 -------
-Copyright (C) 2013-2014 Wind River Systems, Inc.
+Copyright (C) 2013-2016 Wind River Systems, Inc.
 
 Source code included in the tree for individual recipes is under the LICENSE
 stated in the associated recipe (.bb file) unless otherwise stated.
