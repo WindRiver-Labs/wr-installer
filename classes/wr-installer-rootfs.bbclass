@@ -137,7 +137,7 @@ wrl_installer_copy_pkgs() {
             done | tac | tr - _`"
         for arch in $mlarchs_reversed; do
             if [ "$arch" != "noarch" -a "$arch" != "all" -a "$arch" != "any" ]; then
-                installer_target_archs="$installer_target_archs lib32_$arch"
+                installer_target_archs="$installer_target_archs $arch"
             fi
         done
     fi
