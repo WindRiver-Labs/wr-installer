@@ -30,7 +30,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    python-cryptsetup firstboot python-iniparse \
                    dmidecode python-meh python2-libuser libuser \
                    libreport-python localedef \
-                   python-pygobject python-rpm python-urlgrabber\
+                   python-pygobject python3-rpm python-urlgrabber\
                    libgnomecanvas grub usermode tigervnc keybinder \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
