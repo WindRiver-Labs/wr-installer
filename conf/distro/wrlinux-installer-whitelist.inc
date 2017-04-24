@@ -24,6 +24,7 @@ PNWHITELIST_filesystems-layer += "\
 
 # Whitelist for meta-openembedded/meta-oe
 PNWHITELIST_openembedded-layer += "\
+    fltk \
     fontforge \
     giflib \
     libndp \
