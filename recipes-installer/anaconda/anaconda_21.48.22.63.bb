@@ -35,7 +35,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \
                    tzdata-atlantic tzdata-australia tzdata-europe tzdata-pacific \
-                   module-init-tools smartpm util-linux efibootmgr \
+                   module-init-tools dnf util-linux efibootmgr \
                    ca-certificates xfsprogs-fsck xfsprogs-mkfs isomd5sum \
                    btrfs-tools ntfs-3g iproute2 mdadm shadow chkconfig \
                    util-linux-swaponoff util-linux-uuidgen python-blivet \
