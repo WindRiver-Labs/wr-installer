@@ -1,0 +1,29 @@
+From d5ec2fd77221a4f0788adfe5a606bf9a2ee415e8 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 25 Apr 2017 01:36:44 -0400
+Subject: [PATCH] do not build tests sub directory
+
+Upstream-Status: Inappropriate [installer not require tests]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ CMakeLists.txt | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6b30f07..6f67fc8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -300,9 +300,6 @@ if(BUILD_VIEWER)
+   add_subdirectory(media)
+ endif()
+ 
+-add_subdirectory(tests)
+-
+-
+ include(cmake/BuildPackages.cmake)
+ 
+ # uninstall
+-- 
+2.8.1
+

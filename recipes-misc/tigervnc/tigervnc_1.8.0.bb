@@ -22,6 +22,7 @@ SRC_URI = "git://github.com/TigerVNC/tigervnc.git;branch=1.8-branch \
            file://disable_vncviewer.patch \
            file://remove_includedir.patch \
            file://add-fPIC-option-to-COMPILE_FLAGS.patch \
+           file://0001-do-not-build-tests-sub-directory.patch \
 "
 
 EXTRA_OECONF = "--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \
