@@ -6,7 +6,10 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=8ca43cbc842c2336e835926c2166c28b"
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 DEPENDS = "python3"
-RDEPENDS_${PN} = "python3"
+RDEPENDS_${PN} = "python3 \
+                  python3-requests \
+                  python3-six \
+"
 
 S = "${WORKDIR}/git"
 SRC_URI = "git://github.com/rhinstaller/pykickstart.git;protocol=https;branch=master \
