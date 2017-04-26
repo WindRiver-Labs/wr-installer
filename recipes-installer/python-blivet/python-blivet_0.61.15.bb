@@ -28,5 +28,5 @@ inherit setuptools pythonnative
 
 RDEPENDS_${PN} = "pykickstart python-pyudev \
                   parted python-pyparted device-mapper-multipath \
-                  lsof \
+                  lsof cryptsetup \
 "
