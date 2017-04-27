@@ -1,5 +1,0 @@
---- git/src/Makefile.am	2012-12-06 10:39:21.232147477 +0800
-+++ git/src/Makefile.am.new	2012-12-06 10:48:41.516167240 +0800
-@@ -1 +1 @@
--SUBDIRS = include lib plugins report-python gtk-helpers gui-wizard-gtk cli report-newt client-python
-+SUBDIRS = include lib report-python gtk-helpers gui-wizard-gtk cli report-newt client-python
