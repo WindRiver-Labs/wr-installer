@@ -1,25 +1,24 @@
 DESCRIPTION = "keybinder is a library for registering global key bindings, for gtk-based applications."
 HOMEPAGE = "https://github.com/engla/keybinder"
-LICENSE = "GPLv2"
+LICENSE = "X11"
 SECTION = "devel/lib"
 DEPENDS = "gtk+3 gobject-introspection-native \
            gtk+ \
 "
 
-LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f"
+LIC_FILES_CHKSUM = "file://COPYING;md5=1f18f9c6d8b4cfcc7d7804a243a4c0b4"
 
 S = "${WORKDIR}/git"
 B = "${S}"
 
-SRCREV = "f8bdb0f48ba455088a401313829bae4f59842d17"
-PV = "0.3.1+git${SRCPV}"
-SRC_URI = "git://github.com/engla/keybinder.git;branch=keybinder-legacy \
+SRCREV = "736ccef40d39603b8111c8a3a0bca0319bbafdc0"
+PV = "3.0+git${SRCPV}"
+SRC_URI = "git://github.com/engla/keybinder.git;branch=keybinder-3.0 \
 "
 
 RDEPENDS_${PN} = "gtk+"
 
 inherit autotools gtk-doc gobject-introspection
-EXTRA_OECONF += "--disable-python"
 do_configure_prepend() {
 	touch ${S}/ChangeLog
 }
