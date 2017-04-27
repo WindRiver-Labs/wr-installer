@@ -1,24 +1,20 @@
-PR = "r1"
+DESCRIPTION = "XML-RPC for C/C++ is programming libraries and related tools to help you \
+write an XML-RPC server or client in C or C++."
 
+HOMEPAGE = "http://xmlrpc-c.sourceforge.net/"
 LICENSE = "BSD & MIT"
 LIC_FILES_CHKSUM = "file://doc/COPYING;md5=aefbf81ba0750f02176b6f86752ea951"
 
-SRC_URI = "file://xmlrpc-c-1.29.3.tar.gz \
-           file://xmlrpc-c-cmake.patch \
-	   file://xmlrpc-c-longlong.patch \
-	   file://xmlrpc-c-include-string_int.h.patch"
+SRC_URI = "git://github.com/ensc/xmlrpc-c.git;branch=master \
+"
+SRCREV = "81443a9dc234cc275449dbc17867ad77ae189124"
+S = "${WORKDIR}/git"
 
 DEPENDS = "curl libxml2"
 RDEPENDS_${PN} = "curl"
 
-S = "${WORKDIR}/01.29.03/"
-
 inherit cmake
 
 EXTRA_OECMAKE = "-D_lib:STRING=${baselib}"
-
-do_configure_prepend() {
-	rm -f GNUmakefile
-}
 
 BBCLASSEXTEND = "native"
