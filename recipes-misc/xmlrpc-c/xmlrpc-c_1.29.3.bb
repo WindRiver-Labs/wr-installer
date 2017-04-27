@@ -20,3 +20,5 @@ EXTRA_OECMAKE = "-D_lib:STRING=${baselib}"
 do_configure_prepend() {
 	rm -f GNUmakefile
 }
+
+BBCLASSEXTEND = "native"
