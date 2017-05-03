@@ -14,6 +14,7 @@ RDEPENDS_${PN} = "lvm2"
 SRC_URI = "http://people.redhat.com/heinzm/sw/dmraid/src/dmraid-1.0.0.rc16-3.tar.bz2 \
 	   file://klibc.m4 \
 	   file://fix-parallel-compile-issue.patch \
+	   file://dmraid.pc \
 	"
 
 SRC_URI[md5sum] = "819338fcef98e8e25819f0516722beeb"
@@ -36,6 +37,11 @@ EXTRA_OECONF += " --disable-static_link --enable-led --enable-intel_led --disabl
 
 do_configure_prepend () {
     cp ${WORKDIR}/klibc.m4 ${S}
+}
+
+do_install_append () {
+    install -d ${D}/${libdir}/pkgconfig
+    install -m 0644 ${WORKDIR}/dmraid.pc ${D}/${libdir}/pkgconfig
 }
 
 S = "${WORKDIR}/dmraid/1.0.0.rc16-3/dmraid"
