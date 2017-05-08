@@ -1,7 +1,7 @@
-From 1966ec624e82b11530ff54284e6702bc46fd0c6d Mon Sep 17 00:00:00 2001
+From 51023a1ee4505742b4ad7e09936a734bad562d31 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Wed, 31 Aug 2016 21:30:32 -0400
-Subject: [PATCH] invoking mount with infinite timeout
+Subject: [PATCH 09/10] invoking mount with infinite timeout
 
 This large timeout is needed when running on machines with
 lots of disks, or with slow disks.
@@ -14,10 +14,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/blivet/util.py b/blivet/util.py
-index 03e172d..a25b466 100644
+index fefaa16..a61a9b1 100644
 --- a/blivet/util.py
 +++ b/blivet/util.py
-@@ -100,7 +100,7 @@ def mount(device, mountpoint, fstype, options=None):
+@@ -257,7 +257,7 @@ def mount(device, mountpoint, fstype, options=None):
  
      argv = ["mount", "-t", fstype, "-o", options, device, mountpoint]
      try:
@@ -27,5 +27,5 @@ index 03e172d..a25b466 100644
          raise
  
 -- 
-2.8.1
+2.7.4
 

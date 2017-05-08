@@ -11,7 +11,16 @@ B = "${S}"
 SRCREV = "b70da73d701831c29830904c16b9eb6187b9c13e"
 PV = "2.2+git${SRCPV}"
 SRC_URI = "git://github.com/rhinstaller/blivet;branch=2.2-release \
-           file://0001-use-oe-variable-to-replace-hardcoded-dir.patch \
+           file://0001-comment-out-selinux.patch \
+           file://0002-run_program-support-timeout.patch\
+           file://0003-support-infinit-timeout.patch \
+           file://0004-Mount-var-volatile-during-install.patch \
+           file://0005-update-fstab-by-appending.patch \
+           file://0006-fix-new.roots-object-is-not-iterable.patch \
+           file://0007-fix-incorrect-timeout-while-system-time-changed.patch \
+           file://0008-tweak-btrfs-packages.patch \
+           file://0009-invoking-mount-with-infinite-timeout.patch \
+           file://0010-use-oe-variable-to-replace-hardcoded-dir.patch \
 "
 
 inherit setuptools3 python3native
