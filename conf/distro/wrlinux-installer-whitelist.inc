@@ -22,6 +22,8 @@ PNWHITELIST_meta-python += "\
     python3-pyopenssl \
     python3-pyparted \
     python3-pysocks \
+    python3-pytz \
+    python3-pyudev \
     python3-requests \
     python3-urllib3 \
     python-pyrex-native \
