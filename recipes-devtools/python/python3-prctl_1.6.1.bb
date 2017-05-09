@@ -16,7 +16,7 @@ PV = "1.6.1+git${SRCPV}"
 SRC_URI = "git://github.com/seveas/python-prctl;branch=master \
            file://0001-support-cross-complication.patch \
 "
-inherit setuptools pythonnative
+inherit setuptools3 python3native
 
 DEPENDS += "libcap"
 
