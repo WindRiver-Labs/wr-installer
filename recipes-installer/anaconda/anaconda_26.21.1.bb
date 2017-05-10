@@ -40,7 +40,9 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    xrandr glibc-charmaps glibc-localedatas \
                    python3-pytz python3-langtable libpwquality-python3 \
                    python3-ntplib libgnomekbd libtimezonemap \
-                   procps python3-prctl rsync glibc-utils \
+                   procps python3-prctl rsync glibc-utils python3-pid \
+                   python3-ordered-set python3-wrapt python3-coverage \
+                   python3-requests-file python3-requests-ftp \
                 "
 
 RDEPENDS_${PN} += "networkmanager libnmutil libnmglib libnmglib-vpn \
@@ -52,6 +54,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://81-edit-sudoers.ks \
            file://0001-do-not-support-po.patch \
            file://0002-do-not-build-widgets-doc.patch \
+           file://0003-Revert-Use-system-Python-when-running-Anaconda.patch \
           "
 
 SRCREV = "978076d76be51c439bd60456e0cdc5ed7046668f"
