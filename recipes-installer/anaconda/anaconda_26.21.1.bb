@@ -55,6 +55,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0001-do-not-support-po.patch \
            file://0002-do-not-build-widgets-doc.patch \
            file://0003-Revert-Use-system-Python-when-running-Anaconda.patch \
+           file://0004-pyanaconda-flags.py-drop-selinux-module.patch \
           "
 
 SRCREV = "978076d76be51c439bd60456e0cdc5ed7046668f"
