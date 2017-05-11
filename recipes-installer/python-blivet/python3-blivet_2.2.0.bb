@@ -28,7 +28,7 @@ inherit setuptools3 python3native
 RDEPENDS_${PN} = "pykickstart python3-pyudev \
                   parted python3-pyparted device-mapper-multipath \
                   lsof cryptsetup libblockdev \
-                  libbytesize \
+                  libbytesize util-linux-pylibmount \
 "
 
 FILES_${PN} += " \
