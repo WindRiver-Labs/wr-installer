@@ -7,9 +7,9 @@ SECTION = "devel"
 LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 DEPENDS = "e2fsprogs gettext intltool libarchive virtual/libx11 \
-           pango python3 rpm slang zlib dbus audit \
+           pango python3 rpm zlib dbus audit \
            lvm2 libuser util-linux \
-           libnewt libxcomposite gtk+ curl libarchive"
+           libxcomposite gtk+ curl libarchive"
 
 DEPENDS += "libxklavier glade libxml2-native \
             gdk-pixbuf-native \
