@@ -26,6 +26,9 @@ DEPENDS += " \
     volume-key \
     libbytesize \
 "
+RDEPENDS_${PN} += " \
+    lvm2 \
+"
 
 FILES_${PN} += "${PYTHON_SITEPACKAGES_DIR}"
 
