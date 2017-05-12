@@ -6,19 +6,16 @@ SECTION = "devel"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
-DEPENDS = "e2fsprogs gettext libarchive virtual/libx11 \
-           pango python3 rpm zlib audit \
+DEPENDS = "e2fsprogs gettext libarchive \
+           pango python3 rpm audit \
            lvm2 libuser util-linux \
-           libxcomposite gtk+ curl libarchive"
+           libxcomposite curl libarchive"
 
 DEPENDS += "libxklavier glade libxml2-native \
             gdk-pixbuf-native \
             "
 
 S = "${WORKDIR}/git"
-
-# Disabled networkmanager...
-DEPENDS += "networkmanager"
 
 RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    e2fsprogs-tune2fs e2fsprogs-resize2fs \
