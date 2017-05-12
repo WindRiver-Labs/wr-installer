@@ -7,8 +7,8 @@ SECTION = "devel"
 LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 DEPENDS = "e2fsprogs gettext intltool libarchive virtual/libx11 \
-           pango python rpm slang zlib dbus audit \
-           lvm2 system-config-keyboard-native libuser util-linux \
+           pango python3 rpm slang zlib dbus audit \
+           lvm2 libuser util-linux \
            libnewt libxcomposite gtk+ curl libarchive"
 
 DEPENDS += "libxklavier glade libxml2-native \
@@ -26,7 +26,6 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    parted dosfstools gzip libarchive lvm2 \
                    squashfs-tools openssh python3 python3-misc \
                    python3-modules  python3-dbus python3-pyparted \
-                   system-config-keyboard system-config-keyboard-base \
                    system-config-date pykickstart dmraid firstboot \
                    dmidecode python3-meh libreport-python3 localedef \
                    python3-pygobject python3-rpm grub usermode tigervnc \
