@@ -7,7 +7,9 @@ LICENSE = "GPLv2"
 
 inherit autotools-brokensep python3native pkgconfig
 
-SRC_URI = "git://github.com/abrt/satyr.git"
+SRC_URI = "git://github.com/abrt/satyr.git \
+           file://0001-do-not-support-python2.patch \
+"
 SRCREV = "4742fd4857c446b96f712d52e2e4cd0b6cfe7398"
 S = "${WORKDIR}/git"
 
