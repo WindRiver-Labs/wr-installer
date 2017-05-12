@@ -7,7 +7,7 @@ SECTION = "devel"
 LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 DEPENDS = "e2fsprogs gettext libarchive virtual/libx11 \
-           pango python3 rpm zlib dbus audit \
+           pango python3 rpm zlib audit \
            lvm2 libuser util-linux \
            libxcomposite gtk+ curl libarchive"
 
