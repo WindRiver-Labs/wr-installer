@@ -8,9 +8,9 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 S = "${WORKDIR}/git"
 B = "${S}"
 
-SRCREV = "b70da73d701831c29830904c16b9eb6187b9c13e"
+SRCREV = "8e4faa3e0288746c18862c9e5335f038d5194b81"
 PV = "2.2+git${SRCPV}"
-SRC_URI = "git://github.com/rhinstaller/blivet;branch=2.2-release \
+SRC_URI = "git://github.com/rhinstaller/blivet;branch=2.2-devel \
            file://0001-comment-out-selinux.patch \
            file://0002-run_program-support-timeout.patch\
            file://0003-support-infinit-timeout.patch \
