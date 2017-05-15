@@ -8,9 +8,9 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 S = "${WORKDIR}/git"
 B = "${S}"
 
-SRCREV = "e50298d0527e1cac455b554b86e066cb123e74ed"
-PV = "2.0.2+git"
-SRC_URI = "git://github.com/rhinstaller/blivet-gui;branch=f26-branch \
+SRCREV = "16afdccae296ed8c5429a9a37a4280c8a3edcdee"
+PV = "2.1.4+git"
+SRC_URI = "git://github.com/rhinstaller/blivet-gui;branch=master \
 "
 
 inherit setuptools3 python3native
