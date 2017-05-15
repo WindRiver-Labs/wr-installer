@@ -16,4 +16,7 @@ SRC_URI = "git://github.com/mike-fabian/langtable.git;branch=master \
 
 inherit setuptools3 python3native
 
+DISTUTILS_INSTALL_ARGS = "--prefix=${D}/${prefix} \
+    --install-data=${D}/${datadir}/langtable"
+
 FILES_${PN} += "${datadir}/*"
