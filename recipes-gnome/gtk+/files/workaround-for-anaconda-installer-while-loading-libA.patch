@@ -24,7 +24,7 @@ root@localhost:~# python
 
 The root cause is the issue of 'g_module_open' and 'g_module_symbol'
 in libgmodule-2.0.so.0:
-While invoking 'g_module_open("libAnacondaWidgets.so.2.1.0", G_MODULE_BIND_LAZY);'
+While invoking 'g_module_open("libAnacondaWidgets.so.4.0.0", G_MODULE_BIND_LAZY);'
 , the following invoking 'g_module_open(NULL, G_MODULE_BIND_LAZY);' could not
 find its symbol by invoking g_module_symbol.
 
@@ -54,7 +54,7 @@ index f9599ab..8315638 100644
 +
 +  if (!module)
 +  {
-+    module = g_module_open ("libAnacondaWidgets.so.2", 0);
++    module = g_module_open ("libAnacondaWidgets.so.4", 0);
 +  }
 +  symbol = type_name_mangle (name);
 +  if (g_module_symbol (module, symbol, (gpointer)&func))
