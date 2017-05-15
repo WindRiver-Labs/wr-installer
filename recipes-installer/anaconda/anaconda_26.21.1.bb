@@ -38,6 +38,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    procps python3-prctl rsync glibc-utils python3-pid \
                    python3-ordered-set python3-wrapt python3-coverage \
                    python3-requests-file python3-requests-ftp \
+                   python3-blivetgui \
                 "
 
 RDEPENDS_${PN} += "networkmanager libnmutil libnmglib libnmglib-vpn \
