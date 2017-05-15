@@ -26,8 +26,6 @@ PNWHITELIST_meta-python += "\
     python3-pyudev \
     python3-requests \
     python3-urllib3 \
-    python-pyrex-native \
-    python-six \
 "
 
 # Whitelist for meta-openembedded/meta-filesystems
@@ -45,7 +43,6 @@ PNWHITELIST_openembedded-layer += "\
     mozjs \
     networkmanager \
     polkit \
-    python-pygobject \
     ttf-abyssinica \
     ttf-dejavu \
     ttf-lklug \
