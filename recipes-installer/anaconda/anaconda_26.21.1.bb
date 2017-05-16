@@ -38,7 +38,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    procps python3-prctl rsync glibc-utils python3-pid \
                    python3-ordered-set python3-wrapt python3-coverage \
                    python3-requests-file python3-requests-ftp \
-                   python3-blivetgui \
+                   python3-blivetgui librsvg librsvg-gtk \
                 "
 
 RDEPENDS_${PN} += "networkmanager libnmutil libnmglib libnmglib-vpn \
@@ -83,6 +83,8 @@ do_configure_prepend() {
 
 do_install_append() {
 	install -m 644 ${WORKDIR}/81-edit-sudoers.ks ${D}${datadir}/anaconda/post-scripts
+	install -m 644 ${S}/widgets/src/resources/*.svg ${D}${datadir}/anaconda/pixmaps
+	install -m 644 ${S}/widgets/src/resources/*.png ${D}${datadir}/anaconda/pixmaps
 }
 
 addtask do_setupdistro after do_patch before do_configure
