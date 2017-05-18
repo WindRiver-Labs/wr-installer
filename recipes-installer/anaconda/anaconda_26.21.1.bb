@@ -54,6 +54,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0004-pyanaconda-flags.py-drop-selinux-module.patch \
            file://0005-add-package-site-dir-for-installclass-searching.patch \
            file://0006-do-not-load-the-system-wide-Xresources.patch \
+           file://0007-tweak-iso-mount-dir-and-kernel-name.patch \
           "
 
 SRCREV = "978076d76be51c439bd60456e0cdc5ed7046668f"

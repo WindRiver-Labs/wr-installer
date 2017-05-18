@@ -1,0 +1,84 @@
+From 426e4cd139b0b36b5e089ad3b676e061e2df8860 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 18 May 2017 13:41:01 +0800
+Subject: [PATCH 1/2] tweak iso mount dir and kernel name
+
+- Tweak iso mount dir based on WRLinux
+
+- Tweak kernel name based on OE
+
+Upstream-Status: Inappropriate [wr-installer specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/constants.py        |  4 ++--
+ pyanaconda/payload/__init__.py | 12 +++++++-----
+ 2 files changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/pyanaconda/constants.py b/pyanaconda/constants.py
+index 0748d04..fc9c22f 100644
+--- a/pyanaconda/constants.py
++++ b/pyanaconda/constants.py
+@@ -52,8 +52,8 @@ DD_RPMS = "/tmp/DD-*"
+ TRANSLATIONS_UPDATE_DIR = "/tmp/updates/po"
+ 
+ ANACONDA_CLEANUP = "anaconda-cleanup"
+-MOUNT_DIR = "/run/install"
+-DRACUT_REPODIR = "/run/install/repo"
++MOUNT_DIR = "/media/realroot"
++DRACUT_REPODIR = MOUNT_DIR + "/Packages"
+ DRACUT_ISODIR = "/run/install/source"
+ ISO_DIR = MOUNT_DIR + "/isodir"
+ IMAGE_DIR = MOUNT_DIR + "/image"
+diff --git a/pyanaconda/payload/__init__.py b/pyanaconda/payload/__init__.py
+index 04992b9..d9b411b 100644
+--- a/pyanaconda/payload/__init__.py
++++ b/pyanaconda/payload/__init__.py
+@@ -42,7 +42,7 @@ if __name__ == "__main__":
+     from pyanaconda import anaconda_log
+     anaconda_log.init()
+ 
+-from pyanaconda.constants import DRACUT_ISODIR, DRACUT_REPODIR, DD_ALL, DD_FIRMWARE, DD_RPMS, INSTALL_TREE, ISO_DIR
++from pyanaconda.constants import DRACUT_ISODIR, DRACUT_REPODIR, DD_ALL, DD_FIRMWARE, DD_RPMS, INSTALL_TREE, ISO_DIR, MOUNT_DIR
+ from pyanaconda.constants import THREAD_STORAGE, THREAD_WAIT_FOR_CONNECTING_NM, THREAD_PAYLOAD
+ from pyanaconda.constants import THREAD_PAYLOAD_RESTART
+ from pykickstart.constants import GROUP_ALL, GROUP_DEFAULT, GROUP_REQUIRED
+@@ -802,7 +802,7 @@ class PackagePayload(Payload):
+         if "kernel" in self.data.packages.excludedList:
+             return []
+ 
+-        kernels = ["kernel"]
++        kernels = ["kernel-image"]
+ 
+         if blivet.arch.is_x86(32) and isys.isPaeAvailable():
+             kernels.insert(0, "kernel-PAE")
+@@ -830,8 +830,9 @@ class PackagePayload(Payload):
+         files = []
+ 
+         ts = rpm.TransactionSet(iutil.getSysroot())
+-        mi = ts.dbMatch('providename', 'kernel')
++        mi = ts.dbMatch('providename', 'kernel-image')
+         for hdr in mi:
++            log.info("hdr.filenames %s" % hdr.filenames)
+             unicode_fnames = (f.decode("utf-8") for f in hdr.filenames)
+             # Find all /boot/vmlinuz- files and strip off vmlinuz-
+             files.extend((f.split("/")[-1][8:] for f in unicode_fnames
+@@ -1040,12 +1041,13 @@ class PackagePayload(Payload):
+             sslverify = not (method.noverifyssl or flags.noverifyssl)
+         elif method.method == "cdrom" or (checkmount and not method.method):
+             # Did dracut leave the DVD or NFS mounted for us?
+-            device = blivet.util.get_mount_device(DRACUT_REPODIR)
++            device = blivet.util.get_mount_device(MOUNT_DIR)
+ 
+             # Check for valid optical media if we didn't boot from one
+-            if not verifyMedia(DRACUT_REPODIR):
++            if not verifyMedia(MOUNT_DIR):
+                 self.install_device = opticalInstallMedia(storage.devicetree)
+ 
++            log.info("device %s, install_device %s" % (device, self.install_device))
+             # Only look at the dracut mount if we don't already have a cdrom
+             if device and not self.install_device:
+                 self.install_device = storage.devicetree.get_device_by_path(device)
+-- 
+2.7.4
+
