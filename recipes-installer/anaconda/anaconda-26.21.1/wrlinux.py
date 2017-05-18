@@ -3,6 +3,7 @@
 #
 # Copyright (C) 2010  Red Hat, Inc.  All rights reserved.
 # Copyright (C) 2016  Wind River Systems,  All rights reserved.
+# Copyright (C) 2017  Wind River Systems,  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,15 +23,9 @@ from pyanaconda.installclass import BaseInstallClass
 from pyanaconda.product import productName
 from pyanaconda import network
 from pyanaconda import nm
-from pyanaconda.kickstart import getAvailableDiskSpace
-from blivet.partspec import PartSpec
-from blivet.platform import platform
-from blivet.devicelibs import swap
-from blivet.size import Size
-
-from pyanaconda.packaging.smartpayload import SmartPayload
 from pyanaconda.flags import flags
-import ConfigParser
+
+import configparser
 import os
 
 class WRLinuxBaseInstallClass(BaseInstallClass):
@@ -47,40 +42,30 @@ class WRLinuxBaseInstallClass(BaseInstallClass):
 
     efi_dir = "BOOT"
 
-    def configure(self, anaconda):
-        BaseInstallClass.configure(self, anaconda)
-        self.setDefaultPartitioning(anaconda.storage)
-
     def setNetworkOnbootDefault(self, ksdata):
-        if network.has_some_wired_autoconnect_device():
+        if any(nd.onboot for nd in ksdata.network.network if nd.device):
             return
-        # choose the device used during installation
-        # (ie for majority of cases the one having the default route)
-        dev = network.default_route_device() \
-              or network.default_route_device(family="inet6")
-        if not dev:
-            return
-        # ignore wireless (its ifcfgs would need to be handled differently)
-        if nm.nm_device_type_is_wifi(dev):
-            return
-        network.update_onboot_value(dev, "yes", ksdata)
+        # choose first wired device having link
+        for dev in nm.nm_devices():
+            if nm.nm_device_type_is_wifi(dev):
+                continue
+            try:
+                link_up = nm.nm_device_carrier(dev)
+            except (nm.UnknownDeviceError, nm.PropertyNotFoundError):
+                continue
+            if link_up:
+                network.update_onboot_value(dev, True, ksdata=ksdata)
+                break
 
     def __init__(self):
         BaseInstallClass.__init__(self)
-
-    def getBackend(self):
-        if flags.livecdInstall:
-            from pyanaconda.packaging.livepayload import LiveImagePayload
-            return LiveImagePayload
-
-        return SmartPayload
 
     def read_buildstamp(self):
         image = {}
         tasks = {}
 
         if not flags.livecdInstall:
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             config.read(["/tmp/product/.buildstamp", "/.buildstamp", os.environ.get("PRODBUILDPATH", "")])
 
             image_list = (config.get("Rootfs", "LIST") or "").split()
