@@ -31,7 +31,7 @@ index 2c39e90..f5c7489 100644
      @property
 +    def volatile(self):
 +        if not self._volatile:
-+            self._volatile = NoDevice(fmt=getFormat("tmpfs", device="tmpfs", mountpoint="/var/volatile"))
++            self._volatile = NoDevice(fmt=get_format("tmpfs", device="tmpfs", mountpoint="/var/volatile"))
 +        return self._volatile
 +
 +    @property
