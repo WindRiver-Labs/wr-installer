@@ -1,7 +1,7 @@
-From 471b3232dcaf66e9341977171c23b112589e034b Mon Sep 17 00:00:00 2001
+From eed87a53a8c8295cdbd430dd2cf6f7aefc11b39d Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Mon, 15 May 2017 13:47:30 +0800
-Subject: [PATCH] add package site dir for installclass searching
+Subject: [PATCH 05/16] add package site dir for installclass searching
 
 The default dir searching is incorrect.
 
@@ -13,7 +13,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/pyanaconda/installclass.py b/pyanaconda/installclass.py
-index 7ced5c3..f0d5a88 100644
+index 4bb7dff..0311ca7 100644
 --- a/pyanaconda/installclass.py
 +++ b/pyanaconda/installclass.py
 @@ -22,6 +22,7 @@
@@ -24,7 +24,7 @@ index 7ced5c3..f0d5a88 100644
  import os, sys
  import imp
  
-@@ -155,7 +156,7 @@ def availableClasses(showHidden=False):
+@@ -192,7 +193,7 @@ def availableClasses(showHidden=False):
  
      path = []
  

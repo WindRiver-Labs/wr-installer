@@ -1,7 +1,7 @@
-From b90a453935f7a97e4eee295fe45c3f9f8ee18064 Mon Sep 17 00:00:00 2001
+From ad3db7bb4f7d92a5d037d2061dea965c1c0d1142 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Wed, 10 May 2017 03:56:04 -0400
-Subject: [PATCH] Revert "Use system Python when running Anaconda"
+Subject: [PATCH 03/16] Revert "Use system Python when running Anaconda"
 
 The OE does not support it.
 
@@ -16,7 +16,7 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  2 files changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/anaconda.py b/anaconda.py
-index 0b869d5..538b1c9 100755
+index 39d8162..80772b6 100755
 --- a/anaconda.py
 +++ b/anaconda.py
 @@ -1,4 +1,4 @@
@@ -26,7 +26,7 @@ index 0b869d5..538b1c9 100755
  # anaconda: The Red Hat Linux Installation program
  #
 diff --git a/anaconda.spec.in b/anaconda.spec.in
-index 3f6fb1a..64da628 100644
+index a64150e..40f042c 100644
 --- a/anaconda.spec.in
 +++ b/anaconda.spec.in
 @@ -83,7 +83,6 @@ The anaconda package is a metapackage for the Anaconda installer.
@@ -38,5 +38,5 @@ index 3f6fb1a..64da628 100644
  Requires: python3-blivet >= 1:2.1.7-3
  Requires: python3-blockdev >= %{libblockdevver}
 -- 
-2.8.1
+2.7.4
 

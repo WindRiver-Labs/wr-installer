@@ -1,9 +1,9 @@
-From 2efc3f586ba039f76cdc64a5658786ecfadc3000 Mon Sep 17 00:00:00 2001
+From 392c13dc7bba6f75c2ba42451761874c75a3bd97 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Tue, 9 May 2017 04:36:48 -0400
-Subject: [PATCH] do not build widgets/doc
+Subject: [PATCH 02/16] widgets/Makefile.am: do not compile doc
 
-Upstream-Status: Inappropriate [wr-installer specific]
+Upstream-Status: Inappropriate [wrlinux specific]
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
@@ -24,5 +24,5 @@ index 6478ce8..222aeaa 100644
  MAINTAINERCLEANFILES = Makefile.in aclocal.m4 config.guess config.h.in config.sub \
  	configure depcomp install-sh ltmain.sh missing py-compile \
 -- 
-2.8.1
+2.7.4
 

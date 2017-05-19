@@ -49,7 +49,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://wrlinux.py \
            file://81-edit-sudoers.ks \
            file://0001-do-not-support-po.patch \
-           file://0002-do-not-build-widgets-doc.patch \
+           file://0002-widgets-Makefile.am-do-not-compile-doc.patch \
            file://0003-Revert-Use-system-Python-when-running-Anaconda.patch \
            file://0004-pyanaconda-flags.py-drop-selinux-module.patch \
            file://0005-add-package-site-dir-for-installclass-searching.patch \
@@ -58,7 +58,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0008-dnfpayload.py-customize-for-WRLinux.patch \
           "
 
-SRCREV = "978076d76be51c439bd60456e0cdc5ed7046668f"
+SRCREV = "045d6f19c7c9dc9f24aad28ffdde7391ef6bc2a7"
 
 FILES_${PN}-dbg += "${libexecdir}/anaconda/.debug ${PYTHON_SITEPACKAGES_DIR}/pyanaconda/.debug"
 FILES_${PN}-staticdev += "${PYTHON_SITEPACKAGES_DIR}/pyanaconda/_isys.a"
