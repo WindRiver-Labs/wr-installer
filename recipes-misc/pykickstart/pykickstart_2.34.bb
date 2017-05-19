@@ -14,7 +14,7 @@ RDEPENDS_${PN} = "python3 \
 S = "${WORKDIR}/git"
 SRC_URI = "git://github.com/rhinstaller/pykickstart.git;protocol=https;branch=pykickstart-2 \
            "
-SRCREV = "c278e56e7a951596f91aa0f0d204979667d7b5ab"
+SRCREV = "882b77398556d493d3b46d9c886bdc9a5bd99567"
 
 inherit setuptools3
 
