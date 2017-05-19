@@ -1,7 +1,7 @@
-From eed87a53a8c8295cdbd430dd2cf6f7aefc11b39d Mon Sep 17 00:00:00 2001
+From dc3cbd918b8430bff680ea43742a89835e741a92 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Mon, 15 May 2017 13:47:30 +0800
-Subject: [PATCH 05/16] add package site dir for installclass searching
+Subject: [PATCH 05/62] add package site dir for installclass searching
 
 The default dir searching is incorrect.
 

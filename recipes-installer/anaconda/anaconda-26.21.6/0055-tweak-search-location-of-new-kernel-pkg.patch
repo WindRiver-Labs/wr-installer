@@ -1,0 +1,30 @@
+From 8ddb76858a78b6b3e210ca8caaf4c7c9db8f876b Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 1 Jun 2017 17:01:39 +0800
+Subject: [PATCH 55/62] tweak search location of new-kernel-pkg
+
+In OE, it locates /sbin rather than /usr/sbin
+
+Upstream-Status: Inappropriate [wrlinux specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/payload/__init__.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyanaconda/payload/__init__.py b/pyanaconda/payload/__init__.py
+index 27e5c79..ec43ef8 100644
+--- a/pyanaconda/payload/__init__.py
++++ b/pyanaconda/payload/__init__.py
+@@ -664,7 +664,7 @@ class Payload(object):
+ 
+         :returns: None
+         """
+-        if not os.path.exists(iutil.getSysroot() + "/usr/sbin/new-kernel-pkg"):
++        if not os.path.exists(iutil.getSysroot() + "/sbin/new-kernel-pkg"):
+             log.error("new-kernel-pkg does not exist - grubby wasn't installed?  skipping")
+             return
+ 
+-- 
+2.7.4
+

@@ -1,7 +1,7 @@
-From 6ba3bd7e1b0d56e238904a198e6538b7ea4730e1 Mon Sep 17 00:00:00 2001
+From b44d6c80d478ee10eb3c01d1ce09d0bda4a12843 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 18 May 2017 13:41:01 +0800
-Subject: [PATCH 07/16] tweak iso mount dir and kernel name
+Subject: [PATCH 07/62] tweak iso mount dir and kernel name
 
 - Tweak iso mount dir based on WRLinux
 
@@ -12,8 +12,8 @@ Upstream-Status: Inappropriate [wr-installer specific]
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
  pyanaconda/constants.py        |  4 ++--
- pyanaconda/payload/__init__.py | 12 +++++++-----
- 2 files changed, 9 insertions(+), 7 deletions(-)
+ pyanaconda/payload/__init__.py | 20 ++++++++++++--------
+ 2 files changed, 14 insertions(+), 10 deletions(-)
 
 diff --git a/pyanaconda/constants.py b/pyanaconda/constants.py
 index 6478ac4..99100f8 100644
@@ -31,7 +31,7 @@ index 6478ac4..99100f8 100644
  ISO_DIR = MOUNT_DIR + "/isodir"
  IMAGE_DIR = MOUNT_DIR + "/image"
 diff --git a/pyanaconda/payload/__init__.py b/pyanaconda/payload/__init__.py
-index 886b8b2..dad8bdb 100644
+index 886b8b2..9c5b0c6 100644
 --- a/pyanaconda/payload/__init__.py
 +++ b/pyanaconda/payload/__init__.py
 @@ -42,7 +42,7 @@ if __name__ == "__main__":
@@ -52,18 +52,29 @@ index 886b8b2..dad8bdb 100644
  
          if blivet.arch.is_x86(32) and isys.isPaeAvailable():
              kernels.insert(0, "kernel-PAE")
-@@ -887,8 +887,9 @@ class PackagePayload(Payload):
+@@ -887,14 +887,17 @@ class PackagePayload(Payload):
          files = []
  
          ts = rpm.TransactionSet(iutil.getSysroot())
 -        mi = ts.dbMatch('providename', 'kernel')
-+        mi = ts.dbMatch('providename', 'kernel-image')
++        mi = ts.dbMatch()
++        mi.pattern('name', rpm.RPMMIRE_GLOB, 'kernel-image*')
          for hdr in mi:
 +            log.info("hdr.filenames %s" % hdr.filenames)
              unicode_fnames = (f.decode("utf-8") for f in hdr.filenames)
-             # Find all /boot/vmlinuz- files and strip off vmlinuz-
+-            # Find all /boot/vmlinuz- files and strip off vmlinuz-
++            # Find all /boot/* files and strip off *-
              files.extend((f.split("/")[-1][8:] for f in unicode_fnames
-@@ -1097,12 +1098,13 @@ class PackagePayload(Payload):
+-                if fnmatch(f, "/boot/vmlinuz-*") or
+-                   fnmatch(f, "/boot/efi/EFI/%s/vmlinuz-*" % self.instclass.efi_dir)))
++                if fnmatch(f, "/boot/*") or
++                   fnmatch(f, "/boot/efi/EFI/%s/*" % self.instclass.efi_dir)))
+ 
++        log.info("kernelVersionList %s" % files)
+         return sorted(files, key=functools.cmp_to_key(versionCmp))
+ 
+     @property
+@@ -1097,12 +1100,13 @@ class PackagePayload(Payload):
              sslverify = not (method.noverifyssl or flags.noverifyssl)
          elif method.method == "cdrom" or (checkmount and not method.method):
              # Did dracut leave the DVD or NFS mounted for us?

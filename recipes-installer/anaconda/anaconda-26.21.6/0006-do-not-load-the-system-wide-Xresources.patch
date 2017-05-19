@@ -1,7 +1,7 @@
-From c8a145f4d16066c034b1dfa214262393e106b81b Mon Sep 17 00:00:00 2001
+From 292569bc4f1c95cef39a0faeb9690baac43a6ee2 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Mon, 15 May 2017 11:07:19 +0800
-Subject: [PATCH 06/16] do not load the system-wide Xresources
+Subject: [PATCH 06/62] do not load the system-wide Xresources
 
 - In https://github.com/rhinstaller/anaconda, revert the
   following commit:

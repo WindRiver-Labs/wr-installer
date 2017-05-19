@@ -1,7 +1,7 @@
-From a7c06a79eb332b513cacc26345a04bc3e585e468 Mon Sep 17 00:00:00 2001
+From 91e0a08b02a006f4d32511d6df110b0235536fab Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Tue, 9 May 2017 04:10:03 -0400
-Subject: [PATCH 01/16] do not support po
+Subject: [PATCH 01/62] do not support po
 
 Upstream-Status: Inappropriate [wr-installer specific]
 

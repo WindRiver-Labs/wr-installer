@@ -1,17 +1,17 @@
-From f1553d43c42b016d51aae9f5fbb2318426b3f16b Mon Sep 17 00:00:00 2001
+From be1ae39a7698f21e3021680c203cbc335c1e6ea1 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 18 May 2017 15:23:24 +0800
-Subject: [PATCH] dnfpayload.py: customize for WRLinux
+Subject: [PATCH 08/62] dnfpayload.py: customize for WRLinux
 
 Upstream-Status: Inappropriate [wr-installer specific]
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
- pyanaconda/payload/dnfpayload.py | 357 ++++++++++++++++++++++++++++++---------
- 1 file changed, 276 insertions(+), 81 deletions(-)
+ pyanaconda/payload/dnfpayload.py | 366 ++++++++++++++++++++++++++++++---------
+ 1 file changed, 285 insertions(+), 81 deletions(-)
 
 diff --git a/pyanaconda/payload/dnfpayload.py b/pyanaconda/payload/dnfpayload.py
-index 4fff0de..7ba7e1a 100644
+index 4fff0de..332b466 100644
 --- a/pyanaconda/payload/dnfpayload.py
 +++ b/pyanaconda/payload/dnfpayload.py
 @@ -18,6 +18,7 @@
@@ -525,16 +525,25 @@ index 4fff0de..7ba7e1a 100644
          # Read in all the repos from the installation environment, make a note of which
          # are enabled, and then disable them all.  If the user gave us a method, we want
          # to use that instead of the default repos.
-@@ -1160,6 +1308,8 @@ class DNFPayload(payload.PackagePayload):
+@@ -1160,6 +1308,17 @@ class DNFPayload(payload.PackagePayload):
  
          super(DNFPayload, self).postInstall()
  
 +        self._oe_configure_post()
 +
++        # For the generation of anaconda-ks.cfg
++        for pkg in self._list_installed():
++            if pkg not in self.data.packages.packageList:
++                self.data.packages.packageList.append(pkg)
++
++        pyanaconda.iutil.execWithRedirect("depmod",
++                                          ["-a"],
++                                          root=pyanaconda.iutil.getSysroot())
++
      def writeStorageLate(self):
          pass
  
-@@ -1233,3 +1383,48 @@ class RepoMDMetaHash(object):
+@@ -1233,3 +1392,48 @@ class RepoMDMetaHash(object):
                  log.debug("Can't download new repomd.xml from %s. Error: %s", url, e)
  
          return repomd

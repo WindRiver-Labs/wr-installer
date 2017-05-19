@@ -56,6 +56,54 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0006-do-not-load-the-system-wide-Xresources.patch \
            file://0007-tweak-iso-mount-dir-and-kernel-name.patch \
            file://0008-dnfpayload.py-customize-for-WRLinux.patch \
+           file://0009-Remove-unnecessary-noverifyssl-for-http-ftp-protocol.patch \
+           file://0010-dynamic-detect-workable-locale.patch \
+           file://0011-improve-thread-monitor.patch \
+           file://0012-tweak-auditd-invoking-dir.patch \
+           file://0013-bootloader.py-Change-grub2-settings-to-match-oe-core.patch \
+           file://0014-tweak-detect-kernel-version.patch \
+           file://0015-tweak-grub-config-file-for-WRLinux.patch \
+           file://0016-Revert-Use-time.tzset-to-apply-timezone-changes-when.patch \
+           file://0017-kickstart-Authconfig-Firewall-Firstboot-Timezone.patch \
+           file://0018-invisible-help-button.patch \
+           file://0019-disable-non-implemented-functions.patch \
+           file://0020-disable-geoloc-by-default.patch \
+           file://0021-support-UEFI-boot.patch \
+           file://0022-do-not-verify-ssl-certification-by-default.patch \
+           file://0023-tweak-default-nfs-mount-point.patch \
+           file://0024-fix-quoted-empty-string-failed.patch \
+           file://0025-do-not-support-ISO-hold-by-hard-drive-partitions.patch \
+           file://0026-fix-cannot-stat-usr-share-gettext-gettext.h.patch \
+           file://0027-fix-Wind-River-boot-menu-not-work.patch \
+           file://0028-tweak-bootloader-fs-type.patch \
+           file://0029-support-timezone-setting.patch \
+           file://0030-disable-ntp-support.patch \
+           file://0031-do-not-support-manually-set-time.patch \
+           file://0032-support-user-account-creation.patch \
+           file://0033-detect-existence-of-Xorg.patch \
+           file://0034-fix-write-network-conf-failed-while-liveinst.patch \
+           file://0035-revert-commits-to-support-reboot-for-live-installs.patch \
+           file://0036-text-repository-setting-do-not-support-local-ISO-fil.patch \
+           file://0037-text-repository-setting-support-http-proxy.patch \
+           file://0038-set-keyboard-xlayouts-with-us-by-default.patch \
+           file://0039-text-do-not-support-network-setting-for-now.patch \
+           file://0040-tweak-boot-storage-sanity-check.patch \
+           file://0041-kickstart-do-not-support-network-configuration.patch \
+           file://0042-support-to-get-kickstart-from-network.patch \
+           file://0043-support-authentication-for-kickstart.patch \
+           file://0044-support-downloading-file-from-http-ftp-server-to-tar.patch \
+           file://0045-live-install-supports-kickstart.patch \
+           file://0046-support-initramfs-boot.patch \
+           file://0047-fix-hang-while-installed-system-reboot.patch \
+           file://0048-fix-installed-system-boot-from-encrypt-fs-failed.patch \
+           file://0049-installation-destination-disable-iSCSI-network-disks.patch \
+           file://0050-update-region-while-city-changes.patch \
+           file://0051-timezone-fix-set-US-Alaska-failed.patch \
+           file://0052-remove-incorrect-prefix-of-addon-repo-url.patch \
+           file://0053-fix-write-sysconfig-network-failed.patch \
+           file://0054-pyanaconda-ui-gui-utils.py-tweak-mouse-arrow.patch \
+           file://0055-tweak-search-location-of-new-kernel-pkg.patch \
+           file://0056-always-write-fstab-after-install.patch \
           "
 
 SRCREV = "045d6f19c7c9dc9f24aad28ffdde7391ef6bc2a7"

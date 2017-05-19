@@ -1,7 +1,7 @@
-From 392c13dc7bba6f75c2ba42451761874c75a3bd97 Mon Sep 17 00:00:00 2001
+From 4a166ee58690021926c853b8c7f7792fbc346445 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Tue, 9 May 2017 04:36:48 -0400
-Subject: [PATCH 02/16] widgets/Makefile.am: do not compile doc
+Subject: [PATCH 02/62] widgets/Makefile.am: do not compile doc
 
 Upstream-Status: Inappropriate [wrlinux specific]
 

@@ -1,0 +1,40 @@
+From f4a599b9f41bbe3cc075fe7266e5b19046957bdd Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 19 Jul 2016 04:36:06 -0400
+Subject: [PATCH 34/62] fix write network conf failed while liveinst
+
+While liveinst, the network conf writing will overwrite copy
+"/etc/resolv.conf" to "/mnt/sysimage/etc/resolv.conf". But in
+wrlinux, the "/etc/resolv.conf" and "/mnt/sysimage/etc/resolv.conf"
+are the same file which is a symlink to /run/resolve.conf.
+
+Test same file before copy.
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/network.py | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/pyanaconda/network.py b/pyanaconda/network.py
+index 9110ad4..0139fa3 100644
+--- a/pyanaconda/network.py
++++ b/pyanaconda/network.py
+@@ -1062,6 +1062,13 @@ def copyFileToPath(fileName, destPath='', overwrite=False):
+         return False
+     if not os.path.isdir(os.path.dirname(destfile)):
+         iutil.mkdirChain(os.path.dirname(destfile))
++
++    # Same file test
++    if os.path.exists(fileName) and os.path.exists(destfile) and \
++       os.stat(fileName).st_ino == os.stat(destfile).st_ino:
++        log.info("%s and %s are the same file" % (fileName, destfile))
++        return False
++
+     shutil.copy(fileName, destfile)
+     return True
+ 
+-- 
+2.7.4
+

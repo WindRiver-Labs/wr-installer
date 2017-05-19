@@ -1,7 +1,7 @@
-From ad3db7bb4f7d92a5d037d2061dea965c1c0d1142 Mon Sep 17 00:00:00 2001
+From 5f5f4c0be744fd1d8e00b67a6ff808ac70973e6a Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Wed, 10 May 2017 03:56:04 -0400
-Subject: [PATCH 03/16] Revert "Use system Python when running Anaconda"
+Subject: [PATCH 03/62] Revert "Use system Python when running Anaconda"
 
 The OE does not support it.
 

@@ -1,7 +1,7 @@
-From 7f4609a8535547f775fd0d8de3d9a3e09aabea18 Mon Sep 17 00:00:00 2001
+From 28037f2c5ed9430a0b5af53ae3e2b6f64345e585 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 11 May 2017 14:19:06 +0800
-Subject: [PATCH 04/16] pyanaconda/flags.py: drop selinux module
+Subject: [PATCH 04/62] pyanaconda/flags.py: drop selinux module
 
 And we do not use selinux module for wrlinux, so drop it.
 
