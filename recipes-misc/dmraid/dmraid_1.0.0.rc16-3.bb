@@ -8,8 +8,8 @@ Linux >= 2.4 using device-mapper."
 HOMEPAGE = "http://people.redhat.com/heinzm/sw/dmraid"
 LICENSE = "GPLv2+"
 
-DEPENDS = "lvm2"
-RDEPENDS_${PN} = "lvm2"
+DEPENDS = "lvm2 libdevmapper"
+RDEPENDS_${PN} = "lvm2 libdevmapper"
 
 SRC_URI = "http://people.redhat.com/heinzm/sw/dmraid/src/dmraid-1.0.0.rc16-3.tar.bz2 \
 	   file://klibc.m4 \
