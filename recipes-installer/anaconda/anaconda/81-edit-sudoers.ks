@@ -1,3 +1,3 @@
 %post
-echo "%sudo ALL=(ALL) ALL" > /etc/sudoers.d/sudo
+echo "%wheel ALL=(ALL) ALL" > /etc/sudoers.d/wheel
 %end
