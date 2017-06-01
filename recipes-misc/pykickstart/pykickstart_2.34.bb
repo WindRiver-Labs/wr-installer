@@ -13,6 +13,10 @@ RDEPENDS_${PN} = "python3 \
 
 S = "${WORKDIR}/git"
 SRC_URI = "git://github.com/rhinstaller/pykickstart.git;protocol=https;branch=pykickstart-2 \
+           file://0001-support-authentication-for-kickstart.patch \
+           file://0002-pykickstart-parser.py-add-lock-for-readKickstart-and.patch \
+           file://0003-comment-out-sections-shutdown-and-environment-in-gen.patch \
+           file://0004-load.py-retry-to-invoke-request-with-timeout.patch \
            "
 SRCREV = "882b77398556d493d3b46d9c886bdc9a5bd99567"
 
