@@ -104,6 +104,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0054-pyanaconda-ui-gui-utils.py-tweak-mouse-arrow.patch \
            file://0055-tweak-search-location-of-new-kernel-pkg.patch \
            file://0056-always-write-fstab-after-install.patch \
+           file://0057-invoke-grub-install-to-generate-efi-filesystem.patch \
           "
 
 SRCREV = "045d6f19c7c9dc9f24aad28ffdde7391ef6bc2a7"
