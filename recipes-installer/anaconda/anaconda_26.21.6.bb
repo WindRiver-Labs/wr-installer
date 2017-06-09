@@ -105,6 +105,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0055-tweak-search-location-of-new-kernel-pkg.patch \
            file://0056-always-write-fstab-after-install.patch \
            file://0057-invoke-grub-install-to-generate-efi-filesystem.patch \
+           file://0058-do-not-support-closest-mirror.patch \
           "
 
 SRCREV = "045d6f19c7c9dc9f24aad28ffdde7391ef6bc2a7"
