@@ -326,13 +326,11 @@ Building the target installer
          your web server.
 
 13. How to add the http repository mirror list
-    1. Create the mirror list file, the format is the same as the output of
-    invoking "smart mirror --show", you should make sure the mirror listed
-    in the file are correct:
+    1. Create the mirror list file, the format is the same with fedora/redhat
+    which based on dnf. The following mirror list contains two repodata.
     ...
-    http://origin.url/some/path/
-        http://mirror.url/another/path/
-        http://some.mirror.url/to/the/same/content/
+    http://origin1.url/path_to_repodata1/
+    http://origin2.url/path_to_repodata2/
     ...
 
     2. Next, place the mirror list file on the web server.
