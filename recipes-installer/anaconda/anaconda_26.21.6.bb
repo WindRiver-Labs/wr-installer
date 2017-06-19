@@ -109,6 +109,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0059-tweak-MAX_TREEINFO_DOWNLOAD_RETRIES.patch \
            file://0060-tweak-time-setting.patch \
            file://0061-set-CLEARPART_TYPE_ALL-by-default.patch \
+           file://0062-Add-dracut-args-for-home-to-bootloader.patch \
           "
 
 SRCREV = "045d6f19c7c9dc9f24aad28ffdde7391ef6bc2a7"
