@@ -22,6 +22,7 @@ SRC_URI = "git://github.com/rhinstaller/blivet;branch=2.2-devel \
            file://0009-invoking-mount-with-infinite-timeout.patch \
            file://0010-use-oe-variable-to-replace-hardcoded-dir.patch \
            file://0011-invoking-fsck-with-infinite-timeout.patch \
+           file://0012-invoking-mkfs-with-infinite-timeout.patch \
 "
 
 inherit setuptools3 python3native
