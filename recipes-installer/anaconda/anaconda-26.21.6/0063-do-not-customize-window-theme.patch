@@ -1,0 +1,34 @@
+From 4f1da2d4f7a9d40065a6f82f1015858e0fc139ad Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 21 Jun 2017 22:42:15 +0800
+Subject: [PATCH] do not customize window theme
+
+The customized window theme may broke metacity.
+...
+|(metacity:2675): metacity-WARNING **: "(null)" found in configuration
+database is not a valid value for mouse button modifier
+...
+
+Upstream-Status: Inappropriate [wr-installer specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/display.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyanaconda/display.py b/pyanaconda/display.py
+index d3e599b..45ec5d0 100644
+--- a/pyanaconda/display.py
++++ b/pyanaconda/display.py
+@@ -164,7 +164,7 @@ def do_startup_x11_actions():
+     if 'XDG_DATA_DIRS' in os.environ:
+         xdg_data_dirs = datadir + '/window-manager:' + os.environ['XDG_DATA_DIRS']
+     else:
+-        xdg_data_dirs = datadir + '/window-manager:/usr/share'
++        xdg_data_dirs = '/usr/share'
+ 
+     childproc = iutil.startProgram(["metacity", "--display", ":1", "--sm-disable"],
+                                    env_add={'XDG_DATA_DIRS': xdg_data_dirs})
+-- 
+1.8.3.1
+
