@@ -9,3 +9,6 @@ SRC_URI[sha256sum] = "b443169d3dc21397695b4a82016fadb4cfdb0ed8b2ddb4aaa428e1701b
 
 inherit pypi setuptools3
 
+SRC_URI += " \
+    file://0001-remove-requirement-of-nose.patch \
+"
