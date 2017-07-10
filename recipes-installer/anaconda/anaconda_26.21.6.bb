@@ -111,6 +111,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0061-set-CLEARPART_TYPE_ALL-by-default.patch \
            file://0062-Add-dracut-args-for-home-to-bootloader.patch \
            file://0063-do-not-customize-window-theme.patch \
+           file://0064-tweak-product-short-name.patch \
           "
 
 SRCREV = "045d6f19c7c9dc9f24aad28ffdde7391ef6bc2a7"
