@@ -16,6 +16,7 @@ PNWHITELIST_meta-python += "\
     python3-chardet \
     python3-certifi \
     python3-cffi \
+    python3-coverage \
     python3-cryptography \
     python3-dbus \
     python3-idna \
