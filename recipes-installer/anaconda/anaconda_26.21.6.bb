@@ -7,7 +7,7 @@ SECTION = "devel"
 LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 DEPENDS = "e2fsprogs gettext libarchive \
-           pango python3 rpm audit \
+           pango python3 rpm \
            "
 
 DEPENDS += "libxklavier glade libxml2-native \
@@ -59,7 +59,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0009-Remove-unnecessary-noverifyssl-for-http-ftp-protocol.patch \
            file://0010-dynamic-detect-workable-locale.patch \
            file://0011-improve-thread-monitor.patch \
-           file://0012-tweak-auditd-invoking-dir.patch \
+           file://0012-disable-audit.patch \
            file://0013-bootloader.py-Change-grub2-settings-to-match-oe-core.patch \
            file://0014-tweak-detect-kernel-version.patch \
            file://0015-tweak-grub-config-file-for-WRLinux.patch \
