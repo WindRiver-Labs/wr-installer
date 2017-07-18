@@ -4,7 +4,6 @@ PNWHITELIST_gnome-layer += "\
     gnome-themes \
     gtk-engines \
     libgnomecanvas \
-    libgnome-keyring \
     libxklavier \
     network-manager-applet \
 "
