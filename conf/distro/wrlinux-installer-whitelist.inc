@@ -41,6 +41,7 @@ PNWHITELIST_meta-python += "\
     python3-requests-ftp \
     python3-setuptools-scm \
     python3-urllib3 \
+    python3-wrapt \
 "
 
 # Whitelist for meta-openembedded/meta-filesystems
