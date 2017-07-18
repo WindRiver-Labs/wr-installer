@@ -20,6 +20,7 @@ PNWHITELIST_meta-python += "\
     python3-cryptography \
     python3-dbus \
     python3-idna \
+    python3-langtable \
     python3-ndg-httpsclient \
     python3-py \
     python3-pyasn1 \
