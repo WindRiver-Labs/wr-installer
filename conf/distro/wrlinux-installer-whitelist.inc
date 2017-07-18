@@ -25,6 +25,7 @@ PNWHITELIST_meta-python += "\
     python3-ntplib \
     python3-ordered-set \
     python3-pid \
+    python3-prctl \
     python3-py \
     python3-pyasn1 \
     python3-pycparser \
