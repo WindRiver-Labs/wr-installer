@@ -62,6 +62,7 @@ PNWHITELIST_openembedded-layer += "\
     mozjs \
     networkmanager \
     polkit \
+    satyr \
     ttf-abyssinica \
     ttf-dejavu \
     ttf-lklug \
