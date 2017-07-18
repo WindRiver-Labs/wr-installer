@@ -38,6 +38,7 @@ PNWHITELIST_meta-python += "\
     python3-pyudev \
     python3-requests \
     python3-requests-file \
+    python3-requests-ftp \
     python3-setuptools-scm \
     python3-urllib3 \
 "
