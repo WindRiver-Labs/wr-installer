@@ -69,5 +69,6 @@ PNWHITELIST_openembedded-layer += "\
     ttf-wqy-zenhei \
     ttf-tlwg \
     uthash \
+    xmlrpc-c \
     x11vnc \
 "
