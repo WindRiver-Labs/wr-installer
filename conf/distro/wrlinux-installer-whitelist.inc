@@ -52,6 +52,7 @@ PNWHITELIST_filesystems-layer += "\
 # Whitelist for meta-openembedded/meta-oe
 PNWHITELIST_openembedded-layer += "\
     libblockdev \
+    libtar \
     fltk \
     fontforge \
     giflib \
