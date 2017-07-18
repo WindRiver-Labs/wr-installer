@@ -22,6 +22,7 @@ PNWHITELIST_meta-python += "\
     python3-idna \
     python3-langtable \
     python3-ndg-httpsclient \
+    python3-ntplib \
     python3-py \
     python3-pyasn1 \
     python3-pycparser \
