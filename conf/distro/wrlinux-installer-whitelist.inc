@@ -46,6 +46,7 @@ PNWHITELIST_openembedded-layer += "\
     fltk \
     fontforge \
     giflib \
+    glade \
     libndp \
     libvncserver \
     mozjs \
