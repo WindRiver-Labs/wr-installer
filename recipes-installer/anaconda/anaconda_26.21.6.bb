@@ -22,7 +22,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    parted dosfstools gzip libarchive lvm2 \
                    squashfs-tools openssh python3 python3-misc \
                    python3-modules  python3-dbus python3-pyparted \
-                   system-config-date pykickstart dmraid firstboot \
+                   system-config-date pykickstart firstboot \
                    dmidecode python3-meh libreport-python3 localedef \
                    python3-pygobject python3-rpm grub usermode tigervnc \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
@@ -112,6 +112,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0062-Add-dracut-args-for-home-to-bootloader.patch \
            file://0063-do-not-customize-window-theme.patch \
            file://0064-tweak-product-short-name.patch \
+           file://0065-disable-dmraid.patch \
           "
 
 SRCREV = "045d6f19c7c9dc9f24aad28ffdde7391ef6bc2a7"

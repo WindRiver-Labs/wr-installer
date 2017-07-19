@@ -16,6 +16,7 @@ PV = "2.7+git${SRCPV}"
 SRC_URI = "git://github.com/rhinstaller/libblockdev;branch=master \
            file://0001-fix-configure-and-compile-failures.patch \
            file://0002-remove-python2-support.patch \
+           file://0003-remove-dmraid-while-compiling-with-with-dm.patch \
 "
 
 inherit autotools python3native gobject-introspection
@@ -32,10 +33,10 @@ RDEPENDS_${PN} += " \
 
 FILES_${PN} += "${PYTHON_SITEPACKAGES_DIR}"
 
-PACKAGECONFIG ??= "python3 lvm dmraid kmod parted fs"
+PACKAGECONFIG ??= "python3 lvm dm kmod parted fs"
 PACKAGECONFIG[python3] = "--with-python3, --without-python3,,python3"
 PACKAGECONFIG[lvm] = "--with-lvm, --without-lvm, device-mapper-multipath"
-PACKAGECONFIG[dmraid] = "--with-dm, --without-dm, dmraid"
+PACKAGECONFIG[dm] = "--with-dm, --without-dm"
 PACKAGECONFIG[kmod] = "--with-kbd, --without-kbd, kmod"
 PACKAGECONFIG[parted] = "--with-part, --without-part, parted"
 PACKAGECONFIG[fs] = "--with-fs, --without-fs, util-linux"

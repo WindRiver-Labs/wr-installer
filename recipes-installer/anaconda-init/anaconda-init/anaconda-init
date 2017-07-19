@@ -22,9 +22,6 @@ for x in $CMDLINE; do
         cmdline)
             cmdline=1
             ;;
-        dmraid)
-            dmraid=1
-            ;;
         headless)
             headless=1
             ;;
@@ -57,9 +54,6 @@ for x in $CMDLINE; do
             ;;
         noinstall)
             noinstall=1
-            ;;
-        nodmraid)
-            nodmraid=1
             ;;
         nompath)
             nompath=1
@@ -181,7 +175,7 @@ FOE
            echo "$vncpassword" > /tmp/vncpassword.dat
        fi
 
-       for OPTIONS in vnc headless usefbx mpath nompath dmraid nodmraid rescue cmdline; do
+       for OPTIONS in vnc headless usefbx mpath nompath rescue cmdline; do
            if [ -n "${!OPTIONS}" ]; then
                anaconda_opts="$anaconda_opts --$OPTIONS"
            fi
