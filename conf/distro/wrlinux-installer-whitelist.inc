@@ -6,6 +6,7 @@ PNWHITELIST_gnome-layer += "\
     libgnomecanvas \
     libxklavier \
     network-manager-applet \
+    usermode \
 "
 
 # Whitelist for meta-openembedded/meta-python
