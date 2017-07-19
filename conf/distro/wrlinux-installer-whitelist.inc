@@ -56,6 +56,7 @@ PNWHITELIST_openembedded-layer += "\
     fontforge \
     giflib \
     glade \
+    isomd5sum \
     libndp \
     libvncserver \
     mozjs \
