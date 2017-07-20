@@ -4,6 +4,7 @@ PNWHITELIST_gnome-layer += "\
     gnome-themes \
     gtk-engines \
     libgnomecanvas \
+    libgnomekbd \
     libxklavier \
     network-manager-applet \
     usermode \
@@ -73,6 +74,7 @@ PNWHITELIST_openembedded-layer += "\
     ttf-wqy-zenhei \
     ttf-tlwg \
     uthash \
+    volume-key \
     xmlrpc-c \
     x11vnc \
 "
