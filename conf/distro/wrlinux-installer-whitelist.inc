@@ -21,6 +21,7 @@ PNWHITELIST_meta-python += "\
     python3-dbus \
     python3-idna \
     python3-langtable \
+    python3-meh \
     python3-ndg-httpsclient \
     python3-ntplib \
     python3-ordered-set \
