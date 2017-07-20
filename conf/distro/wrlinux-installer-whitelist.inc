@@ -21,6 +21,7 @@ PNWHITELIST_meta-python += "\
     python3-py \
     python3-pyasn1 \
     python3-pycparser \
+    python3-pykickstart \
     python3-pyopenssl \
     python3-pyparted \
     python3-pysocks \
