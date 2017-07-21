@@ -6,6 +6,7 @@ PNWHITELIST_gnome-layer += "\
     keybinder \
     libgnomecanvas \
     libgnomekbd \
+    libtimezonemap \
     libxklavier \
     network-manager-applet \
     usermode \
