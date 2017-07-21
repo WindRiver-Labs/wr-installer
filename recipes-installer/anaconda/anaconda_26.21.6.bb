@@ -33,7 +33,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    btrfs-tools ntfs-3g iproute2 mdadm shadow chkconfig \
                    util-linux-swaponoff util-linux-uuidgen python3-blivet \
                    xrandr glibc-charmaps glibc-localedatas \
-                   python3-pytz python3-langtable libpwquality-python3 \
+                   python3-pytz python3-langtable python3-libpwquality \
                    python3-ntplib libgnomekbd libtimezonemap \
                    procps python3-prctl rsync glibc-utils python3-pid \
                    python3-ordered-set python3-wrapt python3-coverage \
