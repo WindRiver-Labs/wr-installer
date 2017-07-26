@@ -70,6 +70,7 @@ PNWHITELIST_openembedded-layer += "\
     networkmanager \
     polkit \
     satyr \
+    tigervnc \
     ttf-abyssinica \
     ttf-dejavu \
     ttf-lklug \
