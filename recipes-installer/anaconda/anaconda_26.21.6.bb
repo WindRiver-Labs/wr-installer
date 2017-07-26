@@ -23,7 +23,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    squashfs-tools openssh python3 python3-misc \
                    python3-modules  python3-dbus python3-pyparted \
                    python3-pykickstart \
-                   dmidecode python3-meh libreport-python3 localedef \
+                   dmidecode python3-meh python3-libreport localedef \
                    python3-pygobject python3-rpm grub usermode tigervnc \
                    tzdata tzdata-misc tzdata-posix tzdata-right tzdata-africa \
                    tzdata-americas tzdata-antarctica tzdata-arctic tzdata-asia \

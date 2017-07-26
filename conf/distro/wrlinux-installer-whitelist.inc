@@ -58,6 +58,7 @@ PNWHITELIST_openembedded-layer += "\
     libblockdev \
     libbytesize \
     libpwquality \
+    libreport \
     libtar \
     fltk \
     fontforge \
