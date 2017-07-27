@@ -12,6 +12,7 @@ PNWHITELIST_gnome-layer += "\
 # Whitelist for meta-openembedded/meta-python
 PNWHITELIST_meta-python += "\
     python3-blivet \
+    python3-blivetgui \
     python3-chardet \
     python3-certifi \
     python3-cffi \
