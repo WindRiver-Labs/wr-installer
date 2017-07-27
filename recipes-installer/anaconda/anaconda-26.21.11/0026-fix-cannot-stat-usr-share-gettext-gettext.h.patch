@@ -1,0 +1,27 @@
+From fc969fc3eec744fc9a1fbcb3c1b13d7fc1bfb410 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Sat, 11 Jun 2016 23:25:30 -0400
+Subject: [PATCH 26/65] fix cannot stat '/usr/share/gettext/gettext.h'
+
+Tweak location of gettext.h, use sysroots dir to replace host dir.
+
+Upstream-Status: Inappropriate <oe-core specific>
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ widgets/autogen.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/widgets/autogen.sh b/widgets/autogen.sh
+index 55ed5de..eb70eb6 100755
+--- a/widgets/autogen.sh
++++ b/widgets/autogen.sh
+@@ -9,4 +9,4 @@ rm -rf autom4te.cache
+ 
+ # Remove the old symlink if present
+ if [ -h src/gettext.h ] ; then rm src/gettext.h ; fi
+-cp -f /usr/share/gettext/gettext.h src
++cp -f ${STAGING_DATADIR_NATIVE}/gettext/gettext.h src
+-- 
+2.7.4
+

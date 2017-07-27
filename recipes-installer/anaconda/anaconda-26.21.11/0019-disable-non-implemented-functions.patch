@@ -1,0 +1,41 @@
+From f1767915e3a993d2cdaa0be089bdfa93731a496a Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 14:16:48 +0800
+Subject: [PATCH 19/65] disable non-implemented functions
+
+Only enable implemented gui pages
+- support dnf repository setting
+- support software selection setting
+- support timezone setting
+- support user creation setting
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/hubs/__init__.py | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/pyanaconda/ui/gui/hubs/__init__.py b/pyanaconda/ui/gui/hubs/__init__.py
+index 4982ae7..1822161 100644
+--- a/pyanaconda/ui/gui/hubs/__init__.py
++++ b/pyanaconda/ui/gui/hubs/__init__.py
+@@ -227,7 +227,14 @@ class Hub(GUIObject, common.Hub):
+         self._updateContinue()
+ 
+     def _updateCompleteness(self, spoke, update_continue=True):
+-        spoke.selector.set_sensitive(spoke.sensitive and spoke.ready)
++        log.info("_updateCompleteness %s" % (spoke.mainWidgetName))
++        # It is minimal installation for now, the non-implemented
++        # functions will be disabled.
++        if spoke.mainWidgetName not in ["storageWindow", "passwordWindow", "sourceWindow", "softwareWindow", "datetimeWindow", "userCreationWindow"]:
++            spoke.selector.set_sensitive(False)
++        else:
++            spoke.selector.set_sensitive(spoke.sensitive and spoke.ready)
++
+         spoke.selector.set_property("status", spoke.status)
+         spoke.selector.set_tooltip_markup(escape_markup(spoke.status))
+         spoke.selector.set_incomplete(not spoke.completed and spoke.mandatory)
+-- 
+2.7.4
+

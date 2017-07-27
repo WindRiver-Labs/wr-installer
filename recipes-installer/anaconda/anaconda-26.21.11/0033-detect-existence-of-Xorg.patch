@@ -1,0 +1,45 @@
+From 7d54039da9bb6001a1effbb5b0892448d9397949 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 16:15:02 +0800
+Subject: [PATCH 33/65] detect existence of Xorg
+
+Detect the existence of Xorg before start it.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/display.py | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/pyanaconda/display.py b/pyanaconda/display.py
+index fd255a4..d3e599b 100644
+--- a/pyanaconda/display.py
++++ b/pyanaconda/display.py
+@@ -125,9 +125,23 @@ def check_vnc_can_be_started(anaconda):
+ 
+ # X11
+ 
++def has_x11():
++    exist = True
++
++    try:
++        subprocess.check_output("ps -A | grep Xorg -q", shell=True)
++    except subprocess.CalledProcessError as e:
++        exist = False
++
++    return exist
++
+ def start_x11():
+     """Start the X server for the Anaconda GUI."""
+ 
++    if has_x11():
++        log.info("Xorg already existed, no need to start another one")
++        return
++
+     # Start Xorg and wait for it become ready
+     iutil.startX(["Xorg", "-br", "-logfile", "/tmp/X.log",
+                   ":%s" % constants.X_DISPLAY_NUMBER, "vt7", "-s", "1440", "-ac",
+-- 
+2.7.4
+

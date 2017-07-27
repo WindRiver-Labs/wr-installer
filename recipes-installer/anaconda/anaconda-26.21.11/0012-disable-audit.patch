@@ -1,0 +1,64 @@
+From b9b8bae1021093b9593367a1672fc54a2eb23d2d Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 18 Jul 2017 02:39:14 -0400
+Subject: [PATCH 12/65] disable audit
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ anaconda.py                 | 7 -------
+ configure.ac                | 3 ---
+ pyanaconda/isys/Makefile.am | 6 ------
+ 3 files changed, 16 deletions(-)
+
+diff --git a/anaconda.py b/anaconda.py
+index 25f227c..ad7bf6b 100755
+--- a/anaconda.py
++++ b/anaconda.py
+@@ -467,13 +467,6 @@ if __name__ == "__main__":
+ 
+         sys.excepthook = _earlyExceptionHandler
+ 
+-    if can_touch_runtime_system("start audit daemon"):
+-        # auditd will turn into a daemon and exit. Ignore startup errors
+-        try:
+-            iutil.execWithRedirect("/sbin/auditd", [])
+-        except OSError:
+-            pass
+-
+     log.info("anaconda called with cmdline = %s", sys.argv)
+     log.info("Default encoding = %s ", sys.getdefaultencoding())
+ 
+diff --git a/configure.ac b/configure.ac
+index 1237f76..a946770 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -68,9 +68,6 @@ AC_CHECK_FUNCS([getcwd memset mkdir strchr strdup],
+                [],
+                [ANACONDA_SOFT_FAILURE([Function $ac_func not found.])])
+ 
+-AC_CHECK_LIB([audit], [audit_open], [:],
+-             [ANACONDA_SOFT_FAILURE([libaudit not found])])
+-
+ AM_PATH_PYTHON(python_required_version)
+ 
+ # Check for the python extension paths
+diff --git a/pyanaconda/isys/Makefile.am b/pyanaconda/isys/Makefile.am
+index 3318eb8..227deda 100644
+--- a/pyanaconda/isys/Makefile.am
++++ b/pyanaconda/isys/Makefile.am
+@@ -28,10 +28,4 @@ _isys_la_LDFLAGS      = -module -avoid-version
+ _isys_la_LIBADD       = $(PYTHON3_LIBS)
+ _isys_la_SOURCES      = isys.c
+ 
+-auditddir             = $(libexecdir)/$(PACKAGE_NAME)
+-auditd_PROGRAMS       = auditd
+-auditd_SOURCES        = auditd.c
+-auditd_CFLAGS         = $(SELINUX_CFLAGS)
+-auditd_LDFLAGS        = -laudit
+-
+ MAINTAINERCLEANFILES = Makefile.in
+-- 
+2.7.4
+

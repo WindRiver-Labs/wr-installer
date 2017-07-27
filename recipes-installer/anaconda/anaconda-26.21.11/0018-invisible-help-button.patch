@@ -1,0 +1,32 @@
+From 2ff2e7147f3dc618c6dfda298acc0a57874fdc8a Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 14:10:54 +0800
+Subject: [PATCH 18/65] invisible help button
+
+WRLinux do not support help button, so we should not display it.
+
+Do not display layout indicator neither.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ widgets/src/BaseWindow.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/widgets/src/BaseWindow.c b/widgets/src/BaseWindow.c
+index 6a1e372..8d86cd9 100644
+--- a/widgets/src/BaseWindow.c
++++ b/widgets/src/BaseWindow.c
+@@ -415,8 +415,6 @@ G_GNUC_END_IGNORE_DEPRECATIONS
+     gtk_grid_attach(GTK_GRID(win->priv->nav_area), win->priv->name_label, 0, 0, 1, 1);
+     gtk_grid_attach(GTK_GRID(win->priv->nav_area), win->priv->distro_label, 1, 0, 2, 1);
+     gtk_grid_attach(GTK_GRID(win->priv->nav_area), win->priv->beta_label, 1, 1, 1, 1);
+-    gtk_grid_attach(GTK_GRID(win->priv->nav_area), win->priv->layout_indicator, 1, 2, 1, 1);
+-    gtk_grid_attach(GTK_GRID(win->priv->nav_area), win->priv->help_button, 2, 1, 1, 2);
+ 
+     /* Last thing for the main_box is a revealer for the info bar */
+     win->priv->info_revealer = gtk_revealer_new();
+-- 
+2.7.4
+

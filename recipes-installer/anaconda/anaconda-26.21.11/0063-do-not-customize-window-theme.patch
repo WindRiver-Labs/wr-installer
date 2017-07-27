@@ -1,0 +1,55 @@
+From 40530a0ca40763c92fffd0a0670bf1eb7b87e47e Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 21 Jun 2017 22:42:15 +0800
+Subject: [PATCH 63/65] do not customize window theme
+
+The customized window theme may broke metacity.
+...
+|(metacity:2675): metacity-WARNING **: "(null)" found in configuration
+database is not a valid value for mouse button modifier
+...
+
+Also remove install-data-hook, which caused host contamination
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ data/window-manager/config/Makefile.am | 7 +------
+ pyanaconda/display.py                  | 2 +-
+ 2 files changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/data/window-manager/config/Makefile.am b/data/window-manager/config/Makefile.am
+index 6d78347..f17ab6a 100644
+--- a/data/window-manager/config/Makefile.am
++++ b/data/window-manager/config/Makefile.am
+@@ -27,12 +27,7 @@ dist_schema_DATA = org.gnome.desktop.wm.keybindings.gschema.override \
+ # schemas they modify, so pretend that this is the case with symlinks and
+ # create the compiled schema.
+ install-data-hook:
+-	$(MKDIR_P) $(DESTDIR)$(schemadir)
+-	$(LN_S) -f /usr/share/glib-2.0/schemas/org.gnome.desktop.wm.keybindings.gschema.xml $(DESTDIR)$(schemadir)
+-	$(LN_S) -f /usr/share/glib-2.0/schemas/org.gnome.desktop.wm.preferences.gschema.xml $(DESTDIR)$(schemadir)
+-	$(LN_S) -f /usr/share/glib-2.0/schemas/org.gnome.metacity.gschema.xml $(DESTDIR)$(schemadir)
+-	$(LN_S) -f /usr/share/glib-2.0/schemas/org.gnome.desktop.enums.xml $(DESTDIR)$(schemadir)
+-	glib-compile-schemas --strict $(DESTDIR)$(schemadir)
++	echo "pass"
+ 
+ uninstall-local:
+ 	rm -f $(DESTDIR)$(schemadir)/*.xml
+diff --git a/pyanaconda/display.py b/pyanaconda/display.py
+index d3e599b..7f360df 100644
+--- a/pyanaconda/display.py
++++ b/pyanaconda/display.py
+@@ -164,7 +164,7 @@ def do_startup_x11_actions():
+     if 'XDG_DATA_DIRS' in os.environ:
+         xdg_data_dirs = datadir + '/window-manager:' + os.environ['XDG_DATA_DIRS']
+     else:
+-        xdg_data_dirs = datadir + '/window-manager:/usr/share'
++        xdg_data_dirs = '/usr/share'
+ 
+     childproc = iutil.startProgram(["metacity", "--display", ":1", "--sm-disable"],
+                                    env_add={'XDG_DATA_DIRS': xdg_data_dirs})
+-- 
+2.7.4
+

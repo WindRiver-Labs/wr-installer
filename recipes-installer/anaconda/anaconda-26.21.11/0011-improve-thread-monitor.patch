@@ -1,0 +1,55 @@
+From 3ea4a87110523bea46212590b2875f8f0683687d Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 19 May 2017 14:43:24 +0800
+Subject: [PATCH 11/65] improve thread monitor
+
+Set thread name, it is easy to monitor thread status by ps
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/threads.py | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/pyanaconda/threads.py b/pyanaconda/threads.py
+index b3fe610..bce389c 100644
+--- a/pyanaconda/threads.py
++++ b/pyanaconda/threads.py
+@@ -21,6 +21,8 @@ import logging
+ log = logging.getLogger("anaconda")
+ 
+ import threading
++import prctl
++from functools import wraps
+ 
+ _WORKER_THREAD_PREFIX = "AnaWorkerThread"
+ 
+@@ -223,6 +225,14 @@ class AnacondaThread(threading.Thread):
+     _prefix_thread_counts = dict()
+ 
+     def __init__(self, *args, **kwargs):
++        def set_thread_name(target):
++            @wraps(target)
++            def inner_target(*args, **kwargs):
++                prctl.set_name(self.name)
++                return target(*args, **kwargs)
++
++            return inner_target
++
+         # if neither name nor prefix is given, use the worker prefix
+         if "name" not in kwargs and "prefix" not in kwargs:
+             kwargs["prefix"] = _WORKER_THREAD_PREFIX
+@@ -234,6 +244,9 @@ class AnacondaThread(threading.Thread):
+             self._prefix_thread_counts[prefix] = thread_num
+             kwargs["name"] = prefix + str(thread_num)
+ 
++        if "target" in kwargs:
++            kwargs["target"] =  set_thread_name(kwargs["target"])
++
+         if "fatal" in kwargs:
+             self._fatal = kwargs.pop("fatal")
+         else:
+-- 
+2.7.4
+

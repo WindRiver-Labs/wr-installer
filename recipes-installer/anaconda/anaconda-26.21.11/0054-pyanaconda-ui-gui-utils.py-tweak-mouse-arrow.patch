@@ -1,0 +1,31 @@
+From 35670268636a6dd87c74cd67dcc6fb7b10530ea0 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 15 Nov 2016 01:23:50 -0500
+Subject: [PATCH 54/65] pyanaconda/ui/gui/utils.py: tweak mouse arrow
+
+The arrow of Gdk.CursorType.ARROW points to right, use
+Gdk.CursorType.LEFT_PTR to replace.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/utils.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyanaconda/ui/gui/utils.py b/pyanaconda/ui/gui/utils.py
+index 8394eac..8e4c395 100644
+--- a/pyanaconda/ui/gui/utils.py
++++ b/pyanaconda/ui/gui/utils.py
+@@ -345,7 +345,7 @@ def unbusyCursor():
+     if not window:
+         return
+ 
+-    window.set_cursor(Gdk.Cursor(Gdk.CursorType.ARROW))
++    window.set_cursor(Gdk.Cursor(Gdk.CursorType.LEFT_PTR))
+ 
+ def ignoreEscape(dlg):
+     """Prevent a dialog from accepting the escape keybinding, which emits a
+-- 
+2.7.4
+

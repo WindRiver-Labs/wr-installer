@@ -1,0 +1,60 @@
+From e348a6eb74efdc150b6019c9aa032b884b5ad9db Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 15 Jun 2017 13:44:56 +0800
+Subject: [PATCH 61/65] set CLEARPART_TYPE_ALL by default
+
+Whether the disk is partitioned or not, the generated
+anaconda-ks.cfg always has `clearpart --all'.
+
+So the ks file works on partitioned and non-partitioned disk.
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/spokes/storage.py | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/pyanaconda/ui/gui/spokes/storage.py b/pyanaconda/ui/gui/spokes/storage.py
+index 2945c9e..2ae928c 100644
+--- a/pyanaconda/ui/gui/spokes/storage.py
++++ b/pyanaconda/ui/gui/spokes/storage.py
+@@ -77,7 +77,7 @@ from pyanaconda.bootloader import BootLoaderError
+ from pyanaconda.storage_utils import on_disk_storage
+ from pyanaconda.screen_access import sam
+ 
+-from pykickstart.constants import CLEARPART_TYPE_NONE, AUTOPART_TYPE_LVM
++from pykickstart.constants import CLEARPART_TYPE_ALL, AUTOPART_TYPE_LVM
+ from pykickstart.errors import KickstartParseError
+ 
+ import sys
+@@ -288,7 +288,7 @@ class StorageSpoke(NormalSpoke, StorageCheckHandler):
+ 
+         self.autopart = self.data.autopart.autopart
+         self.autoPartType = None
+-        self.clearPartType = CLEARPART_TYPE_NONE
++        self.clearPartType = CLEARPART_TYPE_ALL
+ 
+         if self.data.zerombr.zerombr and arch.is_s390():
+             # run dasdfmt on any unformatted DASDs automatically
+@@ -384,7 +384,7 @@ class StorageSpoke(NormalSpoke, StorageCheckHandler):
+         self.data.clearpart.initAll = True
+ 
+         if not self.autopart_missing_passphrase:
+-            self.clearPartType = CLEARPART_TYPE_NONE
++            self.clearPartType = CLEARPART_TYPE_ALL
+             self.data.clearpart.type = self.clearPartType
+ 
+         self.storage.config.update(self.data)
+@@ -950,7 +950,7 @@ class StorageSpoke(NormalSpoke, StorageCheckHandler):
+                                                      ", ".join(disk_labels))
+         else:
+             free_space = self.storage.get_free_space(disks=disks,
+-                                                     clear_part_type=CLEARPART_TYPE_NONE)
++                                                     clear_part_type=CLEARPART_TYPE_ALL)
+             disk_free = sum(f[0] for f in free_space.values())
+             fs_free = sum(f[1] for f in free_space.values())
+ 
+-- 
+2.7.4
+

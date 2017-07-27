@@ -1,0 +1,53 @@
+From 68fe87ef2ff8b79dc17a35afcdce95f87f9da022 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Mon, 15 May 2017 11:07:19 +0800
+Subject: [PATCH 06/65] do not load the system-wide Xresources
+
+- In https://github.com/rhinstaller/anaconda, revert the
+  following commit:
+-----------------------------------------------
+commit ef85e16c80609efc6bdd50c3a5aa6333fcdf0a57
+Author: David Shea <dshea@redhat.com>
+Date:   Wed Mar 9 14:43:03 2016 -0500
+
+    Load the system-wide Xresources (#1241724)
+-----------------------------------------------
+
+The reason is OE does not have spice-vdagent.
+
+- Use terminal vt7 to display X
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/display.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/pyanaconda/display.py b/pyanaconda/display.py
+index 91c9a83..fd255a4 100644
+--- a/pyanaconda/display.py
++++ b/pyanaconda/display.py
+@@ -130,7 +130,7 @@ def start_x11():
+ 
+     # Start Xorg and wait for it become ready
+     iutil.startX(["Xorg", "-br", "-logfile", "/tmp/X.log",
+-                  ":%s" % constants.X_DISPLAY_NUMBER, "vt6", "-s", "1440", "-ac",
++                  ":%s" % constants.X_DISPLAY_NUMBER, "vt7", "-s", "1440", "-ac",
+                   "-nolisten", "tcp", "-dpi", "96",
+                   "-noreset"], output_redirect=subprocess.DEVNULL)
+ 
+@@ -306,8 +306,8 @@ def setup_display(anaconda, options, addon_paths=None):
+             anaconda.gui_startup_failed = True
+             time.sleep(2)
+ 
+-        if not anaconda.gui_startup_failed:
+-            do_extra_x11_actions(options.runres, gui_mode=anaconda.gui_mode)
++        #if not anaconda.gui_startup_failed:
++        #    do_extra_x11_actions(options.runres, gui_mode=anaconda.gui_mode)
+ 
+     if anaconda.tui_mode and anaconda.gui_startup_failed and flags.vncquestion and not anaconda.ksdata.vnc.enabled:
+         message = _("X was unable to start on your machine. Would you like to start VNC to connect to "
+-- 
+2.7.4
+

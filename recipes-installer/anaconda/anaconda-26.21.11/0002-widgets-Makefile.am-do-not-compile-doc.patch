@@ -1,0 +1,28 @@
+From a1787c64202305aa374e287572ba2c855a35b378 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 9 May 2017 04:36:48 -0400
+Subject: [PATCH 02/65] widgets/Makefile.am: do not compile doc
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ widgets/Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/widgets/Makefile.am b/widgets/Makefile.am
+index 6478ce8..222aeaa 100644
+--- a/widgets/Makefile.am
++++ b/widgets/Makefile.am
+@@ -19,7 +19,7 @@
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-SUBDIRS = src python glade doc
++SUBDIRS = src python glade
+ 
+ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 config.guess config.h.in config.sub \
+ 	configure depcomp install-sh ltmain.sh missing py-compile \
+-- 
+2.7.4
+

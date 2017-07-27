@@ -1,0 +1,41 @@
+From 063bb9bc5a21564c2935e94ca21c71d54a27fdae Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 9 May 2017 04:10:03 -0400
+Subject: [PATCH 01/65] do not support po
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ Makefile.am  | 2 +-
+ configure.ac | 1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 552afd1..387614b 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -17,7 +17,7 @@
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-SUBDIRS = data docs dracut po pyanaconda scripts tests widgets utils
++SUBDIRS = data docs dracut pyanaconda scripts tests widgets utils
+ 
+ EXTRA_DIST = COPYING .coveragerc
+ 
+diff --git a/configure.ac b/configure.ac
+index 9a9955d..1237f76 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -128,7 +128,6 @@ AC_CONFIG_FILES([Makefile
+                  data/window-manager/Makefile
+                  data/window-manager/config/Makefile
+                  data/window-manager/theme/Makefile
+-                 po/Makefile
+                  scripts/Makefile
+                  pyanaconda/Makefile
+                  pyanaconda/version.py
+-- 
+2.7.4
+

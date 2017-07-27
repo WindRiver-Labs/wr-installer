@@ -1,0 +1,29 @@
+From a3bf304f1016a39249d0882644d0365be93bd18b Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 1 Jun 2017 13:50:15 +0800
+Subject: [PATCH 41/65] kickstart do not support network configuration
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/install.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/pyanaconda/install.py b/pyanaconda/install.py
+index 929b89d..555d7b0 100644
+--- a/pyanaconda/install.py
++++ b/pyanaconda/install.py
+@@ -72,6 +72,9 @@ def _writeKS(ksdata):
+     if ksdata.method.method == "url" and not ksdata.method.url.startswith("https://"):
+         ksdata.method.noverifyssl = False
+ 
++    # Do not support network configuration
++    ksdata.network.network = []
++
+     # Make it so only root can read - could have passwords
+     with iutil.open_with_perm(path, "w", 0o600) as f:
+         f.write(str(ksdata))
+-- 
+2.7.4
+

@@ -1,0 +1,72 @@
+From d6ecdb270fc89995fde6f0035bff0396806f6673 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 16:36:37 +0800
+Subject: [PATCH 36/65] text repository setting: do not support local ISO file
+
+WRLinux does not support repository in local ISO file
+(an ISO in HDD), so remove it.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/tui/spokes/source.py | 18 +++++-------------
+ 1 file changed, 5 insertions(+), 13 deletions(-)
+
+diff --git a/pyanaconda/ui/tui/spokes/source.py b/pyanaconda/ui/tui/spokes/source.py
+index f1037f7..d794150 100644
+--- a/pyanaconda/ui/tui/spokes/source.py
++++ b/pyanaconda/ui/tui/spokes/source.py
+@@ -136,11 +136,12 @@ class SourceSpoke(EditTUISpoke, SourceSwitchHandler):
+             return not self._error and self.ready and (self.data.method.method or self.payload.baseRepo)
+ 
+     def refresh(self, args=None):
++        log.info("refresh args %s" % (args))
+         EditTUISpoke.refresh(self, args)
+ 
+         threadMgr.wait(THREAD_PAYLOAD)
+ 
+-        _methods = [_("CD/DVD"), _("local ISO file"), _("Network")]
++        _methods = [_("CD/DVD"), _("Network")]
+ 
+         if self.data.method.method == "harddrive" and \
+            get_mount_device(DRACUT_ISODIR) == get_mount_device(DRACUT_REPODIR):
+@@ -148,7 +149,7 @@ class SourceSpoke(EditTUISpoke, SourceSwitchHandler):
+             self._window += [TextWidget(message), ""]
+             return True
+ 
+-        if args == 3:
++        if args == 2:
+             text = [TextWidget(_(p)) for p in self._protocols]
+         else:
+             self._window += [TextWidget(_("Choose an installation source type."))]
+@@ -174,7 +175,8 @@ class SourceSpoke(EditTUISpoke, SourceSwitchHandler):
+         except ValueError:
+             return super(SourceSpoke, self).input(args, key)
+ 
+-        if args == 3:
++        log.info("input args %s, key %s" % (args, key))
++        if args == 2:
+             # network install
+             self._selection = num
+             if self._selection == 1:
+@@ -202,16 +204,6 @@ class SourceSpoke(EditTUISpoke, SourceSwitchHandler):
+                 self.apply()
+                 self.close()
+                 return INPUT_PROCESSED
+-        elif num == 2:
+-            # local ISO file (HDD ISO)
+-            self._selection = num
+-            newspoke = SelectDeviceSpoke(self.app, self.data,
+-                    self.storage, self.payload,
+-                    self.instclass)
+-            self.app.switch_screen_modal(newspoke)
+-            self.apply()
+-            self.close()
+-            return INPUT_PROCESSED
+         else:
+             # mounted ISO
+             if num == 1:
+-- 
+2.7.4
+

@@ -1,0 +1,106 @@
+From 5cbdfd4b80c56825716bf035041c19052777d413 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 9 Jun 2017 14:55:45 +0800
+Subject: [PATCH 60/65] tweak time setting
+
+- Unify the gui and tui with the same default timezone setting
+
+- The tui not support NTP server setting
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/constants.py                    |  2 ++
+ pyanaconda/ui/gui/spokes/datetime_spoke.py |  3 +--
+ pyanaconda/ui/tui/spokes/time_spoke.py     | 18 +++++-------------
+ 3 files changed, 8 insertions(+), 15 deletions(-)
+
+diff --git a/pyanaconda/constants.py b/pyanaconda/constants.py
+index d15767b..af421e1 100644
+--- a/pyanaconda/constants.py
++++ b/pyanaconda/constants.py
+@@ -69,6 +69,8 @@ DEFAULT_KEYBOARD = "us"
+ 
+ DRACUT_SHUTDOWN_EJECT = "/run/initramfs/usr/lib/dracut/hooks/shutdown/99anaconda-eject.sh"
+ 
++DEFAULT_TZ = "America/New_York"
++
+ # VNC questions
+ USEVNC = N_("Start VNC")
+ USETEXT = N_("Use text mode")
+diff --git a/pyanaconda/ui/gui/spokes/datetime_spoke.py b/pyanaconda/ui/gui/spokes/datetime_spoke.py
+index 996aed0..fe12fad 100644
+--- a/pyanaconda/ui/gui/spokes/datetime_spoke.py
++++ b/pyanaconda/ui/gui/spokes/datetime_spoke.py
+@@ -48,6 +48,7 @@ from pyanaconda import nm
+ from pyanaconda import ntp
+ from pyanaconda import flags
+ from pyanaconda import constants
++from pyanaconda.constants import DEFAULT_TZ
+ from pyanaconda.threads import threadMgr, AnacondaThread
+ 
+ import datetime
+@@ -63,8 +64,6 @@ SERVER_POOL = 1
+ SERVER_WORKING = 2
+ SERVER_USE = 3
+ 
+-DEFAULT_TZ = "America/New_York"
+-
+ SPLIT_NUMBER_SUFFIX_RE = re.compile(r'([^0-9]*)([-+])([0-9]+)')
+ 
+ def _compare_regions(reg_xlated1, reg_xlated2):
+diff --git a/pyanaconda/ui/tui/spokes/time_spoke.py b/pyanaconda/ui/tui/spokes/time_spoke.py
+index f2a62ea..693283d 100644
+--- a/pyanaconda/ui/tui/spokes/time_spoke.py
++++ b/pyanaconda/ui/tui/spokes/time_spoke.py
+@@ -28,6 +28,7 @@ from pyanaconda import ntp
+ from pyanaconda import constants
+ from pyanaconda.i18n import N_, _, C_
+ from pyanaconda.constants_text import INPUT_PROCESSED
++from pyanaconda.constants_text import DEFAULT_TZ
+ from pyanaconda.threads import threadMgr, AnacondaThread
+ from pyanaconda.flags import flags
+ 
+@@ -184,11 +185,10 @@ class TimeSpoke(FirstbootSpokeMixIn, NormalTUISpoke):
+ 
+     @property
+     def status(self):
+-        if self.data.timezone.timezone:
+-            return _("%s timezone") % self.data.timezone.timezone
+-        else:
+-            return _("Timezone is not set.")
++        if not self.data.timezone.timezone:
++            self.data.timezone.timezone = DEFAULT_TZ
+ 
++        return _("%s timezone") % self.data.timezone.timezone
+     def _summary_text(self):
+         """Return summary of current timezone & NTP configuration.
+ 
+@@ -227,7 +227,7 @@ class TimeSpoke(FirstbootSpokeMixIn, NormalTUISpoke):
+         else:
+             timezone_option = _("Set timezone")
+ 
+-        _options = [timezone_option, _("Configure NTP servers")]
++        _options = [timezone_option]
+         text = [TextWidget(m) for m in _options]
+ 
+         def _prep(i, w):
+@@ -255,14 +255,6 @@ class TimeSpoke(FirstbootSpokeMixIn, NormalTUISpoke):
+             self.app.switch_screen_modal(self.timezone_spoke)
+             self.close()
+             return INPUT_PROCESSED
+-        elif num == 2:
+-            # configure NTP servers
+-            newspoke = NTPServersSpoke(self.app, self.data, self.storage,
+-                                       self.payload, self.instclass, self)
+-            self.app.switch_screen_modal(newspoke)
+-            self.apply()
+-            self.close()
+-            return INPUT_PROCESSED
+         else:
+             # the user provided an invalid option number, just stay in the spoke
+             return INPUT_PROCESSED
+-- 
+2.7.4
+

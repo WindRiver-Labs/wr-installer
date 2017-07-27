@@ -1,0 +1,50 @@
+From 3008184173cf6fb063f4c2bee3443728477517a6 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 16:49:11 +0800
+Subject: [PATCH 38/65] set keyboard xlayouts with 'us' by default
+
+Previously only graphic set keyboard xlayouts with 'us' by default,
+and text mode did not have the setting and it caused 100% cpu when
+loadkey invoked. The hung of loadkey also caused reboot failed.
+
+The setting in default ks works on both of graphic and text.
+
+Revert the following fix:
+---------
+commit ec53ff6e4a7a06d190925a482371031a2f48509d
+Author: Martin Kolman <mkolman@redhat.com>
+Date:   Thu Jan 19 18:37:29 2017 +0100
+
+    Use correct default password quality value
+---------
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ data/interactive-defaults.ks | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/data/interactive-defaults.ks b/data/interactive-defaults.ks
+index a5f89c2..b6a5e76 100644
+--- a/data/interactive-defaults.ks
++++ b/data/interactive-defaults.ks
+@@ -2,14 +2,5 @@
+ # This is not loaded if a kickstart file is provided on the command line.
+ auth --enableshadow --passalgo=sha512
+ firstboot --enable
++keyboard --xlayouts='us'
+ 
+-%anaconda
+-# Default password policies
+-pwpolicy root --notstrict --minlen=6 --minquality=1 --nochanges --emptyok
+-pwpolicy user --notstrict --minlen=6 --minquality=1 --nochanges --emptyok
+-pwpolicy luks --notstrict --minlen=6 --minquality=1 --nochanges --emptyok
+-# NOTE: This applies only to *fully* interactive installations, partial kickstart
+-#       installations use defaults specified in pyanaconda/pwpolicy.py.
+-#       Automated kickstart installs simply ignore the password policy as the policy
+-#       only applies to the UI, not for passwords specified in kickstart.
+-%end
+-- 
+2.7.4
+

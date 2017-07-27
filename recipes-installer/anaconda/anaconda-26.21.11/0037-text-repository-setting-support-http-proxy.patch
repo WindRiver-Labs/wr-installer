@@ -1,0 +1,95 @@
+From e943c724b32390b14bd353e53a0539527180ee75 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 16:45:48 +0800
+Subject: [PATCH 37/65] text repository setting: support http proxy
+
+For text mode, it supports:
+- http repo + http proxy;
+- https repo + http proxy;
+- ftp repo + http proxy;
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/helpers.py           |  9 ++++++++-
+ pyanaconda/ui/tui/spokes/source.py | 15 +++++++++++++--
+ 2 files changed, 21 insertions(+), 3 deletions(-)
+
+diff --git a/pyanaconda/ui/helpers.py b/pyanaconda/ui/helpers.py
+index ee94f63..e3f5e3a 100644
+--- a/pyanaconda/ui/helpers.py
++++ b/pyanaconda/ui/helpers.py
+@@ -104,6 +104,8 @@ class SourceSwitchHandler(object, metaclass=ABCMeta):
+     and cleanup any previous method set.
+     """
+ 
++    log = logging.getLogger("anaconda")
++
+     @abstractproperty
+     def data(self):
+         pass
+@@ -171,7 +173,7 @@ class SourceSwitchHandler(object, metaclass=ABCMeta):
+         # as we already made the device protected when
+         # switching to it, we don't need to protect it here
+ 
+-    def set_source_url(self, url=None):
++    def set_source_url(self, url=None, proxy=None):
+         """ Switch to install source specified by URL """
+         # clean any old HDD ISO sources
+         self._clean_hdd_iso()
+@@ -179,6 +181,11 @@ class SourceSwitchHandler(object, metaclass=ABCMeta):
+         self.data.method.method = "url"
+         if url is not None:
+             self.data.method.url = url
++            self.log.info("url: %s" % url)
++
++        if proxy is not None:
++            self.data.method.proxy = proxy
++            self.log.info("proxy: %s" % proxy)
+ 
+     def set_source_nfs(self, opts=None):
+         """ Switch to NFS install source """
+diff --git a/pyanaconda/ui/tui/spokes/source.py b/pyanaconda/ui/tui/spokes/source.py
+index d794150..9e51147 100644
+--- a/pyanaconda/ui/tui/spokes/source.py
++++ b/pyanaconda/ui/tui/spokes/source.py
+@@ -244,7 +244,8 @@ class SpecifyRepoSpoke(EditTUISpoke, SourceSwitchHandler):
+     category = SoftwareCategory
+ 
+     edit_fields = [
+-        Entry(N_("Repo URL"), "url", re.compile(".*$"), True)
++        Entry(N_("Repo URL"), "url", re.compile(".*$"), True),
++        Entry(N_("Repo Proxy"), "proxy", re.compile(".*$"), True)
+         ]
+ 
+     def __init__(self, app, data, storage, payload, instclass, selection):
+@@ -263,6 +264,7 @@ class SpecifyRepoSpoke(EditTUISpoke, SourceSwitchHandler):
+ 
+     def apply(self):
+         """ Apply all of our changes. """
++        log.info("apply args %s" % self.args)
+         url = None
+         if self.selection == 2 and not self.args.url.startswith("http://"):
+             url = "http://" + self.args.url
+@@ -274,7 +276,16 @@ class SpecifyRepoSpoke(EditTUISpoke, SourceSwitchHandler):
+             # protocol either unknown or entry already starts with a protocol
+             # specification
+             url = self.args.url
+-        self.set_source_url(url)
++
++        # Proxy only support http protocal
++        proxy = None
++        if self.args.proxy.strip() != '':
++            if not self.args.proxy.startswith("http://"):
++                proxy = "http://" + self.args.proxy
++            else:
++                proxy = self.args.proxy
++
++        self.set_source_url(url, proxy)
+ 
+ class SpecifyNFSRepoSpoke(EditTUISpoke, SourceSwitchHandler):
+     """ Specify server and mount opts here if NFS selected. """
+-- 
+2.7.4
+

@@ -1,0 +1,29 @@
+From bf5a4298d1f8eae33a70210808c0fd26ec056287 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 1 Jun 2017 14:35:52 +0800
+Subject: [PATCH 49/65] installation destination: disable iSCSI network disks
+
+WRLinux does not support it.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/spokes/storage.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/pyanaconda/ui/gui/spokes/storage.py b/pyanaconda/ui/gui/spokes/storage.py
+index 4871667..2945c9e 100644
+--- a/pyanaconda/ui/gui/spokes/storage.py
++++ b/pyanaconda/ui/gui/spokes/storage.py
+@@ -806,6 +806,7 @@ class StorageSpoke(NormalSpoke, StorageCheckHandler):
+         self.builder.get_object("local_untouched_label_revealer").set_reveal_child(anySelected)
+         self.builder.get_object("special_untouched_label_revealer").set_reveal_child(anySelected)
+         self.builder.get_object("other_options_grid").set_sensitive(anySelected)
++        self.builder.get_object("addSpecializedButton").set_sensitive(False)
+ 
+         if len(self.disks) == 0:
+             self.set_warning(_("No disks detected.  Please shut down the computer, connect at least one disk, and restart to complete installation."))
+-- 
+2.7.4
+

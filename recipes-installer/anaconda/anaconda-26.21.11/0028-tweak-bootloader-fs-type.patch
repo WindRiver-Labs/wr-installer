@@ -1,0 +1,31 @@
+From dd105dcf13c6351a0a35208030ab23ecde07fa95 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 14:51:26 +0800
+Subject: [PATCH 28/65] tweak bootloader fs type
+
+Use ext2 as default fs of bootloader to workaround grub-probe
+failure while e2fsprogs upgraded to 1.43
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/bootloader.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index 8ad2926..2c86603 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -1429,7 +1429,7 @@ class GRUB2(GRUB):
+         if productName.startswith("Red Hat "):              # pylint: disable=no-member
+             return ["xfs", "ext4", "ext3", "ext2", "btrfs"]
+         else:
+-            return ["ext4", "ext3", "ext2", "btrfs", "xfs"]
++            return ["ext2", "ext3", "ext4", "btrfs", "xfs"]
+ 
+     #
+     # grub-related conveniences
+-- 
+2.7.4
+

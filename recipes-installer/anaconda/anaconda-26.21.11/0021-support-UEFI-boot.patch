@@ -1,0 +1,38 @@
+From ec8da5a284de623253687fbe3d36a8cabcf94696 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 14:24:37 +0800
+Subject: [PATCH 21/65] support UEFI boot
+
+- tweak grub efi package name based on oe-core
+
+- tweak efi_dir according to oe-core's EFI layout
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/bootloader.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index 2a91759..50fdac1 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -1846,12 +1846,12 @@ class EFIGRUB1(EFIBase, GRUB):
+ 
+ 
+ class EFIGRUB(EFIBase, GRUB2):
+-    packages = ["grub2-efi", "efibootmgr", "shim"]
++    packages = ["grub-efi", "efibootmgr"]
+     can_dual_boot = False
+     stage2_is_valid_stage1 = False
+     stage2_bootable = False
+ 
+-    _efi_binary = "\\shim.efi"
++    _efi_binary = "\\boot*.efi"
+ 
+     def __init__(self):
+         super(EFIGRUB, self).__init__()
+-- 
+2.7.4
+

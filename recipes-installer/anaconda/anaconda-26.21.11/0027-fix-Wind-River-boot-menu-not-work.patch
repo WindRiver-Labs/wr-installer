@@ -1,0 +1,35 @@
+From 5f37502599b7a7fdbb5d49725bd1a5da71b79298 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 14:48:43 +0800
+Subject: [PATCH 27/65] fix "Wind River" boot menu not work
+
+While efi installation finished, and reboot target.
+There is a "Wind River Linux" in bios boot menu
+(not grub menu), this patch to make it work.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/bootloader.py | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index 50fdac1..8ad2926 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -1851,7 +1851,10 @@ class EFIGRUB(EFIBase, GRUB2):
+     stage2_is_valid_stage1 = False
+     stage2_bootable = False
+ 
+-    _efi_binary = "\\boot*.efi"
++    if os.uname()[4] == "x86_64":
++        _efi_binary = "\\bootx64.efi"
++    else:
++        _efi_binary = "\\bootia32.efi"
+ 
+     def __init__(self):
+         super(EFIGRUB, self).__init__()
+-- 
+2.7.4
+

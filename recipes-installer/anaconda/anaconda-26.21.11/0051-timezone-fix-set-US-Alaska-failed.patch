@@ -1,0 +1,38 @@
+From 403cc7187dfcaae7257579bdd891ba42fb3f2ab1 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Sun, 11 Sep 2016 21:52:30 -0400
+Subject: [PATCH 51/65] timezone: fix set US/Alaska failed
+
+Make sure the existence of dir.
+------
+  File "/usr/lib64/python2.7/site-packages/pyanaconda/timezone.py", line 108, in write_timezone_config
+    shutil.copyfile(tz_file, rooted_tz_file)
+
+  File "/usr/lib64/python2.7/shutil.py", line 83, in copyfile
+    with open(dst, 'wb') as fdst:
+
+IOError: [Errno 2] No such file or directory: '/mnt/sysimage/usr/share/zoneinfo/US/Alaska'
+------
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/timezone.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/pyanaconda/timezone.py b/pyanaconda/timezone.py
+index 21b1ec1..f84100b 100644
+--- a/pyanaconda/timezone.py
++++ b/pyanaconda/timezone.py
+@@ -103,6 +103,7 @@ def write_timezone_config(timezone, root):
+     link_path = os.path.normpath(root + "/etc/localtime")
+ 
+     if not os.access(rooted_tz_file, os.R_OK) and os.access(tz_file, os.R_OK):
++        iutil.mkdirChain(os.path.dirname(rooted_tz_file))
+         shutil.copyfile(tz_file, rooted_tz_file)
+ 
+     if not os.access(rooted_tz_file, os.R_OK):
+-- 
+2.7.4
+

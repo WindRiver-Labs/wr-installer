@@ -1,0 +1,216 @@
+From 471899dfb432b452566b1c7cd032a840597059fb Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 14:09:17 +0800
+Subject: [PATCH 17/65] kickstart: Authconfig/Firewall/Firstboot/Timezone
+
+We do not support kickstart for now
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/kickstart.py | 162 +++---------------------------------------------
+ 1 file changed, 8 insertions(+), 154 deletions(-)
+
+diff --git a/pyanaconda/kickstart.py b/pyanaconda/kickstart.py
+index 470a12e..2210845 100644
+--- a/pyanaconda/kickstart.py
++++ b/pyanaconda/kickstart.py
+@@ -249,29 +249,10 @@ class Authconfig(commands.authconfig.FC3_Authconfig):
+         self.packages = []
+ 
+     def setup(self):
+-        if self.seen:
+-            self.packages = ["authconfig"]
++        pass
+ 
+     def execute(self, *args):
+-        cmd = "/usr/sbin/authconfig"
+-        if not os.path.lexists(iutil.getSysroot()+cmd):
+-            if flags.automatedInstall and self.seen:
+-                msg = _("%s is missing. Cannot setup authentication.") % cmd
+-                raise KickstartError(msg)
+-            else:
+-                return
+-
+-        args = ["--update", "--nostart"] + shlex.split(self.authconfig)
+-
+-        if not flags.automatedInstall and \
+-           (os.path.exists(iutil.getSysroot() + "/lib64/security/pam_fprintd.so") or
+-            os.path.exists(iutil.getSysroot() + "/lib/security/pam_fprintd.so")):
+-            args += ["--enablefingerprint"]
+-
+-        try:
+-            iutil.execInSysroot(cmd, args)
+-        except RuntimeError as msg:
+-            log.error("Error running %s %s: %s", cmd, args, msg)
++        pass
+ 
+ class AutoPart(commands.autopart.F26_AutoPart):
+     def parse(self, args):
+@@ -692,71 +673,17 @@ class Firewall(commands.firewall.F20_Firewall):
+         self.packages = []
+ 
+     def setup(self):
+-        if self.seen:
+-            self.packages = ["firewalld"]
++        pass
+ 
+     def execute(self, storage, ksdata, instClass):
+-        args = []
+-        # enabled is None if neither --enable or --disable is passed
+-        # default to enabled if nothing has been set.
+-        if self.enabled == False:
+-            args += ["--disabled"]
+-        else:
+-            args += ["--enabled"]
+-
+-        if "ssh" not in self.services and "ssh" not in self.remove_services and "22:tcp" not in self.ports:
+-            args += ["--service=ssh"]
+-
+-        for dev in self.trusts:
+-            args += ["--trust=%s" % (dev,)]
+-
+-        for port in self.ports:
+-            args += ["--port=%s" % (port,)]
+-
+-        for remove_service in self.remove_services:
+-            args += ["--remove-service=%s" % (remove_service,)]
+-
+-        for service in self.services:
+-            args += ["--service=%s" % (service,)]
+-
+-        cmd = "/usr/bin/firewall-offline-cmd"
+-        if not os.path.exists(iutil.getSysroot() + cmd):
+-            if self.enabled:
+-                msg = _("%s is missing. Cannot setup firewall.") % (cmd,)
+-                raise KickstartError(msg)
+-        else:
+-            iutil.execInSysroot(cmd, args)
++        pass
+ 
+ class Firstboot(commands.firstboot.FC3_Firstboot):
+     def setup(self, ksdata, instClass):
+-        if not self.seen:
+-            if flags.automatedInstall:
+-                # firstboot should be disabled by default after kickstart installations
+-                self.firstboot = FIRSTBOOT_SKIP
+-            elif instClass.firstboot and not self.firstboot:
+-                # if nothing is specified, use the installclass default for firstboot
+-                self.firstboot = instClass.firstboot
++        pass
+ 
+     def execute(self, *args):
+-        action = iutil.enable_service
+-        unit_name = "initial-setup.service"
+-
+-        # find if the unit file for the Initial Setup service is installed
+-        unit_exists = os.path.exists(os.path.join(iutil.getSysroot(), "lib/systemd/system/", unit_name))
+-        if unit_exists and self.firstboot == FIRSTBOOT_RECONFIG:
+-            # write the reconfig trigger file
+-            f = open(os.path.join(iutil.getSysroot(), "etc/reconfigSys"), "w+")
+-            f.close()
+-
+-        if self.firstboot == FIRSTBOOT_SKIP:
+-            action = iutil.disable_service
+-            # Also tell the screen access manager, so that the fact that post installation tools
+-            # should be disabled propagates to the user interaction config file.
+-            screen_access.sam.post_install_tools_disabled = True
+-
+-        # enable/disable the Initial Setup service (if its unit is installed)
+-        if unit_exists:
+-            action(unit_name)
++        pass
+ 
+ class Group(commands.group.F12_Group):
+     def execute(self, storage, ksdata, instClass, users):
+@@ -1729,84 +1656,11 @@ class Timezone(commands.timezone.F25_Timezone):
+     def __init__(self, *args):
+         commands.timezone.F25_Timezone.__init__(self, *args)
+ 
+-        self._added_chrony = False
+-        self._enabled_chrony = False
+-        self._disabled_chrony = False
+-
+     def setup(self, ksdata):
+-        # do not install and use NTP package
+-        if self.nontp or NTP_PACKAGE in ksdata.packages.excludedList:
+-            if iutil.service_running(NTP_SERVICE) and \
+-                    can_touch_runtime_system("stop NTP service"):
+-                ret = iutil.stop_service(NTP_SERVICE)
+-                if ret != 0:
+-                    log.error("Failed to stop NTP service")
+-
+-            if self._added_chrony and NTP_PACKAGE in ksdata.packages.packageList:
+-                ksdata.packages.packageList.remove(NTP_PACKAGE)
+-                self._added_chrony = False
+-
+-            # Both un-enable and disable chrony, because sometimes it's installed
+-            # off by default (packages) and sometimes not (liveimg).
+-            if self._enabled_chrony and NTP_SERVICE in ksdata.services.enabled:
+-                ksdata.services.enabled.remove(NTP_SERVICE)
+-                self._enabled_chrony = False
+-
+-            if NTP_SERVICE not in ksdata.services.disabled:
+-                ksdata.services.disabled.append(NTP_SERVICE)
+-                self._disabled_chrony = True
+-        # install and use NTP package
+-        else:
+-            if not iutil.service_running(NTP_SERVICE) and \
+-                    can_touch_runtime_system("start NTP service"):
+-                ret = iutil.start_service(NTP_SERVICE)
+-                if ret != 0:
+-                    log.error("Failed to start NTP service")
+-
+-            if not NTP_PACKAGE in ksdata.packages.packageList:
+-                ksdata.packages.packageList.append(NTP_PACKAGE)
+-                self._added_chrony = True
+-
+-            if self._disabled_chrony and NTP_SERVICE in ksdata.services.disabled:
+-                ksdata.services.disabled.remove(NTP_SERVICE)
+-                self._disabled_chrony = False
+-
+-            if not NTP_SERVICE in ksdata.services.enabled and \
+-                    not NTP_SERVICE in ksdata.services.disabled:
+-                ksdata.services.enabled.append(NTP_SERVICE)
+-                self._enabled_chrony = True
++        pass
+ 
+     def execute(self, *args):
+-        # write out timezone configuration
+-        if not timezone.is_valid_timezone(self.timezone):
+-            # this should never happen, but for pity's sake
+-            log.warning("Timezone %s set in kickstart is not valid, falling "
+-                        "back to default (America/New_York).", self.timezone)
+-            self.timezone = "America/New_York"
+-
+-        timezone.write_timezone_config(self, iutil.getSysroot())
+-
+-        # write out NTP configuration (if set) and --nontp is not used
+-        if not self.nontp and self.ntpservers:
+-            chronyd_conf_path = os.path.normpath(iutil.getSysroot() + ntp.NTP_CONFIG_FILE)
+-            pools, servers = ntp.internal_to_pools_and_servers(self.ntpservers)
+-            if os.path.exists(chronyd_conf_path):
+-                log.debug("Modifying installed chrony configuration")
+-                try:
+-                    ntp.save_servers_to_config(pools, servers, conf_file_path=chronyd_conf_path)
+-                except ntp.NTPconfigError as ntperr:
+-                    log.warning("Failed to save NTP configuration: %s", ntperr)
+-            # use chrony conf file from installation environment when
+-            # chrony is not installed (chrony conf file is missing)
+-            else:
+-                log.debug("Creating chrony configuration based on the "
+-                          "configuration from installation environment")
+-                try:
+-                    ntp.save_servers_to_config(pools, servers,
+-                                               conf_file_path=ntp.NTP_CONFIG_FILE,
+-                                               out_file_path=chronyd_conf_path)
+-                except ntp.NTPconfigError as ntperr:
+-                    log.warning("Failed to save NTP configuration without chrony package: %s", ntperr)
++        pass
+ 
+ class User(commands.user.F19_User):
+     def execute(self, storage, ksdata, instClass, users):
+-- 
+2.7.4
+

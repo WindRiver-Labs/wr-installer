@@ -1,0 +1,33 @@
+From d240618cb08b977bdadb365a61e9324804827780 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Mon, 10 Jul 2017 10:52:51 +0800
+Subject: [PATCH 64/65] tweak product short name
+
+The yocto named its production with braces which caused short name
+with illegal character that broke lvm partition.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/constants.py | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/pyanaconda/constants.py b/pyanaconda/constants.py
+index af421e1..af42791 100644
+--- a/pyanaconda/constants.py
++++ b/pyanaconda/constants.py
+@@ -41,7 +41,9 @@ isFinal = product.isFinal
+ 
+ # for use in device names, eg: "fedora", "rhel"
+ shortProductName = productName.lower()          # pylint: disable=no-member
+-if productName.count(" "):                      # pylint: disable=no-member
++if '(' in shortProductName and ')' in shortProductName:
++    shortProductName = shortProductName.split()[0]
++elif productName.count(" "):                      # pylint: disable=no-member
+     shortProductName = ''.join(s[0] for s in shortProductName.split())
+ 
+ # DriverDisc Paths
+-- 
+2.7.4
+

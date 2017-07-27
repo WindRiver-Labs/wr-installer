@@ -1,0 +1,31 @@
+From f72aa915e7a7c510587447725af40ed1050422a2 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 1 Jun 2017 13:48:00 +0800
+Subject: [PATCH 40/65] tweak /boot storage sanity check
+
+Since kernel-vmlinux (200MB+) was installed to /boot,
+tweak /boot storage sanity check from 200MB to 300MB.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/storage_utils.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyanaconda/storage_utils.py b/pyanaconda/storage_utils.py
+index ca49f86..23160bc 100644
+--- a/pyanaconda/storage_utils.py
++++ b/pyanaconda/storage_utils.py
+@@ -642,7 +642,7 @@ class StorageChecker(object):
+             '/tmp': Size("50 MiB"),
+             '/var': Size("384 MiB"),
+             '/home': Size("100 MiB"),
+-            '/boot': Size("200 MiB")
++            '/boot': Size("300 MiB")
+         })
+ 
+         self.add_new_constraint(STORAGE_MUST_BE_ON_LINUXFS, {
+-- 
+2.7.4
+

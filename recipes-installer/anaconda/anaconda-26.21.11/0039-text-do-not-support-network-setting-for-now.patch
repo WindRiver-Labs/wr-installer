@@ -1,0 +1,33 @@
+From f282390815a67d876044ba6ec9803bcc4d413f22 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 1 Jun 2017 13:34:20 +0800
+Subject: [PATCH 39/65] text: do not support network setting for now
+
+We have a long term plan to support it, but not now.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/tui/spokes/network.py | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/pyanaconda/ui/tui/spokes/network.py b/pyanaconda/ui/tui/spokes/network.py
+index 0bdee5d..7af5da3 100644
+--- a/pyanaconda/ui/tui/spokes/network.py
++++ b/pyanaconda/ui/tui/spokes/network.py
+@@ -58,6 +58,11 @@ class NetworkSpoke(FirstbootSpokeMixIn, EditTUISpoke):
+         self.errors = []
+         self._apply = False
+ 
++    @classmethod
++    def should_run(cls, environment, data):
++        # Do not support network config for now
++        return False
++
+     def initialize(self):
+         self.initialize_start()
+         self._load_new_devices()
+-- 
+2.7.4
+

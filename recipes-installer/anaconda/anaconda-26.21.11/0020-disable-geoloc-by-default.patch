@@ -1,0 +1,30 @@
+From 23bbe43b72154be12f23523258fd918704ccd570 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 14:19:58 +0800
+Subject: [PATCH 20/65] disable geoloc by default
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ anaconda.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/anaconda.py b/anaconda.py
+index ad7bf6b..5163fb3 100755
+--- a/anaconda.py
++++ b/anaconda.py
+@@ -695,8 +695,8 @@ if __name__ == "__main__":
+     else:
+         # flags.cmdline.getbool is used as it handles values such as
+         # 0, no, off and also nogeoloc as False
+-        # and other values or geoloc not being present as True
+-        use_geolocation = flags.cmdline.getbool('geoloc', True)
++        # and other values or geoloc not being present as False
++        use_geolocation = flags.cmdline.getbool('geoloc', False)
+ 
+     if use_geolocation:
+         startup_utils.start_geolocation(provider_id=opts.geoloc)
+-- 
+2.7.4
+

@@ -1,0 +1,138 @@
+From 80f24da9a6a564f642ce2e4badd8d78515f4914e Mon Sep 17 00:00:00 2001
+From: Mark Hatle <mark.hatle@windriver.com>
+Date: Fri, 19 May 2017 15:30:43 +0800
+Subject: [PATCH 13/65] bootloader.py: Change 'grub2' settings to match oe-core
+
+There is no 'grub2' package in oe-core, it's called 'grub'.  Adjust settings
+to match this naming.  Also before writing out a variety of configuration
+files, as necessary -- create the directories required.
+
+Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
+
+Upstream-Status: Inappropriate [oe specific]
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/bootloader.py | 39 +++++++++++++++++++++++++++++++++------
+ 1 file changed, 33 insertions(+), 6 deletions(-)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index 339cc2f..3c8ae40 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -944,6 +944,10 @@ class BootLoader(object):
+             raise BootLoaderError("no config file defined for this boot loader")
+ 
+         config_path = os.path.normpath(iutil.getSysroot() + self.config_file)
++        config_dir = os.path.dirname(config_path)
++        if not os.path.isdir(config_dir):
++            os.mkdir(config_dir, 755)
++
+         if os.access(config_path, os.R_OK):
+             os.rename(config_path, config_path + ".anacbak")
+ 
+@@ -1214,6 +1218,11 @@ class GRUB(BootLoader):
+     def write_device_map(self):
+         """ Write out a device map containing all supported devices. """
+         map_path = os.path.normpath(iutil.getSysroot() + self.device_map_file)
++
++        map_dir = os.path.dirname(map_path)
++        if not os.path.isdir(map_dir):
++            os.mkdir(map_dir, 755)
++
+         if os.access(map_path, os.R_OK):
+             os.rename(map_path, map_path + ".anacbak")
+ 
+@@ -1399,9 +1408,9 @@ class GRUB2(GRUB):
+ 
+     """
+     name = "GRUB2"
+-    packages = ["grub2"]
++    packages = ["grub"]
+     _config_file = "grub.cfg"
+-    _config_dir = "grub2"
++    _config_dir = "grub"
+     defaults_file = "/etc/default/grub"
+     terminal_type = "console"
+     stage2_max_end = None
+@@ -1460,6 +1469,11 @@ class GRUB2(GRUB):
+     def write_device_map(self):
+         """ Write out a device map containing all supported devices. """
+         map_path = os.path.normpath(iutil.getSysroot() + self.device_map_file)
++
++        map_dir = os.path.dirname(map_path)
++        if not os.path.isdir(map_dir):
++            os.mkdir(map_dir, 755)
++
+         if os.access(map_path, os.R_OK):
+             os.rename(map_path, map_path + ".anacbak")
+ 
+@@ -1485,6 +1499,11 @@ class GRUB2(GRUB):
+ 
+     def write_defaults(self):
+         defaults_file = "%s%s" % (iutil.getSysroot(), self.defaults_file)
++
++        defaults_dir = os.path.dirname(defaults_file)
++        if not os.path.isdir(defaults_dir):
++            os.mkdir(defaults_dir, 755)
++
+         defaults = open(defaults_file, "w+")
+         defaults.write("GRUB_TIMEOUT=%d\n" % self.timeout)
+         defaults.write("GRUB_DISTRIBUTOR=\"$(sed 's, release .*$,,g' /etc/system-release)\"\n")
+@@ -1517,7 +1536,7 @@ class GRUB2(GRUB):
+         passwords = "%s\n%s\n" % (self.password, self.password)
+         os.write(pwrite, passwords.encode("utf-8"))
+         os.close(pwrite)
+-        buf = iutil.execWithCapture("grub2-mkpasswd-pbkdf2", [],
++        buf = iutil.execWithCapture("grub-mkpasswd-pbkdf2", [],
+                                     stdin=pread,
+                                     root=iutil.getSysroot())
+         os.close(pread)
+@@ -1530,6 +1549,11 @@ class GRUB2(GRUB):
+             return
+ 
+         users_file = iutil.getSysroot() + "/etc/grub.d/01_users"
++
++        users_dir = os.path.dirname(users_file)
++        if not os.path.isdir(users_dir):
++            os.mkdir(users_dir, 755)
++
+         header = iutil.open_with_perm(users_file, "w", 0o700)
+         header.write("#!/bin/sh -e\n\n")
+         header.write("cat << \"EOF\"\n")
+@@ -1567,12 +1591,12 @@ class GRUB2(GRUB):
+                 log.warning("Failed to find default image (%s), defaulting to 0", self.default.label)
+                 default_index = 0
+ 
+-            rc = iutil.execInSysroot("grub2-set-default", [str(default_index)])
++            rc = iutil.execInSysroot("grub-set-default", [str(default_index)])
+             if rc:
+                 log.error("failed to set default menu entry to %s", productName)
+ 
+         # now tell grub2 to generate the main configuration file
+-        rc = iutil.execInSysroot("grub2-mkconfig",
++        rc = iutil.execInSysroot("grub-mkconfig",
+                                  ["-o", self.config_file])
+         if rc:
+             raise BootLoaderError("failed to write boot loader configuration")
+@@ -1599,7 +1623,7 @@ class GRUB2(GRUB):
+                 else:
+                     log.info("bootloader.py: mbr will be updated for grub2")
+ 
+-            rc = iutil.execWithRedirect("grub2-install", grub_args,
++            rc = iutil.execWithRedirect("grub-install", grub_args,
+                                         root=iutil.getSysroot(),
+                                         env_prune=['MALLOC_PERTURB_'])
+             if rc:
+@@ -2407,6 +2431,9 @@ def writeSysconfigKernel(storage, version, instClass):
+ 
+     kernel = h.name.decode()
+ 
++    if not os.path.isdir(iutil.getSysroot() + "/etc/sysconfig"):
++        os.mkdir(iutil.getSysroot() + "/etc/sysconfig", 755)
++
+     f = open(iutil.getSysroot() + "/etc/sysconfig/kernel", "w+")
+     f.write("# UPDATEDEFAULT specifies if new-kernel-pkg should make\n"
+             "# new kernels the default\n")
+-- 
+2.7.4
+

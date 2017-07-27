@@ -1,0 +1,38 @@
+From c23cb67a0bf9960357c66651527e959ccb754076 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Mon, 15 May 2017 13:47:30 +0800
+Subject: [PATCH 05/65] add package site dir for installclass searching
+
+The default dir searching is incorrect.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/installclass.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/pyanaconda/installclass.py b/pyanaconda/installclass.py
+index 4bb7dff..0311ca7 100644
+--- a/pyanaconda/installclass.py
++++ b/pyanaconda/installclass.py
+@@ -22,6 +22,7 @@
+ #
+ 
+ from distutils.sysconfig import get_python_lib
++from site import getsitepackages
+ import os, sys
+ import imp
+ 
+@@ -192,7 +193,7 @@ def availableClasses(showHidden=False):
+ 
+     path = []
+ 
+-    env_path = []
++    env_path = ["%s/pyanaconda/installclasses" % p for p in getsitepackages()]
+     if "ANACONDA_INSTALL_CLASSES" in os.environ:
+         env_path += os.environ["ANACONDA_INSTALL_CLASSES"].split(":")
+ 
+-- 
+2.7.4
+

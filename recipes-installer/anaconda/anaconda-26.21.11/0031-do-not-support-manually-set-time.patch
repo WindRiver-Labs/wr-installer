@@ -1,0 +1,32 @@
+From 265adffc84235b9cbc0ea68e576e4e8afe2e3d3f Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 31 Mar 2017 13:40:00 +0800
+Subject: [PATCH 31/65] do not support manually set time
+
+Since NTP setting is not supported in anaconda, it does not
+support set time manually neither.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/spokes/datetime_spoke.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/pyanaconda/ui/gui/spokes/datetime_spoke.py b/pyanaconda/ui/gui/spokes/datetime_spoke.py
+index ecf32f7..4cc9f60 100644
+--- a/pyanaconda/ui/gui/spokes/datetime_spoke.py
++++ b/pyanaconda/ui/gui/spokes/datetime_spoke.py
+@@ -541,6 +541,9 @@ class DatetimeSpoke(FirstbootSpokeMixIn, NormalSpoke):
+                              _("Restoring hardware time..."))
+             threadMgr.wait(constants.THREAD_TIME_INIT)
+ 
++        # Do not support manually set time
++        self._set_date_time_setting_sensitive(False)
++
+         hubQ.send_ready(self.__class__.__name__, False)
+ 
+         # report that we are done
+-- 
+2.7.4
+

@@ -1,0 +1,42 @@
+From 71baa574de0810c5698f5f749f074648e1747895 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 10 May 2017 03:56:04 -0400
+Subject: [PATCH 03/65] Revert "Use system Python when running Anaconda"
+
+The OE does not support it.
+
+This reverts commit b23760dcac91fcc77cc629d3e87757a8b4b6aae0.
+
+Upstream-Status: Inappropriate [OE specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ anaconda.py      | 2 +-
+ anaconda.spec.in | 1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/anaconda.py b/anaconda.py
+index 4c9fef6..25f227c 100755
+--- a/anaconda.py
++++ b/anaconda.py
+@@ -1,4 +1,4 @@
+-#!/usr/libexec/system-python
++#!/usr/bin/python3
+ #
+ # anaconda: The Red Hat Linux Installation program
+ #
+diff --git a/anaconda.spec.in b/anaconda.spec.in
+index e92d82c..776150d 100644
+--- a/anaconda.spec.in
++++ b/anaconda.spec.in
+@@ -83,7 +83,6 @@ The anaconda package is a metapackage for the Anaconda installer.
+ 
+ %package core
+ Summary: Core of the Anaconda installer
+-Requires: python3-libs
+ Requires: python3-dnf >= %{dnfver}
+ Requires: python3-blivet >= 1:2.1.9-1
+ Requires: python3-blockdev >= %{libblockdevver}
+-- 
+2.7.4
+

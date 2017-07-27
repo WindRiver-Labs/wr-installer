@@ -1,0 +1,72 @@
+From 8c62794da3c3703a0712676c7961ac1686253360 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 16:31:46 +0800
+Subject: [PATCH 35/65] revert commits to support reboot for live installs
+
+This reverts commit ab9d579a27cb9f102b5ea9e215c70334dc5e88fc.
+
+The upstream use a separate way to reboot for live install,
+because they need eject live CD after installation finished.
+(They add a simple wrapper around anaconda to kick off an install
+from a live CD)
+
+But wrlinux do not need it, and could not eject installation live CD
+neither. We mount rootfs to live CD (/dev/sr0), and it is hard to umount
+rootfs before eject.
+
+And we could not use upstream's wrapper, it is gnome desktop related
+and not proper for wrlinux.
+
+It also partly revert the following commit to let reboot work for live
+installs.
+-------------
+commit 346181e9f82f6efb01e545394c2850d3bb657662
+Author: Chris Lumens <clumens@redhat.com>
+Date:   Thu Sep 6 11:25:44 2012 -0400
+
+    Quitting the live installer shouldn't reboot the system (#854904).
+-------------
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ anaconda.py                        | 3 +--
+ pyanaconda/ui/gui/hubs/progress.py | 7 -------
+ 2 files changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/anaconda.py b/anaconda.py
+index 5163fb3..91d3fc0 100755
+--- a/anaconda.py
++++ b/anaconda.py
+@@ -92,8 +92,7 @@ def exitHandler(rebootData, storage):
+     if pidfile:
+         pidfile.close()
+ 
+-    if not flags.imageInstall and not flags.livecdInstall \
+-       and not flags.dirInstall:
++    if not flags.imageInstall and not flags.dirInstall:
+         from pykickstart.constants import KS_SHUTDOWN, KS_WAIT
+ 
+         if flags.eject or rebootData.eject:
+diff --git a/pyanaconda/ui/gui/hubs/progress.py b/pyanaconda/ui/gui/hubs/progress.py
+index 34f1e53..75e8f18 100644
+--- a/pyanaconda/ui/gui/hubs/progress.py
++++ b/pyanaconda/ui/gui/hubs/progress.py
+@@ -209,13 +209,6 @@ class ProgressHub(Hub):
+     def initialize(self):
+         Hub.initialize(self)
+ 
+-        if flags.livecdInstall:
+-            continueText = self.builder.get_object("rebootLabel")
+-            continueText.set_text(_("%s is now successfully installed on your system and ready "
+-                                    "for you to use!  When you are ready, reboot your system to start using it!"))
+-            continueText.set_line_wrap(True)
+-            self.window.get_continue_button().set_label(C_("GUI|Progress", "_Quit"))
+-
+         self._progressBar = self.builder.get_object("progressBar")
+         self._progressLabel = self.builder.get_object("progressLabel")
+         self._progressNotebook = self.builder.get_object("progressNotebook")
+-- 
+2.7.4
+

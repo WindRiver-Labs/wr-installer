@@ -1,0 +1,96 @@
+From 08cdf7e69a40c16e16b927ea1b58cbf33ab64d3d Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 19 May 2017 16:14:01 +0800
+Subject: [PATCH 14/65] tweak detect kernel version
+
+According kernel layout in oe-core, tweak the detection
+rather than using redhat's.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/bootloader.py          | 32 ++++++++++++++++++--------------
+ pyanaconda/payload/livepayload.py |  9 +++++++--
+ 2 files changed, 25 insertions(+), 16 deletions(-)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index 3c8ae40..a8fc01f 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -2404,16 +2404,23 @@ def get_bootloader():
+ 
+ def writeSysconfigKernel(storage, version, instClass):
+     # get the name of the default kernel package based on the version
+-    kernel_basename = "vmlinuz-" + version
+-    kernel_file = "/boot/%s" % kernel_basename
+-    if not os.path.isfile(iutil.getSysroot() + kernel_file):
+-        efi_dir = instClass.efi_dir
+-        if flags.cmdline.get("force_efi_dir") is not None:
+-            efi_dir = flags.cmdline.get("force_efi_dir")
+-        kernel_file = "/boot/efi/EFI/%s/%s" % (efi_dir, kernel_basename)
+-        if not os.path.isfile(iutil.getSysroot() + kernel_file):
+-            log.error("failed to recreate path to default kernel image")
+-            return
++    for kernel_basename in ["vmlinux", "bzImage"]:
++        kernel_file = "/boot/%s" % kernel_basename
++        if os.path.isfile(iutil.getSysroot() + kernel_file):
++            break
++        else:
++            efi_dir = instClass.efi_dir
++            if flags.cmdline.get("force_efi_dir") is not None:
++                efi_dir = flags.cmdline.get("force_efi_dir")
++            kernel_file = "/boot/efi/EFI/%s/%s" % (efi_dir, kernel_basename)
++            if not os.path.isfile(iutil.getSysroot() + kernel_file):
++                break
++
++        kernel_file = None
++
++    if kernel_file is None:
++        log.error("failed to recreate path to default kernel image")
++        return
+ 
+     try:
+         import rpm
+@@ -2421,6 +2428,7 @@ def writeSysconfigKernel(storage, version, instClass):
+         log.error("failed to import rpm python module")
+         return
+ 
++    log.debug("kernel_file %s" % kernel_file)
+     ts = rpm.TransactionSet(iutil.getSysroot())
+     mi = ts.dbMatch('basenames', kernel_file)
+     try:
+@@ -2493,10 +2501,6 @@ def writeBootLoader(storage, payload, instClass, ksdata):
+     # add whatever rescue kernels we can find to the end
+     kernel_versions = list(payload.kernelVersionList)
+ 
+-    rescue_versions = glob(iutil.getSysroot() + "/boot/vmlinuz-*-rescue-*")
+-    rescue_versions += glob(iutil.getSysroot() + "/boot/efi/EFI/%s/vmlinuz-*-rescue-*" % instClass.efi_dir)
+-    kernel_versions += (f.split("/")[-1][8:] for f in rescue_versions)
+-
+     if not kernel_versions:
+         log.warning("no kernel was installed -- boot loader config unchanged")
+         return
+diff --git a/pyanaconda/payload/livepayload.py b/pyanaconda/payload/livepayload.py
+index 632c798..1c41402 100644
+--- a/pyanaconda/payload/livepayload.py
++++ b/pyanaconda/payload/livepayload.py
+@@ -191,8 +191,13 @@ class LiveImagePayload(ImagePayload):
+         return Size(iutil.getDirSize("/") * 1024)
+ 
+     def _updateKernelVersionList(self):
+-        files = glob.glob(INSTALL_TREE + "/boot/vmlinuz-*")
+-        files.extend(glob.glob(INSTALL_TREE + "/boot/efi/EFI/%s/vmlinuz-*" % self.instclass.efi_dir))
++        for kernel in ["vmlinux", "bzImage"]:
++            files = glob.glob(INSTALL_TREE + "/boot/%s-*" % kernel)
++            files.extend(glob.glob(INSTALL_TREE + "/boot/efi/EFI/%s/%s-*" % (self.instclass.efi_dir, kernel)))
++            versions = sorted((f.split("/")[-1][8:] for f in files if os.path.isfile(f)))
++            if versions:
++                log.info("kernel versions: %s", versions)
++                break
+ 
+         self._kernelVersionList = sorted((f.split("/")[-1][8:] for f in files
+            if os.path.isfile(f) and "-rescue-" not in f), key=functools.cmp_to_key(versionCmp))
+-- 
+2.7.4
+

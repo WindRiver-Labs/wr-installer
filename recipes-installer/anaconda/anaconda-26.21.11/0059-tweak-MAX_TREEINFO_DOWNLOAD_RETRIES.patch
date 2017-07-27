@@ -1,0 +1,42 @@
+From 35d7ac6f653b42099f4e5e6126cc44f5d918d10b Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 9 Jun 2017 11:15:40 +0800
+Subject: [PATCH 59/65] tweak MAX_TREEINFO_DOWNLOAD_RETRIES
+
+Do not need to retry so many times.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/payload/__init__.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/pyanaconda/payload/__init__.py b/pyanaconda/payload/__init__.py
+index 24a234e..1311a2b 100644
+--- a/pyanaconda/payload/__init__.py
++++ b/pyanaconda/payload/__init__.py
+@@ -75,7 +75,7 @@ USER_AGENT = "%s (anaconda)/%s" % (productName, productVersion)
+ from distutils.version import LooseVersion
+ 
+ REPO_NOT_SET = False
+-MAX_TREEINFO_DOWNLOAD_RETRIES = 6
++MAX_TREEINFO_DOWNLOAD_RETRIES = 1
+ 
+ 
+ def versionCmp(v1, v2):
+@@ -536,9 +536,9 @@ class Payload(object):
+                 version = "rawhide"
+             except configparser.Error:
+                 pass
+-            log.debug("using treeinfo release version of %s", version)
++            log.info("using treeinfo release version of %s", version)
+         else:
+-            log.debug("using default release version of %s", version)
++            log.info("using default release version of %s", version)
+ 
+         return version
+ 
+-- 
+2.7.4
+

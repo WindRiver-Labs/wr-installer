@@ -1,0 +1,42 @@
+From aba7e051a98c33da3b168222a2cd9325963c5601 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 1 Jun 2017 14:39:13 +0800
+Subject: [PATCH 52/65] remove incorrect prefix of addon repo url
+
+While user set addon repo url with "http://128.224.162.227/intel_x86_64/",
+it has incorrect prefix "http://http://128.224.162.227/intel_x86_64/".
+
+So remove incorrect prefix of addon repo url.
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/spokes/source.py | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/pyanaconda/ui/gui/spokes/source.py b/pyanaconda/ui/gui/spokes/source.py
+index b8bd739..34fa04d 100644
+--- a/pyanaconda/ui/gui/spokes/source.py
++++ b/pyanaconda/ui/gui/spokes/source.py
+@@ -1521,9 +1521,15 @@ class SourceSpoke(NormalSpoke, GUISpokeInputCheckHandler):
+         proto = REPO_PROTO[idx]
+         url = self._repoUrlEntry.get_text().strip()
+         if self._repoMirrorlistCheckbox.get_active():
+-            repo.mirorlist = proto + url
++            if not url.startswith(proto):
++                repo.mirorlist = proto + url
++            else:
++                repo.mirorlist = url
+         else:
+-            repo.baseurl = proto + url
++            if not url.startswith(proto):
++                repo.baseurl = proto + url
++            else:
++                repo.baseurl = url
+ 
+         # do not update check status if check are not yet set up
+         # (populationg/refreshing the spoke)
+-- 
+2.7.4
+

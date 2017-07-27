@@ -1,0 +1,74 @@
+From 6b2687d0b3fb79d61a46c71e35d2f025b3285014 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 14:55:11 +0800
+Subject: [PATCH 29/65] support timezone setting
+
+- If selected timezone does not exist in target,
+  try to make a copy from host
+
+- Drop unused /etc/adjtime (redhat specific),
+  use /etc/localtime to replace (oe-core specific).
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/timezone.py | 28 ++++++----------------------
+ 1 file changed, 6 insertions(+), 22 deletions(-)
+
+diff --git a/pyanaconda/timezone.py b/pyanaconda/timezone.py
+index c9990d2..21b1ec1 100644
+--- a/pyanaconda/timezone.py
++++ b/pyanaconda/timezone.py
+@@ -23,6 +23,7 @@ configuration, valid timezones recognition etc.
+ """
+ 
+ import os
++import shutil
+ import pytz
+ import langtable
+ from collections import OrderedDict
+@@ -101,6 +102,9 @@ def write_timezone_config(timezone, root):
+     relative_path = os.path.normpath("../" + tz_file)
+     link_path = os.path.normpath(root + "/etc/localtime")
+ 
++    if not os.access(rooted_tz_file, os.R_OK) and os.access(tz_file, os.R_OK):
++        shutil.copyfile(tz_file, rooted_tz_file)
++
+     if not os.access(rooted_tz_file, os.R_OK):
+         log.error("Timezone to be linked (%s) doesn't exist", rooted_tz_file)
+     else:
+@@ -116,28 +120,8 @@ def write_timezone_config(timezone, root):
+             log.error("Error when symlinking timezone (from %s): %s",
+                       rooted_tz_file, oserr.strerror)
+ 
+-    if arch.is_s390():
+-        # there is no HW clock on s390(x)
+-        return
+-
+-    try:
+-        fobj = open(os.path.normpath(root + "/etc/adjtime"), "r")
+-        lines = fobj.readlines()
+-        fobj.close()
+-    except IOError:
+-        lines = ["0.0 0 0.0\n", "0\n"]
+-
+-    try:
+-        with open(os.path.normpath(root + "/etc/adjtime"), "w") as fobj:
+-            fobj.write(lines[0])
+-            fobj.write(lines[1])
+-            if timezone.isUtc:
+-                fobj.write("UTC\n")
+-            else:
+-                fobj.write("LOCAL\n")
+-    except IOError as ioerr:
+-        msg = "Error while writing /etc/adjtime file: %s" % ioerr.strerror
+-        raise TimezoneConfigError(msg)
++    with open(root + "/etc/timezone", "w") as fobj:
++        fobj.write('%s\n' % timezone.timezone)
+ 
+ def save_hw_clock(timezone):
+     """
+-- 
+2.7.4
+

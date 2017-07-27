@@ -1,0 +1,597 @@
+From b975f1e037d87f068fcf21517a74665b02ad3988 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 18 May 2017 15:23:24 +0800
+Subject: [PATCH 08/65] dnfpayload.py: customize for WRLinux
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/payload/dnfpayload.py | 366 ++++++++++++++++++++++++++++++---------
+ 1 file changed, 285 insertions(+), 81 deletions(-)
+
+diff --git a/pyanaconda/payload/dnfpayload.py b/pyanaconda/payload/dnfpayload.py
+index 6d196e2..8cad37b 100644
+--- a/pyanaconda/payload/dnfpayload.py
++++ b/pyanaconda/payload/dnfpayload.py
+@@ -18,6 +18,7 @@
+ # Red Hat, Inc.
+ #
+ import os
++import os.path
+ 
+ from blivet.size import Size
+ from pykickstart.constants import GROUP_ALL, GROUP_DEFAULT, KS_MISSING_IGNORE
+@@ -44,7 +45,13 @@ import sys
+ import time
+ import threading
+ from requests.exceptions import RequestException
++import inspect
++import collections
+ 
++if __name__ == "__main__":
++    from pyanaconda import anaconda_log
++    anaconda_log.init()
++    anaconda_log.logger.setupVirtio()
+ log = logging.getLogger("packaging")
+ 
+ import dnf
+@@ -54,6 +61,7 @@ import dnf.repo
+ import dnf.callback
+ import dnf.conf.parser
+ import dnf.conf.substitutions
++import dnf.const
+ import rpm
+ import librepo
+ 
+@@ -225,7 +233,18 @@ class PayloadRPMDisplay(dnf.callback.TransactionProgress):
+         """Report an error that occurred during the transaction. Message is a
+         string which describes the error.
+         """
+-        self._queue.put(('error', message))
++        token = "error"
++        if message.startswith("Non-fatal"):
++            token = "warn"
++        self._queue.put((token, message))
++        log.info("error: %s" % message)
++
++    def scriptout(self, msgs):
++        if msgs is None:
++            return
++
++        log.info("scriptout: %s" % msgs)
++
+ 
+ 
+ class DownloadProgress(dnf.callback.DownloadProgress):
+@@ -294,6 +313,14 @@ class DNFPayload(payload.PackagePayload):
+         self._updates_enabled = True
+         self._configure()
+ 
++        self.requiredPackages += ['base-files', 'base-passwd', 'shadow']
++        # Support grub-mkconfig
++        self.requiredPackages += ['sed', 'coreutils', 'busybox']
++        # The extra packages make sure lvm initramfs generation
++        #self.requiredPackages += ['ldd', 'gzip', 'iputils']
++        # Support create new user
++        self.requiredPackages += ['shadow']
++
+         # Protect access to _base.repos to ensure that the dictionary is not
+         # modified while another thread is attempting to iterate over it. The
+         # lock only needs to be held during operations that change the number
+@@ -303,12 +330,26 @@ class DNFPayload(payload.PackagePayload):
+         # save repomd metadata
+         self._repoMD_list = []
+ 
++        # WRlinux specific
++        self.image = {}
++        self.tasks = {}
++
++    def setup(self, storage, instClass):
++        log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
++
++        self.image, self.tasks = instClass.read_buildstamp()
++        super(DNFPayload, self).setup(storage, instClass)
++
+     def unsetup(self):
+         super(DNFPayload, self).unsetup()
+         self._base = None
+         self._configure()
+         self._repoMD_list = []
+ 
++        # WRlinux specific
++        self.image = {}
++        self.tasks = {}
++
+     def _replace_vars(self, url):
+         """Replace url variables with their values.
+ 
+@@ -405,21 +446,12 @@ class DNFPayload(payload.PackagePayload):
+         super(DNFPayload, self).addRepo(ksrepo)
+ 
+     def _apply_selections(self):
+-        if self.data.packages.nocore:
+-            log.info("skipping core group due to %%packages --nocore; system may not be complete")
+-        else:
+-            try:
+-                self._select_group('core', required=True)
+-                log.info("selected group: core")
+-            except payload.NoSuchGroup as e:
+-                self._miss(e)
+-
+         env = None
+ 
+-        if self.data.packages.default and self.environments:
+-            env = self.environments[0]
+-        elif self.data.packages.environment:
++        if self.data.packages.environment:
+             env = self.data.packages.environment
++        elif self.environments:
++            env = self.environments[0]
+ 
+         excludedGroups = [group.name for group in self.data.packages.excludedGroupList]
+ 
+@@ -461,7 +493,7 @@ class DNFPayload(payload.PackagePayload):
+             except payload.NoSuchPackage as e:
+                 self._miss(e)
+ 
+-        for group in self.requiredGroups:
++        for group in self.requiredGroups or []:
+             try:
+                 self._select_group(group, required=True)
+                 log.debug("selected required group: %s", group)
+@@ -497,6 +529,33 @@ class DNFPayload(payload.PackagePayload):
+             conf.proxy_username = None
+             conf.proxy_password = None
+ 
++    def _oe_configure(self, dnf_conf):
++        # Refers oe-core's recipes of dnf and rpm
++        os.environ['RPM_NO_CHROOT_FOR_SCRIPTS'] = "1"
++
++        # Refers oe-core's meta/lib/oe/package_manager.py
++        # def _prepare_pkg_transaction(self) in class RpmPM(PackageManager)
++        target_rootfs = pyanaconda.iutil.getSysroot()
++        os.environ['D'] = target_rootfs
++        os.environ['OFFLINE_ROOT'] = target_rootfs
++        os.environ['IPKG_OFFLINE_ROOT'] = target_rootfs
++        os.environ['OPKG_OFFLINE_ROOT'] = target_rootfs
++
++        # Refer oe-core's meta/lib/oe/package_manager.py
++        # def _configure_dnf(self) in class RpmPM(PackageManager)
++        # directly read its result from installer system
++        dnf_conf.substitutions['arch'] = open("/etc/dnf/vars/arch", "r").readline()
++
++    def _oe_configure_post(self):
++        # Refers oe-core's meta/lib/oe/package_manager.py
++        # def _configure_rpm(self) and def _configure_dnf(self)
++        # in class RpmPM(PackageManager)
++        # directly copy its result from installer system
++        target_sysconf = "%s/etc" % pyanaconda.iutil.getSysroot()
++        pyanaconda.iutil.execWithRedirect("cp", ["-fr", "/etc/rpmrc", target_sysconf])
++        pyanaconda.iutil.execWithRedirect("cp", ["-rf", "/etc/dnf", target_sysconf])
++        pyanaconda.iutil.execWithRedirect("cp", ["-rf", "/etc/rpm", target_sysconf])
++
+     def _configure(self):
+         self._base = dnf.Base()
+         conf = self._base.conf
+@@ -508,12 +567,17 @@ class DNFPayload(payload.PackagePayload):
+         conf.installroot = pyanaconda.iutil.getSysroot()
+         conf.prepend_installroot('persistdir')
+ 
++        self._oe_configure(conf)
++
+         self._base.conf.substitutions.update_from_etc(conf.installroot)
+ 
+         # NSS won't survive the forking we do to shield out chroot during
+         # transaction, disable it in RPM:
+         conf.tsflags.append('nocrypto')
+ 
++        conf.errorlevel = dnf.const.VERBOSE_LEVEL
++        conf.debuglevel = dnf.const.VERBOSE_LEVEL
++
+         if self.data.packages.multiLib:
+             conf.multilib_policy = "all"
+ 
+@@ -551,9 +615,9 @@ class DNFPayload(payload.PackagePayload):
+         # reserve extra
+         return Size(size) + Size("150 MB")
+ 
+-    def _install_package(self, pkg_name, required=False):
++    def _install_package(self, pkg_name, required=False, strict=True):
+         try:
+-            return self._base.install(pkg_name)
++            return self._base.install(pkg_name, strict=strict)
+         except dnf.exceptions.MarkingError:
+             raise payload.NoSuchPackage(pkg_name, required=required)
+ 
+@@ -589,25 +653,47 @@ class DNFPayload(payload.PackagePayload):
+         return pkgdir
+ 
+     def _select_group(self, group_id, default=True, optional=False, required=False):
+-        grp = self._base.comps.group_by_pattern(group_id)
+-        if grp is None:
+-            raise payload.NoSuchGroup(group_id, required=required)
+-        types = {'mandatory'}
+-        if default:
+-            types.add('default')
+-        if optional:
+-            types.add('optional')
+-        exclude = self.data.packages.excludedList
+-        try:
+-            self._base.group_install(grp.id, types, exclude=exclude)
+-        except dnf.exceptions.MarkingError as e:
+-            # dnf-1.1.9 raises this error when a package is missing from a group
+-            raise payload.NoSuchPackage(str(e), required=True)
+-        except dnf.exceptions.CompsError as e:
+-            # DNF raises this when it is already selected
+-            log.debug(e)
++        log.info("_select_group %s" % group_id)
++        if not group_id:
++            return
++
++        glob = self._complementary_glob(group_id)
++
++        # get all available languages in repos
++        available_packs = self._base.sack.query().available() \
++            .filter(name__glob = "*-%s"%glob)
++        allpkgnames = [p.name for p in available_packs]
++        log.info("allpkgnames %d" % len(allpkgnames))
++        for pkgname in allpkgnames:
++            self._install_package(pkgname, strict=False)
++
++    def _select_linguas(self, image_linguas):
++        lc_globs = []
++        for ling in image_linguas.split():
++            if ling not in lc_globs:
++                lc_globs.append(ling)
++
++            baselang = ling.split('-')[0]
++            if ling != baselang and baselang not in lc_globs:
++                lc_globs.append(baselang)
++
++        log.info("lc_globs: %s" % lc_globs)
++        for glob in lc_globs:
++            self._select_group("locale-%s" % glob)
+ 
+     def _select_environment(self, env_id, excluded):
++        (image_name, description)  = self.environmentDescription(env_id)
++        log.info("image_name %s, des %s" % (image_name, description))
++        image_id = image_name.split()[0]
++        (image_summary, image_description, package_install, package_install_attemptonly, image_linguas) = self.image[image_id]
++        log.info("package_install %s, attempt %s, linguas %s" %
++                   (package_install, package_install_attemptonly, image_linguas))
++
++        for pkg in package_install.split():
++            self.requiredPackages.append(pkg)
++
++        self._select_linguas(image_linguas)
++
+         # dnf.base.environment_install excludes on packages instead of groups,
+         # which is unhelpful. Instead, use group_install for each group in
+         # the environment so we can skip the ones that are excluded.
+@@ -655,20 +741,25 @@ class DNFPayload(payload.PackagePayload):
+     def baseRepo(self):
+         # is any locking needed here?
+         repo_names = [constants.BASE_REPO_NAME] + self.DEFAULT_REPOS
++        log.info("repo_names %s" % repo_names)
+         with self._repos_lock:
+             for repo in self._base.repos.iter_enabled():
++                log.info("repo.id %s" % repo.id)
+                 if repo.id in repo_names:
+                     return repo.id
+         return None
+ 
+     @property
+     def environments(self):
+-        return [env.id for env in self._base.comps.environments]
++        """ List of environment ids. """
++        log.info("%s %s: %s" % (self.__class__.__name__, inspect.stack()[0][3], self.tasks.keys()))
++        return sorted(self.tasks.keys())
+ 
+     @property
+     def groups(self):
+-        groups = self._base.comps.groups_iter()
+-        return [g.id for g in groups]
++        """ List of group ids. """
++        log.info("%s %s" % (self.__class__.__name__, inspect.stack()[0][3]))
++        return sorted(self.tasks.keys())
+ 
+     @property
+     def mirrorEnabled(self):
+@@ -738,7 +829,7 @@ class DNFPayload(payload.PackagePayload):
+         return grp.visible
+ 
+     def _groupHasInstallableMembers(self, grpid):
+-        return True
++        return False
+ 
+     def checkSoftwareSelection(self):
+         log.info("checking software selection")
+@@ -792,50 +883,49 @@ class DNFPayload(payload.PackagePayload):
+         super(DNFPayload, self).enableRepo(repo_id)
+ 
+     def environmentDescription(self, environmentid):
+-        env = self._base.comps.environment_by_pattern(environmentid)
+-        if env is None:
+-            raise payload.NoSuchGroup(environmentid)
+-        return (env.ui_name, env.ui_description)
++        log.info("%s %s, %s" % (self.__class__.__name__, inspect.stack()[0][3], environmentid))
++
++        if environmentid not in self.tasks:
++                raise NoSuchGroup(environmentid)
++
++        if environmentid in self.tasks:
++            log.info("environmentDescription %s" % self.tasks)
++            (name, description, group) = self.tasks[environmentid]
++
++            return (name, description)
++        return (environmentid, environmentid)
+ 
+     def environmentId(self, environment):
+         """Return environment id for the environment specified by id or name."""
+-        env = self._base.comps.environment_by_pattern(environment)
+-        if env is None:
+-            raise payload.NoSuchGroup(environment)
+-        return env.id
++        log.info("%s %s, environment %s" % (self.__class__.__name__, inspect.stack()[0][3], environment))
++        # TODO
++        return environment
+ 
+     def environmentGroups(self, environmentid, optional=True):
+-        env = self._base.comps.environment_by_pattern(environmentid)
+-        if env is None:
+-            raise payload.NoSuchGroup(environmentid)
+-        group_ids = (id_.name for id_ in env.group_ids)
+-        option_ids = (id_.name for id_ in env.option_ids)
+-        if optional:
+-            return list(itertools.chain(group_ids, option_ids))
+-        else:
+-            return list(group_ids)
++        log.info("%s %s, %s" % (self.__class__.__name__, inspect.stack()[0][3], environmentid))
++
++        if environmentid in self.tasks:
++            log.info("environmentDescription %s" % self.tasks)
++            (name, description, groups) = self.tasks[environmentid]
++
++            return groups.split()
++        return [environmentid]
+ 
+     def environmentHasOption(self, environmentid, grpid):
+-        env = self._base.comps.environment_by_pattern(environmentid)
+-        if env is None:
+-            raise payload.NoSuchGroup(environmentid)
+-        return grpid in (id_.name for id_ in env.option_ids)
++        log.info("%s %s, %s, %s" % (self.__class__.__name__, inspect.stack()[0][3], environmentid, grpid))
++        # TODO
++        return True
+ 
+     def environmentOptionIsDefault(self, environmentid, grpid):
+-        env = self._base.comps.environment_by_pattern(environmentid)
+-        if env is None:
+-            raise payload.NoSuchGroup(environmentid)
+-
+-        # Look for a group in the optionlist that matches the group_id and has
+-        # default set
+-        return any(grp for grp in env.option_ids if grp.name == grpid and grp.default)
++        log.info("%s %s, %s, %s" % (self.__class__.__name__, inspect.stack()[0][3], environmentid, grpid))
++        # TODO
++        return True
+ 
+     def groupDescription(self, grpid):
+         """Return name/description tuple for the group specified by id."""
+-        grp = self._base.comps.group_by_pattern(grpid)
+-        if grp is None:
+-            raise payload.NoSuchGroup(grpid)
+-        return (grp.ui_name, grp.ui_description)
++        log.info("%s %s, %s" % (self.__class__.__name__, inspect.stack()[0][3], grpid))
++        (name, description, group) = self.tasks[grpid]
++        return (name, description)
+ 
+     def groupId(self, group_name):
+         """Translate group name to group ID.
+@@ -858,6 +948,31 @@ class DNFPayload(payload.PackagePayload):
+         self._base.read_comps()
+         self._refreshEnvironmentAddons()
+ 
++    # Refer upstream oe-core meta/lib/oe/package_manager.py
++    def _save_rpmpostinst(self, pkg):
++        def _script_num_prefix(path):
++            files = os.listdir(path)
++            numbers = set()
++            numbers.add(99)
++            for f in files:
++                numbers.add(int(f.split("-")[0]))
++            return max(numbers) + 1
++
++        log.info("Saving postinstall script of %s" % (pkg))
++
++        target_rootfs = pyanaconda.iutil.getSysroot()
++        args = ["-q", "--root=%s" % target_rootfs, "--queryformat", "%{postin}", pkg]
++
++        output = pyanaconda.iutil.execWithCapture('rpm', args, log_output=False)
++        log.info(output)
++
++        target_path = "%s/etc/rpm-postinsts" % target_rootfs
++        pyanaconda.iutil.execWithRedirect("mkdir", ["-p", target_path])
++        num = _script_num_prefix(target_path)
++        saved_script_name = os.path.join(target_path, "%d-%s" % (num, pkg))
++        open(saved_script_name, 'w').write(output)
++        os.chmod(saved_script_name, 0o755)
++
+     def install(self):
+         progress_message(N_('Starting package installation process'))
+ 
+@@ -889,6 +1004,7 @@ class DNFPayload(payload.PackagePayload):
+                 _failure_limbo()
+ 
+         log.info('Downloading packages finished.')
++        failed_scriptlets_pkgnames = collections.OrderedDict()
+ 
+         pre_msg = (N_("Preparing transaction from installation source"))
+         progress_message(pre_msg)
+@@ -921,6 +1037,9 @@ class DNFPayload(payload.PackagePayload):
+             elif token == 'quit':
+                 msg = ("Payload error - DNF installation has ended up abruptly: %s" % msg)
+                 raise payload.PayloadError(msg)
++            elif token == 'warn':
++                if msg.startswith("Non-fatal POSTIN scriptlet failure in rpm package"):
++                    failed_scriptlets_pkgnames[msg.split()[-1]] = True
+             elif token == 'error':
+                 exc = payload.PayloadInstallError("DNF error: %s" % msg)
+                 if errors.errorHandler.cb(exc) == errors.ERROR_RAISE:
+@@ -929,7 +1048,12 @@ class DNFPayload(payload.PackagePayload):
+             (token, msg) = queue_instance.get()
+ 
+         process.join()
++
+         self._base.close()
++
++        for pkg in failed_scriptlets_pkgnames.keys():
++            self._save_rpmpostinst(pkg)
++
+         if os.path.exists(self._download_location):
+             log.info("Cleaning up downloaded packages: %s", self._download_location)
+             shutil.rmtree(self._download_location)
+@@ -940,6 +1064,39 @@ class DNFPayload(payload.PackagePayload):
+             # we don't have to care about clearing the download location ourselves.
+             log.warning("Can't delete nonexistent download location: %s", self._download_location)
+ 
++    def _list_installed(self):
++        output = pyanaconda.iutil.execWithCapture(
++                      'dnf',
++                      [
++                        'repoquery',
++                        '--installed',
++                        '--installroot='+pyanaconda.iutil.getSysroot(),
++                        '--queryformat=Package:%{name}'
++                      ],
++                      log_output=False
++                 )
++        output = output.rstrip()
++        lines = output.splitlines()
++        installed = []
++        for line in lines:
++            if not line.startswith("Package:"):
++                continue
++            installed.append(line.replace("Package:", ""))
++        return installed
++
++    def _complementary_glob(self, group):
++        complementary_glob = {}
++        complementary_glob['dev-pkgs'] = 'dev'
++        complementary_glob['staticdev-pkgs'] = 'staticdev'
++        complementary_glob['doc-pkgs'] = 'doc'
++        complementary_glob['dbg-pkgs'] = 'dbg'
++        complementary_glob['ptest-pkgs'] = 'ptest'
++
++        if group in complementary_glob:
++            return complementary_glob[group]
++
++        return group
++
+     def getRepo(self, repo_id):
+         """Return the yum repo object."""
+         return self._base.repos[repo_id]
+@@ -959,16 +1116,7 @@ class DNFPayload(payload.PackagePayload):
+         return True
+ 
+     def languageGroups(self):
+-        locales = [self.data.lang.lang] + self.data.lang.addsupport
+-        match_fn = pyanaconda.localization.langcode_matches_locale
+-        gids = set()
+-        gl_tuples = ((g.id, g.lang_only) for g in self._base.comps.groups_iter())
+-        for (gid, lang) in gl_tuples:
+-            for locale in locales:
+-                if match_fn(lang, locale):
+-                    gids.add(gid)
+-        log.info('languageGroups: %s', gids)
+-        return list(gids)
++        return []
+ 
+     def preInstall(self, packages=None, groups=None):
+         super(DNFPayload, self).preInstall(packages, groups)
+@@ -986,12 +1134,12 @@ class DNFPayload(payload.PackagePayload):
+         self._repoMD_list = []
+ 
+     def updateBaseRepo(self, fallback=True, checkmount=True):
+-        log.info('configuring base repo')
+         self.reset()
+         url, mirrorlist, sslverify = self._setupInstallDevice(self.storage,
+                                                               checkmount)
+         method = self.data.method
+-
++        log.info('configuring base repo: url %s, mirrorlist %s, sslverify %s, method %s'
++                    % (url, mirrorlist, sslverify, method.method))
+         # Read in all the repos from the installation environment, make a note of which
+         # are enabled, and then disable them all.  If the user gave us a method, we want
+         # to use that instead of the default repos.
+@@ -1161,6 +1309,17 @@ class DNFPayload(payload.PackagePayload):
+ 
+         super(DNFPayload, self).postInstall()
+ 
++        self._oe_configure_post()
++
++        # For the generation of anaconda-ks.cfg
++        for pkg in self._list_installed():
++            if pkg not in self.data.packages.packageList:
++                self.data.packages.packageList.append(pkg)
++
++        pyanaconda.iutil.execWithRedirect("depmod",
++                                          ["-a"],
++                                          root=pyanaconda.iutil.getSysroot())
++
+     def writeStorageLate(self):
+         pass
+ 
+@@ -1234,3 +1393,48 @@ class RepoMDMetaHash(object):
+                 log.debug("Can't download new repomd.xml from %s. Error: %s", url, e)
+ 
+         return repomd
++
++
++# For testing
++if __name__ == "__main__":
++    log.info("God bless us")
++
++    from pykickstart.version import makeVersion
++
++    # set up ksdata
++    ksdata = makeVersion()
++
++    ksdata.method.method = "cdrom"
++
++    from pyanaconda.installclass import DefaultInstall
++    instClass = DefaultInstall()
++
++    import blivet
++    storage = blivet.Blivet(ksdata=ksdata)
++    storage.set_default_fstype("ext4")
++
++    _payload = DNFPayload(ksdata)
++
++    _payload.setup(storage, instClass)
++
++    # Keep setting up package-based repositories
++    # Download package metadata
++    try:
++        _payload.updateBaseRepo(fallback=False, checkmount=True)
++    except payload.PayloadError as e:
++        log.error("PayloadError: %s", e)
++        _payload.unsetup()
++        exit(0)
++
++    # Gather the group data
++    _payload.gatherRepoMetadata()
++    _payload.release()
++    _payload.addDriverRepos()
++
++    log.info("baseRepo %s" % _payload.baseRepo)
++
++    _payload.preInstall()
++
++    _payload.install()
++
++    _payload.postInstall()
+-- 
+2.7.4
+

@@ -1,0 +1,30 @@
+From b9f0d13df1a467c4eedf11820ffb0e0e3f04feba Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 19 May 2016 22:28:14 -0400
+Subject: [PATCH 23/65] tweak default nfs mount point
+
+Tweak nfs mount point of base repository to "/media/source".
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/constants.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyanaconda/constants.py b/pyanaconda/constants.py
+index b514bf5..d15767b 100644
+--- a/pyanaconda/constants.py
++++ b/pyanaconda/constants.py
+@@ -57,7 +57,7 @@ DRACUT_REPODIR = MOUNT_DIR + "/Packages"
+ DRACUT_ISODIR = "/run/install/source"
+ ISO_DIR = MOUNT_DIR + "/isodir"
+ IMAGE_DIR = MOUNT_DIR + "/image"
+-INSTALL_TREE = MOUNT_DIR + "/source"
++INSTALL_TREE = "/media/source"
+ BASE_REPO_NAME = "anaconda"
+ 
+ # NOTE: this should be LANG_TERRITORY.CODESET, e.g. en_US.UTF-8
+-- 
+2.7.4
+

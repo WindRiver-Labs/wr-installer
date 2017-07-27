@@ -1,0 +1,47 @@
+From 7bae228f66d6598e053352a24d0f0a05242e2342 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 1 Jun 2017 14:19:41 +0800
+Subject: [PATCH 45/65] live install supports kickstart
+
+While live install, WRLinux does not support harddrive,
+use cdrom to replace
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/install.py       | 4 ++++
+ pyanaconda/startup_utils.py | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/pyanaconda/install.py b/pyanaconda/install.py
+index 0bb0722..38e10fd 100644
+--- a/pyanaconda/install.py
++++ b/pyanaconda/install.py
+@@ -75,6 +75,10 @@ def _writeKS(ksdata):
+     # Do not support network configuration
+     ksdata.network.network = []
+ 
++    # Correct method of live install, use cdrom to replace
++    if ksdata.method.method == "harddrive":
++        ksdata.method.method = "cdrom"
++
+     # Make it so only root can read - could have passwords
+     with iutil.open_with_perm(path, "w", 0o600) as f:
+         f.write(str(ksdata))
+diff --git a/pyanaconda/startup_utils.py b/pyanaconda/startup_utils.py
+index a54d1e2..ae45c5e 100644
+--- a/pyanaconda/startup_utils.py
++++ b/pyanaconda/startup_utils.py
+@@ -419,7 +419,7 @@ def parse_kickstart(options, addon_paths):
+     :returns: kickstart parsed to a data model
+     """
+     ksdata = None
+-    if options.ksfile and not options.liveinst:
++    if options.ksfile:
+         if not os.path.exists(options.ksfile) and \
+            not options.ksfile.startswith("http://") and \
+            not options.ksfile.startswith("https://") and \
+-- 
+2.7.4
+

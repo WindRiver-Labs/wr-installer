@@ -1,0 +1,46 @@
+From 7d33e72c8b29e9faf7a3c197431e8b92219b44eb Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 26 May 2017 14:34:46 +0800
+Subject: [PATCH 24/65] fix quoted empty string failed
+
+While password or username is a empty string, it failed to
+invoke quote:
+...
+|  File "/usr/lib64/python2.7/site-packages/pyanaconda/iutil.py",
+line 823, in parse_components
+|    quote(self.password) or "")
+|  File "/usr/lib64/python2.7/urllib.py", line 1290, in quote
+|    raise TypeError('None object cannot be quoted')
+...
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/iutil.py | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/pyanaconda/iutil.py b/pyanaconda/iutil.py
+index beaf2b2..cb5ad27 100644
+--- a/pyanaconda/iutil.py
++++ b/pyanaconda/iutil.py
+@@ -925,9 +925,13 @@ class ProxyString(object):
+     def parse_components(self):
+         """ Parse the components of a proxy url into url and noauth_url
+         """
+-        if self.username or self.password:
+-            self.proxy_auth = "%s:%s@" % (quote(self.username or ""),
+-                                          quote(self.password or ""))
++        if self.username and self.password:
++            self.proxy_auth = "%s:%s@" % (quote(self.username) or "",
++                                          quote(self.password) or "")
++        elif self.username and not self.password:
++            self.proxy_auth = "%s:@" % (quote(self.username) or "")
++        elif not self.username and self.password:
++            self.proxy_auth = ":%s@" % (quote(self.password) or "")
+ 
+         self.url = self.protocol + self.proxy_auth + self.host + ":" + self.port
+         self.noauth_url = self.protocol + self.host + ":" + self.port
+-- 
+2.7.4
+

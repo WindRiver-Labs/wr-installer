@@ -1,0 +1,179 @@
+From a051be873355ed8c198faaba84e1981aa4558cfb Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 1 Jun 2017 14:15:27 +0800
+Subject: [PATCH 44/65] support downloading file from http/ftp server to target
+ image
+
+Add key in kickstart to support downloading file from http/ftp server to target image,
+'download --dest=[file://dir/filename|/dir/filename] --src=[http url| ftp url]'
+
+Here is the example in kickstart file:
+---start---
+download --dest=/etc/rpm/keys/0x100001 --src=http://128.224.162.159/testkey
+download --dest=file://etc/rpm/keys/0x100002 --src=http://128.224.162.159/testkey2
+---end---
+
+The file be download to target image (/mnt/image/****). For host image,
+we could make use of "%pre" section with invoking shell to do that)
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+
+Rebase from WRL8 to WRL9
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+
+Rebase from WRL9 to WRL10
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/install.py   |  2 +
+ pyanaconda/kickstart.py | 97 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 99 insertions(+)
+
+diff --git a/pyanaconda/install.py b/pyanaconda/install.py
+index 555d7b0..0bb0722 100644
+--- a/pyanaconda/install.py
++++ b/pyanaconda/install.py
+@@ -99,6 +99,8 @@ def doConfiguration(storage, payload, ksdata, instClass):
+     os_config.append(Task("Configure firewall", ksdata.firewall.execute, (storage, ksdata, instClass)))
+     os_config.append(Task("Configure X", ksdata.xconfig.execute, (storage, ksdata, instClass)))
+     os_config.append(Task("Configure skip-X", ksdata.skipx.execute, (storage, ksdata, instClass)))
++    os_config.append(Task("Configure download", ksdata.download.execute, (storage, ksdata, instClass)))
++
+     configuration_queue.append(os_config)
+ 
+     # schedule network configuration (if required)
+diff --git a/pyanaconda/kickstart.py b/pyanaconda/kickstart.py
+index d858ed1..881738c 100644
+--- a/pyanaconda/kickstart.py
++++ b/pyanaconda/kickstart.py
+@@ -78,6 +78,8 @@ from pykickstart.constants import CLEARPART_TYPE_NONE, CLEARPART_TYPE_ALL, \
+ from pykickstart.base import BaseHandler
+ from pykickstart.errors import formatErrorMsg, KickstartError, KickstartParseError, KickstartAuthError
+ from pykickstart.parser import KickstartParser
++from pykickstart.base import KickstartCommand, BaseData
++from pykickstart.options import KSOptionParser
+ from pykickstart.parser import Script as KSScript
+ from pykickstart.sections import Section
+ from pykickstart.sections import NullSection, PackageSection, PostScriptSection, PreScriptSection, PreInstallScriptSection, \
+@@ -1930,6 +1932,99 @@ class Upgrade(commands.upgrade.F20_Upgrade):
+         iutil.ipmi_report(IPMI_ABORTED)
+         sys.exit(1)
+ 
++class DownloadData(BaseData):
++    removedKeywords = BaseData.removedKeywords
++    removedAttrs = BaseData.removedAttrs
++
++    def __init__(self, *args, **kwargs):
++        BaseData.__init__(self, *args, **kwargs)
++        self.dest = kwargs.get("dest", None)
++        self.src = kwargs.get("src", None)
++
++    def __eq__(self, y):
++        return self.dest == y.dest
++
++    def _getArgsAsStr(self):
++        retval = "--dest=%s --src=%s" % (self.dest, self.src)
++        return retval
++
++    def __str__(self):
++        retval = BaseData.__str__(self)
++        retval += "download %s\n" % self._getArgsAsStr()
++        return retval
++
++class Download(KickstartCommand):
++    removedKeywords = KickstartCommand.removedKeywords
++    removedAttrs = KickstartCommand.removedAttrs
++
++    def __init__(self, writePriority=0, *args, **kwargs):
++        KickstartCommand.__init__(self, writePriority, *args, **kwargs)
++        self.op = self._getParser()
++        self.downloadList = kwargs.get("downloadList", [])
++
++    def __str__(self):
++        retval = "# Download file from http/ftp server to target image\n"
++        retval += "# download --dest=[file://dir/filename|/dir/filename] --src=[http url| ftp url]\n"
++        for d in self.downloadList:
++            retval += d.__str__()
++        retval += "\n"
++        return retval
++
++    def _getParser(self):
++        op = KSOptionParser()
++        op.add_option("--dest", dest="dest", required=True)
++        op.add_option("--src", dest="src", required=True)
++        return op
++
++    def parse(self, args):
++        (opts, extra) = self.op.parse_args(args=args, lineno=self.lineno)
++        dd = self.handler.DownloadData()
++        self._setToObj(self.op, opts, dd)
++        dd.lineno = self.lineno
++
++        # Check for duplicates in the data list.
++        if dd in self.dataList():
++            log.warn(_("A source %s has already been defined.") % dd.src)
++
++        log.info("kickstart downloading %s to %s" % (opts.src, opts.dest))
++        return dd
++
++    def dataList(self):
++        return self.downloadList
++
++    def execute(self, storage, ksdata, instClass):
++        if not ksdata.download:
++            return
++
++        for dd in ksdata.download.downloadList:
++            if dd.dest.startswith("file:"):
++                dd.dest = dd.dest[len("file:"):]
++
++            if not dd.dest.startswith("/"):
++                msg = _("The dest %s is not on filesystem" % (dd.dest))
++                stderrLog.critical(msg)
++                sys.exit(1)
++
++            dest = iutil.getSysroot() + dd.dest
++            log.info("downloading %s to %s" % (dd.src, dest))
++            dest_dir = os.path.dirname(dest)
++            if not os.path.exists(dest_dir):
++                os.makedirs(dest_dir)
++
++            try:
++                src_f = urlgrabber.urlopen(dd.src)
++            except urlgrabber.grabber.URLGrabError as e:
++                msg = _("The following error was encountered while downloading %s:\n\n%s" % (dd.src, e))
++                stderrLog.critical(msg)
++                sys.exit(1)
++
++            with open(dest, "w+") as dest_f:
++                dest_f.write(src_f.read())
++                dest_f.close()
++
++            src_f.close()
++
++
+ ###
+ ### %anaconda Section
+ ###
+@@ -2030,6 +2125,7 @@ commandMap = {
+     "volgroup": VolGroup,
+     "xconfig": XConfig,
+     "zfcp": ZFCP,
++    "download": Download,
+ }
+ 
+ dataMap = {
+@@ -2040,6 +2136,7 @@ dataMap = {
+     "RepoData": RepoData,
+     "SnapshotData": SnapshotData,
+     "VolGroupData": VolGroupData,
++    "DownloadData": DownloadData,
+ }
+ 
+ superclass = returnClassForVersion()
+-- 
+2.7.4
+

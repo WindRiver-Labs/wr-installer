@@ -1,0 +1,96 @@
+From e3c49a4ed129e6719e87f792915dc6c2d1ddc915 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 9 Jun 2017 10:58:07 +0800
+Subject: [PATCH 58/65] do not support closest mirror
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/spokes/source.glade |  1 -
+ pyanaconda/ui/gui/spokes/source.py    |  4 ----
+ pyanaconda/ui/tui/spokes/source.py    | 18 ++++++------------
+ 3 files changed, 6 insertions(+), 17 deletions(-)
+
+diff --git a/pyanaconda/ui/gui/spokes/source.glade b/pyanaconda/ui/gui/spokes/source.glade
+index 089838c..ba0ee10 100644
+--- a/pyanaconda/ui/gui/spokes/source.glade
++++ b/pyanaconda/ui/gui/spokes/source.glade
+@@ -755,7 +755,6 @@
+                                           <item id="https">https://</item>
+                                           <item id="ftp">ftp://</item>
+                                           <item id="nfs">nfs</item>
+-                                          <item id="Closest mirror" translatable="yes">Closest mirror</item>
+                                         </items>
+                                         <signal name="changed" handler="on_protocol_changed" swapped="no"/>
+                                       </object>
+diff --git a/pyanaconda/ui/gui/spokes/source.py b/pyanaconda/ui/gui/spokes/source.py
+index 34fa04d..86eaa9b 100644
+--- a/pyanaconda/ui/gui/spokes/source.py
++++ b/pyanaconda/ui/gui/spokes/source.py
+@@ -821,10 +821,6 @@ class SourceSpoke(NormalSpoke, GUISpokeInputCheckHandler):
+             combo = self.builder.get_object("isoPartitionCombo")
+             combo.set_active(active)
+ 
+-        # We default to the mirror list, and then if the method tells us
+-        # something different later, we can change it.
+-        self._protocolComboBox.set_active_id(PROTOCOL_MIRROR)
+-
+         if self.data.method.method == "url":
+             self._networkButton.set_active(True)
+ 
+diff --git a/pyanaconda/ui/tui/spokes/source.py b/pyanaconda/ui/tui/spokes/source.py
+index 9e51147..3b3fe71 100644
+--- a/pyanaconda/ui/tui/spokes/source.py
++++ b/pyanaconda/ui/tui/spokes/source.py
+@@ -58,7 +58,7 @@ class SourceSpoke(EditTUISpoke, SourceSwitchHandler):
+     helpFile = "SourceSpoke.txt"
+     category = SoftwareCategory
+ 
+-    _protocols = (N_("Closest mirror"), "http://", "https://", "ftp://", "nfs")
++    _protocols = ("http://", "https://", "ftp://", "nfs")
+ 
+     # default to 'closest mirror', as done in the GUI
+     _selection = 1
+@@ -179,13 +179,7 @@ class SourceSpoke(EditTUISpoke, SourceSwitchHandler):
+         if args == 2:
+             # network install
+             self._selection = num
+-            if self._selection == 1:
+-                # closest mirror
+-                self.set_source_closest_mirror()
+-                self.apply()
+-                self.close()
+-                return INPUT_PROCESSED
+-            elif self._selection in range(2, 5):
++            if self._selection in range(1, 4):
+                 # preliminary URL source switch
+                 self.set_source_url()
+                 newspoke = SpecifyRepoSpoke(self.app, self.data, self.storage,
+@@ -194,7 +188,7 @@ class SourceSpoke(EditTUISpoke, SourceSwitchHandler):
+                 self.apply()
+                 self.close()
+                 return INPUT_PROCESSED
+-            elif self._selection == 5:
++            elif self._selection == 4:
+                 # nfs
+                 # preliminary NFS source switch
+                 self.set_source_nfs()
+@@ -266,11 +260,11 @@ class SpecifyRepoSpoke(EditTUISpoke, SourceSwitchHandler):
+         """ Apply all of our changes. """
+         log.info("apply args %s" % self.args)
+         url = None
+-        if self.selection == 2 and not self.args.url.startswith("http://"):
++        if self.selection == 1 and not self.args.url.startswith("http://"):
+             url = "http://" + self.args.url
+-        elif self.selection == 3 and not self.args.url.startswith("https://"):
++        elif self.selection == 2 and not self.args.url.startswith("https://"):
+             url = "https://" + self.args.url
+-        elif self.selection == 4 and not self.args.url.startswith("ftp://"):
++        elif self.selection == 3 and not self.args.url.startswith("ftp://"):
+             url = "ftp://" + self.args.url
+         else:
+             # protocol either unknown or entry already starts with a protocol
+-- 
+2.7.4
+

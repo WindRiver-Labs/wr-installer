@@ -1,0 +1,60 @@
+From b44a5d91f984c6dbb46ace1a8c46c5b517440577 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Tue, 6 Jun 2017 15:40:55 +0800
+Subject: [PATCH 57/65] invoke grub-install to generate efi filesystem
+
+Previously, the efi filesystem was from package grub-efi
+which generated at build time.
+
+Add a wraper to generate efi filesystem with fs_uuid located.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/bootloader.py | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/pyanaconda/bootloader.py b/pyanaconda/bootloader.py
+index 7e3fce1..ace90b0 100644
+--- a/pyanaconda/bootloader.py
++++ b/pyanaconda/bootloader.py
+@@ -1711,6 +1711,11 @@ class EFIBase(object):
+             efi_dir = flags.cmdline.get("force_efi_dir")
+         return "efi/EFI/%s" % (efi_dir,)
+ 
++    @property
++    def config_file(self):
++        """ Full path to configuration file. """
++        return "%s/grub/%s" % (self.config_dir, self._config_file)
++
+     def efibootmgr(self, *args, **kwargs):
+         if flags.imageInstall or flags.dirInstall:
+             log.info("Skipping efibootmgr for image/directory install.")
+@@ -1800,6 +1805,23 @@ class EFIBase(object):
+             self.remove_efi_boot_target()
+         self.add_efi_boot_target()
+ 
++        with open(iutil.getSysroot() + "/tmp/grub-mkimage-wrapper.sh", "w") as f:
++            f.write('#!/bin/sh\n')
++            f.write('uuid=`grub-probe  --target=fs_uuid  /boot/efi/`\n')
++            f.write('echo "search.fs_uuid ${uuid} root" > /tmp/load.cfg\n')
++            f.write('echo "grub-mkimage -c /tmp/load.cfg $@ search_fs_uuid"\n')
++            f.write('grub-mkimage -c /tmp/load.cfg $@ search_fs_uuid\n')
++        os.chmod(iutil.getSysroot() + "/tmp/grub-mkimage-wrapper.sh", 0o755)
++
++        rc = iutil.execInSysroot("grub-install", ["--removable",
++                                                  "--efi-directory=/boot/efi/",
++                                                  "--boot-directory=%s" % self.config_dir,
++                                                  "--grub-mkimage=/tmp/grub-mkimage-wrapper.sh",
++                                                  "/boot/efi/"
++                                                 ])
++        if rc:
++            raise BootLoaderError("boot loader install failed")
++
+ 
+ class EFIGRUB1(EFIBase, GRUB):
+     packages = ["efibootmgr"]
+-- 
+2.7.4
+

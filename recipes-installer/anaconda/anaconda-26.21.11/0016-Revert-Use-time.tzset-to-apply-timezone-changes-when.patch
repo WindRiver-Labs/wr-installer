@@ -1,0 +1,66 @@
+From b61aa798c2ad66862f00fb185441d2595faa3149 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 19 May 2017 16:43:39 +0800
+Subject: [PATCH 16/65] Revert "Use `time.tzset()` to apply timezone changes
+ when we can"
+
+This reverts commit 40adf6e3f8ce842c953f3376440dbd9bf8d8b303.
+
+The python3 in oe-core does not support time.tzset().
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/isys/__init__.py                | 2 --
+ pyanaconda/ui/gui/spokes/datetime_spoke.py | 4 ----
+ 2 files changed, 6 deletions(-)
+
+diff --git a/pyanaconda/isys/__init__.py b/pyanaconda/isys/__init__.py
+index fe2a9ae..391a067 100644
+--- a/pyanaconda/isys/__init__.py
++++ b/pyanaconda/isys/__init__.py
+@@ -119,8 +119,6 @@ def set_system_date_time(year=None, month=None, day=None, hour=None, minute=None
+     if not tz:
+         tz = utc
+ 
+-    time.tzset()
+-
+     # get the right values
+     now = datetime.datetime.now(tz)
+     year = year if year is not None else now.year
+diff --git a/pyanaconda/ui/gui/spokes/datetime_spoke.py b/pyanaconda/ui/gui/spokes/datetime_spoke.py
+index 9a63d65..c3eedbc 100644
+--- a/pyanaconda/ui/gui/spokes/datetime_spoke.py
++++ b/pyanaconda/ui/gui/spokes/datetime_spoke.py
+@@ -53,7 +53,6 @@ from pyanaconda.threads import threadMgr, AnacondaThread
+ import datetime
+ import re
+ import threading
+-import time
+ import locale as locale_mod
+ import functools
+ 
+@@ -621,7 +620,6 @@ class DatetimeSpoke(FirstbootSpokeMixIn, NormalSpoke):
+ 
+         if is_valid_timezone(self.data.timezone.timezone):
+             self._tzmap.set_timezone(self.data.timezone.timezone)
+-            time.tzset()
+ 
+         self._update_datetime()
+ 
+@@ -1003,11 +1001,9 @@ class DatetimeSpoke(FirstbootSpokeMixIn, NormalSpoke):
+                 offset = -float(city[3:])
+ 
+             self._tzmap.set_selected_offset(offset)
+-            time.tzset()
+         else:
+             # we don't want the timezone-changed signal to be emitted
+             self._tzmap.set_timezone(timezone)
+-            time.tzset()
+ 
+         # update "old" values
+         self._old_city = city
+-- 
+2.7.4
+

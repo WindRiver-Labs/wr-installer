@@ -1,0 +1,32 @@
+From f97cc9915bf4e2931476ddfcb50b2103768339f7 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 9 Sep 2016 13:23:48 -0400
+Subject: [PATCH 50/65] update region while city changes
+
+While user select US/Alaska from combobox at first time, the libtimezonemap
+convert it to America/Anchorage, and anaconda gui page recognize it as
+America/Alaska, the fix make sure region/city could be correctly updated.
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/ui/gui/spokes/datetime_spoke.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyanaconda/ui/gui/spokes/datetime_spoke.py b/pyanaconda/ui/gui/spokes/datetime_spoke.py
+index 4cc9f60..996aed0 100644
+--- a/pyanaconda/ui/gui/spokes/datetime_spoke.py
++++ b/pyanaconda/ui/gui/spokes/datetime_spoke.py
+@@ -926,7 +926,7 @@ class DatetimeSpoke(FirstbootSpokeMixIn, NormalSpoke):
+ 
+         region = self._get_active_region()
+ 
+-        if not region or region == self._old_region:
++        if not region:
+             # region entry being edited or old_value chosen, no action needed
+             # @see: on_city_changed
+             return
+-- 
+2.7.4
+

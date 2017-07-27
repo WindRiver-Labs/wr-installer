@@ -1,0 +1,133 @@
+From 0a325766f56c70f7f1513b0b9f06d1faa769688d Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 1 Jun 2017 14:09:36 +0800
+Subject: [PATCH 43/65] support authentication for kickstart
+
+We add option 'ksuser' and 'kspasswd' in /proc/cmdline to support
+authentication while downloading kickstart from web server.
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+
+Rebase from WRL8 to WRL9.
+
+Compared with old installer, we do not support to pop a prompt page
+while authentication failed, because the new installer do not support
+snack module (The python snack is used for text display).
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/flags.py     | 11 +++++++++++
+ pyanaconda/kickstart.py | 41 ++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 45 insertions(+), 7 deletions(-)
+
+diff --git a/pyanaconda/flags.py b/pyanaconda/flags.py
+index 37206d0..7c5f3b4 100644
+--- a/pyanaconda/flags.py
++++ b/pyanaconda/flags.py
+@@ -71,6 +71,11 @@ class Flags(object):
+         self.rescue_mode = False
+         self.noefi = False
+         self.kexec = False
++
++        # Authentication for downloading kickstart file through http
++        self.ksuser = None
++        self.kspasswd = None
++
+         # nosave options
+         self.nosave_input_ks = False
+         self.nosave_output_ks = False
+@@ -91,6 +96,12 @@ class Flags(object):
+                   "nombr", "gpt", "noefi"):
+             self.set_cmdline_bool(f)
+ 
++        if "ksuser" in self.cmdline:
++            self.ksuser = self.cmdline['ksuser']
++
++        if "kspasswd" in self.cmdline:
++            self.kspasswd = self.cmdline['kspasswd']
++
+         if not os.path.exists("/selinux/load"):
+             self.selinux = 0
+ 
+diff --git a/pyanaconda/kickstart.py b/pyanaconda/kickstart.py
+index 2210845..d858ed1 100644
+--- a/pyanaconda/kickstart.py
++++ b/pyanaconda/kickstart.py
+@@ -76,7 +76,7 @@ from pykickstart.constants import CLEARPART_TYPE_NONE, CLEARPART_TYPE_ALL, \
+                                   SELINUX_DISABLED, SELINUX_ENFORCING, SELINUX_PERMISSIVE, \
+                                   SNAPSHOT_WHEN_POST_INSTALL, SNAPSHOT_WHEN_PRE_INSTALL
+ from pykickstart.base import BaseHandler
+-from pykickstart.errors import formatErrorMsg, KickstartError, KickstartParseError
++from pykickstart.errors import formatErrorMsg, KickstartError, KickstartParseError, KickstartAuthError
+ from pykickstart.parser import KickstartParser
+ from pykickstart.parser import Script as KSScript
+ from pykickstart.sections import Section
+@@ -2086,12 +2086,39 @@ class AnacondaKSHandler(superclass):
+     def __str__(self):
+         return superclass.__str__(self) + "\n" + str(self.addons) + str(self.anaconda)
+ 
+-class AnacondaPreParser(KickstartParser):
+-    # A subclass of KickstartParser that only looks for %pre scripts and
++class WRKickstartParser(KickstartParser):
++    # A subclass of KickstartParser that parse the authentication failure
++    # while downloading kickstart file from web server
++    def __init__(self, handler, followIncludes=True, errorsAreFatal=True,
++                  missingIncludeIsFatal=True):
++        KickstartParser.__init__(self, handler, missingIncludeIsFatal=False)
++        self.username = flags.ksuser
++        self.password = flags.kspasswd
++
++    def readKickstart(self, f, reset=True):
++        while True:
++            try:
++                KickstartParser.readKickstart(self, f, reset=reset,
++                                              username=self.username,
++                                              password=self.password)
++
++                # Make sure the following readKickstart invoking will success
++                flags.ksuser = self.username
++                flags.kspasswd = self.password
++                break
++            except KickstartAuthError as e:
++                msg = 'Append "ksuser=<username> kspasswd=<password>" to boot command'
++                raise KickstartError(msg)
++            except:
++                raise
++
++
++class AnacondaPreParser(WRKickstartParser):
++    # A subclass of WRKickstartParser that only looks for %pre scripts and
+     # sets them up to be run.  All other scripts and commands are ignored.
+     def __init__(self, handler, followIncludes=True, errorsAreFatal=True,
+                  missingIncludeIsFatal=True):
+-        KickstartParser.__init__(self, handler, missingIncludeIsFatal=False)
++        WRKickstartParser.__init__(self, handler, missingIncludeIsFatal=False)
+ 
+     def handleCommand(self, lineno, args):
+         pass
+@@ -2107,17 +2134,17 @@ class AnacondaPreParser(KickstartParser):
+         self.registerSection(NullSection(self.handler.anaconda, sectionOpen="%anaconda"))
+ 
+ 
+-class AnacondaKSParser(KickstartParser):
++class AnacondaKSParser(WRKickstartParser):
+     def __init__(self, handler, followIncludes=True, errorsAreFatal=True,
+                  missingIncludeIsFatal=True, scriptClass=AnacondaKSScript):
+         self.scriptClass = scriptClass
+-        KickstartParser.__init__(self, handler)
++        WRKickstartParser.__init__(self, handler)
+ 
+     def handleCommand(self, lineno, args):
+         if not self.handler:
+             return
+ 
+-        return KickstartParser.handleCommand(self, lineno, args)
++        return WRKickstartParser.handleCommand(self, lineno, args)
+ 
+     def setupSections(self):
+         self.registerSection(PreScriptSection(self.handler, dataObj=self.scriptClass))
+-- 
+2.7.4
+
