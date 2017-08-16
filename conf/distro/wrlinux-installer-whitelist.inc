@@ -11,20 +11,24 @@ PNWHITELIST_gnome-layer += "\
 
 # Whitelist for meta-openembedded/meta-python
 PNWHITELIST_meta-python += "\
+    python3-chardet \
     python3-certifi \
     python3-cffi \
     python3-cryptography \
     python3-dbus \
     python3-idna \
     python3-ndg-httpsclient \
+    python3-py \
     python3-pyasn1 \
     python3-pycparser \
     python3-pyopenssl \
     python3-pyparted \
     python3-pysocks \
+    python3-pytest-runner \
     python3-pytz \
     python3-pyudev \
     python3-requests \
+    python3-setuptools-scm \
     python3-urllib3 \
 "
 
