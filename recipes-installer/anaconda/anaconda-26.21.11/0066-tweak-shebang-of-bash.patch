@@ -1,0 +1,25 @@
+From 304202b2400fb6f4d6b507703121d31f4446e773 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Mon, 21 Aug 2017 11:29:29 +0800
+Subject: [PATCH] tweak shebang of bash
+
+Upstream-Status: Pending
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ scripts/run-anaconda | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/run-anaconda b/scripts/run-anaconda
+index d31f70c..a774d45 100755
+--- a/scripts/run-anaconda
++++ b/scripts/run-anaconda
+@@ -1,4 +1,4 @@
+-#!/usr/bin/bash
++#!/bin/bash
+ #
+ # Quick script to attach to tmux where anaconda is running
+ #
+-- 
+1.8.3.1
+

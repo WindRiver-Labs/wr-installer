@@ -38,7 +38,7 @@ RDEPENDS_${PN} = "e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs \
                    procps python3-prctl rsync glibc-utils python3-pid \
                    python3-ordered-set python3-wrapt python3-coverage \
                    python3-requests-file python3-requests-ftp \
-                   python3-blivetgui librsvg librsvg-gtk \
+                   python3-blivetgui librsvg librsvg-gtk bash \
                 "
 
 RDEPENDS_${PN} += "networkmanager libnmutil libnmglib libnmglib-vpn \
@@ -113,6 +113,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0063-do-not-customize-window-theme.patch \
            file://0064-tweak-product-short-name.patch \
            file://0065-disable-dmraid.patch \
+           file://0066-tweak-shebang-of-bash.patch \
           "
 
 SRCREV = "3007d202469f90ef9bb7580ff4068a345ba1e588"
@@ -126,7 +127,7 @@ FILES_${PN} = "/lib ${libdir} ${sysconfdir} ${bindir} ${sbindir} ${libexecdir} \
 "
 FILES_${PN}-misc = "/usr/lib"
 PACKAGES += "${PN}-misc"
-RDEPENDS_${PN}-misc += "bash python"
+RDEPENDS_${PN}-misc += "bash python3-core"
 
 EXTRA_OECONF += "--disable-selinux \
          --with-sysroot=${PKG_CONFIG_SYSROOT_DIR} \
