@@ -28,7 +28,7 @@ SRC_URI = "git://github.com/rhinstaller/blivet;branch=2.2-devel \
 inherit setuptools3 python3native
 
 RDEPENDS_${PN} = "pykickstart python3-pyudev \
-                  parted python3-pyparted device-mapper-multipath \
+                  parted python3-pyparted multipath-tools \
                   lsof cryptsetup libblockdev \
                   libbytesize util-linux-pylibmount \
 "

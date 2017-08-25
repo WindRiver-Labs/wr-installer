@@ -35,7 +35,7 @@ FILES_${PN} += "${PYTHON_SITEPACKAGES_DIR}"
 
 PACKAGECONFIG ??= "python3 lvm dm kmod parted fs"
 PACKAGECONFIG[python3] = "--with-python3, --without-python3,,python3"
-PACKAGECONFIG[lvm] = "--with-lvm, --without-lvm, device-mapper-multipath"
+PACKAGECONFIG[lvm] = "--with-lvm, --without-lvm, multipath-tools"
 PACKAGECONFIG[dm] = "--with-dm, --without-dm"
 PACKAGECONFIG[kmod] = "--with-kbd, --without-kbd, kmod"
 PACKAGECONFIG[parted] = "--with-part, --without-part, parted"
