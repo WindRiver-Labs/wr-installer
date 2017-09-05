@@ -1,3 +1,4 @@
+PNWHITELIST_LAYERS_remove = "wr-installer"
 
 # Whitelist for meta-openembedded/meta-gnome
 PNWHITELIST_gnome-layer += "\
@@ -7,7 +8,6 @@ PNWHITELIST_gnome-layer += "\
     libgnomecanvas \
     libgnomekbd \
     libtimezonemap \
-    libxklavier \
     network-manager-applet \
     usermode \
 "
