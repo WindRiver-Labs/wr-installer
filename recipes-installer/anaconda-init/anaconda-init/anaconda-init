@@ -10,7 +10,7 @@
 
 # Don't reboot when failed
 stoponfail="1"
-EXTRA_ENVS=""
+EXTRA_ENVS="LANG=$LANG "
 EULA_DIR="@EULA_DIR@"
 EXTRA_ENVS="$EXTRA_ENVS EULA_DIR=$EULA_DIR"
 
