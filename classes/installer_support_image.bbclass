@@ -7,10 +7,22 @@ EXTRA_IMAGEDEPENDS += "glibc-locale"
 # Generate filesystem images for image copy install
 IMAGE_FSTYPES += "ext4"
 
+ROOTFS_POSTPROCESS_COMMAND_append = " copy_grub_lib;"
 IMAGE_POSTPROCESS_COMMAND_append = " emit_image_env;"
 
 inherit distro_features_check
 REQUIRED_DISTRO_FEATURES = "systemd ldconfig"
+
+DEPENDS += "grub grub-efi"
+
+copy_grub_lib() {
+    mkdir -p ${IMAGE_ROOTFS}/${libdir}/grub
+    for f in ${libdir}/grub/i386-pc ${libdir}/grub/${TARGET_ARCH}-efi ; do
+        [ -d ${IMAGE_ROOTFS}/$f ] && continue
+        echo "Copy $f"
+        cp -rf ${STAGING_DIR_HOST}$f ${IMAGE_ROOTFS}/${f%/*}
+    done
+}
 
 python emit_image_env () {
     localdata = bb.data.createCopy(d)

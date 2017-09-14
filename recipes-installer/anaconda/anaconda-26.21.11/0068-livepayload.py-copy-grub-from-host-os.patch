@@ -1,0 +1,51 @@
+From 1ae76a832f560356ce5802a16020dff432f6c128 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 15 Sep 2017 10:49:18 +0800
+Subject: [PATCH] livepayload.py: copy grub from host os
+
+The image install require both of grub and grub-efi to be
+installed, but oe-core has a file confliction error while
+install both of them (I have sent a fix to oe-core, but not reply)
+
+The temporary workaround is to copy it from host os
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ pyanaconda/payload/livepayload.py | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/pyanaconda/payload/livepayload.py b/pyanaconda/payload/livepayload.py
+index 1c41402..cc41d1e 100644
+--- a/pyanaconda/payload/livepayload.py
++++ b/pyanaconda/payload/livepayload.py
+@@ -36,6 +36,7 @@ from pyanaconda.iutil import ProxyString, ProxyStringError, lowerASCII
+ import hashlib
+ import glob
+ import functools
++import shutil
+ 
+ from pyanaconda.payload import ImagePayload, PayloadSetupError, PayloadInstallError
+ 
+@@ -160,6 +161,17 @@ class LiveImagePayload(ImagePayload):
+             if errorHandler.cb(exn) == ERROR_RAISE:
+                 raise exn
+ 
++        # Live needs grub-install, grub-set-default and grub-mkconf
++        # Copy it from host os
++        iutil.execWithRedirect("cp", ["-fr", "/etc/grub.d", iutil.getSysroot()+"/etc"])
++        iutil.execWithRedirect("cp", ["-fr", "/usr/share/grub", iutil.getSysroot()+"/usr/share"])
++        for pat in ["/usr/bin/grub-*", "/usr/sbin/grub-*"]:
++            for f in glob.glob(pat):
++                try:
++                    shutil.copy(f, iutil.getSysroot()+os.path.dirname(f))
++                except IOError as e:
++                    log.info("Could not copy file %s: %s", f, e.strerror)
++
+         # Wait for progress thread to finish
+         with self.pct_lock:
+             self.pct = 100
+-- 
+2.7.4
+

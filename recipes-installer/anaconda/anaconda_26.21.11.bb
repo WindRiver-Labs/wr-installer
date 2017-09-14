@@ -115,6 +115,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0065-disable-dmraid.patch \
            file://0066-tweak-shebang-of-bash.patch \
            file://0067-Tweak-label-name.patch \
+           file://0068-livepayload.py-copy-grub-from-host-os.patch \
           "
 
 SRCREV = "3007d202469f90ef9bb7580ff4068a345ba1e588"
