@@ -4,13 +4,13 @@
 #            2) While serail starting, it invokes screen attach
 #               after bash started
 #
-FILESEXTRAPATHS_prepend_wrlinux-installer := "${THISDIR}/files:"
+FILESEXTRAPATHS_prepend_installer := "${THISDIR}/files:"
 
-SRC_URI_append_wrlinux-installer = " file://serial-getty@.service \
+SRC_URI_append_installer = " file://serial-getty@.service \
            file://serial-screen-anaconda.sh \
 "
 
-do_install_append_wrlinux-installer() {
+do_install_append_installer() {
 	install -d ${D}${sysconfdir}/profile.d
 	install -m 644 ${WORKDIR}/serial-screen-anaconda.sh ${D}${sysconfdir}/profile.d/
 

@@ -1,5 +1,5 @@
-FILESEXTRAPATHS_append_wrlinux-installer := ":${THISDIR}/files"
+FILESEXTRAPATHS_append_installer := ":${THISDIR}/files"
 
-SRC_URI_append_wrlinux-installer = " \
+SRC_URI_append_installer = " \
     file://init-live.sh \
 "
