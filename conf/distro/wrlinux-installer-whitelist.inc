@@ -7,9 +7,12 @@ PNWHITELIST_gnome-layer += "\
     keybinder \
     libgnomecanvas \
     libgnomekbd \
+    libgnome-keyring \
     libtimezonemap \
+    metacity \
     network-manager-applet \
     usermode \
+    libgtop \
 "
 
 # Whitelist for meta-openembedded/meta-python
@@ -50,11 +53,14 @@ PNWHITELIST_meta-python += "\
 
 # Whitelist for meta-openembedded/meta-filesystems
 PNWHITELIST_filesystems-layer += "\
+    fuse \
     ntfs-3g-ntfsprogs \
+    xfsprogs \
 "
 
 # Whitelist for meta-openembedded/meta-oe
 PNWHITELIST_openembedded-layer += "\
+    augeas \
     libblockdev \
     libbytesize \
     libpwquality \
@@ -64,6 +70,8 @@ PNWHITELIST_openembedded-layer += "\
     fontforge \
     giflib \
     glade \
+    gnome-doc-utils-stub \
+    gnulib \
     isomd5sum \
     libndp \
     libvncserver \
