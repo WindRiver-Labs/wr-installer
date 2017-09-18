@@ -3,7 +3,6 @@
 #
 # Image generation functions to setup the installer components
 #
-
 RPM_POSTPROCESS_COMMANDS_append = "wrl_installer;"
 
 INSTPRODUCT ?= "${DISTRO_NAME}"
@@ -58,7 +57,9 @@ wrl_installer_hardlinktree() {
 }
 
 wrl_installer_copy_local_repos() {
-    if [ -d "$target_build/tmp/deploy/rpm" ]; then
+    deploy_dir_rpm=$1
+
+    if [ -d "$deploy_dir_rpm" ]; then
         echo "Copy rpms from target build to installer image."
         mkdir -p ${IMAGE_ROOTFS}/Packages.$prj_name
 
@@ -74,10 +75,10 @@ wrl_installer_copy_local_repos() {
 
         : > ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
         for arch in $installer_target_archs; do
-            if [ -d "$target_build/tmp/deploy/rpm/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages.$prj_name/"$arch ]; then
+            if [ -d "$deploy_dir_rpm/"$arch -a ! -d "${IMAGE_ROOTFS}/Packages.$prj_name/"$arch ]; then
                 channel_priority=$(expr $channel_priority - 5)
                 echo "$channel_priority $arch" >> ${IMAGE_ROOTFS}/Packages.$prj_name/.feedpriority
-                wrl_installer_hardlinktree "$target_build/tmp/deploy/rpm/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
+                wrl_installer_hardlinktree "$deploy_dir_rpm/"$arch "${IMAGE_ROOTFS}/Packages.$prj_name/."
             fi
         done
         createrepo_c --update -q ${IMAGE_ROOTFS}/Packages.$prj_name/
@@ -102,13 +103,6 @@ wrl_installer_copy_pkgs() {
             -e '^DISTRO=.*' -e '^DISTRO_NAME=.*' -e '^DISTRO_VERSION=.*' \
             "
 
-    # Find target image env location: $T, and target rpm repo dir: $WORKDIR/rpms
-    (cd $target_build; \
-        flock $target_build -c \
-        "PSEUDO_UNLOAD=1 bitbake -e $target_image" | \
-        grep -e '^T=.*' -e '^WORKDIR=.*' > ${BB_LOGFILE}.distro_vals);
-    eval `cat ${BB_LOGFILE}.distro_vals`
-
     if [ -f "$installer_conf" ]; then
         eval "grep -e \"^PACKAGE_INSTALL=.*\" $common_grep $installer_conf \
             | sed -e 's/=/=\"/' -e 's/$/\"/' > ${BB_LOGFILE}.distro_vals"
@@ -120,8 +114,8 @@ wrl_installer_copy_pkgs() {
             bbfatal "PACKAGE_ARCHS or PACKAGE_INSTALL is null, please check $installer_conf"
         fi
     else
-        eval "cat $T/target_image_env | \
-            grep $common_grep -e '^PN=.*' -e '^SUMMARY=.*' \
+        eval "cat $target_build/installersupport_$target_image | \
+            grep $common_grep -e '^PN=.*' -e '^SUMMARY=.*' -e 'DEPLOY_DIR_RPM=.*'\
             -e '^DESCRIPTION=.*' -e '^export PACKAGE_INSTALL=.*' > ${BB_LOGFILE}.distro_vals"
 
         eval `cat ${BB_LOGFILE}.distro_vals`
@@ -167,11 +161,11 @@ IMAGE_LINGUAS=${IMAGE_LINGUAS}
 _EOF
     fi
 
-    if [ -d "$target_build/tmp/deploy/rpm" ]; then
+    if [ -d "$DEPLOY_DIR_RPM" ]; then
         # Copy local repos while the image is not initramfs
         bpn=${BPN}
         if [ "${bpn##*initramfs}" = "${bpn%%initramfs*}" ]; then
-            wrl_installer_copy_local_repos
+            wrl_installer_copy_local_repos $DEPLOY_DIR_RPM
         fi
         echo "$DISTRO::$prj_name::$DISTRO_NAME::$DISTRO_VERSION" >> ${IMAGE_ROOTFS}/.target_build_list
     fi
@@ -269,10 +263,12 @@ _EOF
 
 python __anonymous() {
     if "selinux" in d.getVar("DISTRO_FEATURES", True).split():
-        bb.fatal("Unable to build the installer when selinux is enabled.")
-        return False
+        raise bb.parse.SkipPackage("Unable to build the installer when selinux is enabled.")
 
     if bb.data.inherits_class('image', d):
+        if d.getVar("DISTRO", True) != "wrlinux-installer":
+            raise bb.parse.SkipPackage("Set DISTRO = 'wrlinux-installer' in local.conf")
+
         target_builds = d.getVar('INSTALLER_TARGET_BUILD', True)
         if not target_builds:
             errmsg = "No INSTALLER_TARGET_BUILD is found,\n"
@@ -281,14 +277,12 @@ python __anonymous() {
             errmsg += "install, or\n"
             errmsg += "set INSTALLER_TARGET_BUILD = '<target-build-image>' to do\n"
             errmsg += "image copy install"
-            bb.fatal(errmsg)
+            raise bb.parse.SkipPackage(errmsg)
 
         count = 0
         for target_build in target_builds.split():
-            if target_build == d.getVar('TOPDIR', True):
-                bb.fatal("The INSTALLER_TARGET_BUILD can't be the current dir")
-            elif not os.path.exists(target_build):
-                bb.fatal("The %s of INSTALLER_TARGET_BUILD does not exist" % target_build)
+            if not os.path.exists(target_build):
+                raise bb.parse.SkipPackage("The %s of INSTALLER_TARGET_BUILD does not exist" % target_build)
 
             if os.path.isdir(target_build):
                 count += 1
@@ -299,30 +293,30 @@ python __anonymous() {
             if not target_images:
                 errmsg = "The INSTALLER_TARGET_BUILD is a dir, but not found INSTALLER_TARGET_IMAGE,\n"
                 errmsg += "set INSTALLER_TARGET_IMAGE = '<target-image-pn>' to do RPMs install"
-                bb.fatal(errmsg)
+                raise bb.parse.SkipPackage(errmsg)
 
             elif count != len(target_images.split()):
                 errmsg = "The INSTALLER_TARGET_BUILD has %s build dirs: %s\n" % (count, target_builds)
                 errmsg += "But INSTALLER_TARGET_IMAGE has %s build images: %s\n" % (len(target_images.split()), target_images)
-                bb.fatal(errmsg)
+                raise bb.parse.SkipPackage(errmsg)
 
         # The count of INSTALLER_TARGET_BUILD and WRL_INSTALLER_CONF must match when set.
         wrlinstaller_confs = d.getVar('WRL_INSTALLER_CONF', True)
         if wrlinstaller_confs:
             if len(wrlinstaller_confs.split()) != len(target_builds.split()):
-                bb.fatal("The count of INSTALLER_TARGET_BUILD and WRL_INSTALLER_CONF not match!")
+                raise bb.parse.SkipPackage("The count of INSTALLER_TARGET_BUILD and WRL_INSTALLER_CONF not match!")
             for wrlinstaller_conf in wrlinstaller_confs.split():
                 if not os.path.exists(wrlinstaller_conf):
-                    bb.fatal("The installer conf %s in WRL_INSTALLER_CONF doesn't exist!" % wrlinstaller_conf)
+                    raise bb.parse.SkipPackage("The installer conf %s in WRL_INSTALLER_CONF doesn't exist!" % wrlinstaller_conf)
 
         # The count of INSTALLER_TARGET_IMAGE and KICKSTART_FILE must match when set.
         kickstart_files = d.getVar('KICKSTART_FILE', True)
         if kickstart_files:
             if len(kickstart_files.split()) != len(target_builds.split()):
-                bb.fatal("The count of INSTALLER_TARGET_BUILD and KICKSTART_FILE not match!")
+                raise bb.parse.SkipPackage("The count of INSTALLER_TARGET_BUILD and KICKSTART_FILE not match!")
             for kickstart_file in kickstart_files.split():
                 if not os.path.exists(kickstart_file):
-                    bb.fatal("The kickstart file %s in KICKSTART_FILE doesn't exist!" % kickstart_file)
+                    raise bb.parse.SkipPackage("The kickstart file %s in KICKSTART_FILE doesn't exist!" % kickstart_file)
 
 }
 
