@@ -133,9 +133,6 @@ EXTRA_OECONF += "--disable-selinux \
          --with-sysroot=${PKG_CONFIG_SYSROOT_DIR} \
 "
 
-PACKAGECONFIG ??= "${@base_conditional('USE_NLS','yes','nls','',d)}"
-PACKAGECONFIG[nls] = "--enable-nls, --disable-nls,,packagegroup-fonts-ttf"
-
 inherit distro_features_check
 REQUIRED_DISTRO_FEATURES = "systemd x11"
 
