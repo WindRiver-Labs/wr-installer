@@ -1,8 +1,0 @@
-[X-GNOME-Metatheme]
-Name=WindRiver
-Comment=Wind River Linux default theme
-Type=X-GNOME-Metatheme
-Encoding=UTF-8
-GtkTheme=Clearlooks
-MetacityTheme=Clearlooks
-IconTheme=gnome
