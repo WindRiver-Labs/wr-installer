@@ -114,6 +114,7 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0064-tweak-product-short-name.patch \
            file://0065-disable-dmraid.patch \
            file://0066-tweak-shebang-of-bash.patch \
+           file://0067-Tweak-label-name.patch \
           "
 
 SRCREV = "3007d202469f90ef9bb7580ff4068a345ba1e588"
@@ -139,17 +140,21 @@ REQUIRED_DISTRO_FEATURES = "systemd x11"
 inherit autotools-brokensep gettext python3native pkgconfig gobject-introspection
 
 do_configure_prepend() {
-	( cd ${S}; STAGING_DATADIR_NATIVE=${STAGING_DATADIR_NATIVE} ${S}/autogen.sh --noconfigure)
+    ( cd ${S}; STAGING_DATADIR_NATIVE=${STAGING_DATADIR_NATIVE} ${S}/autogen.sh --noconfigure)
 }
 
 do_install_append() {
-	install -m 644 ${WORKDIR}/81-edit-sudoers.ks ${D}${datadir}/anaconda/post-scripts
-	install -m 644 ${S}/widgets/src/resources/*.svg ${D}${datadir}/anaconda/pixmaps
-	install -m 644 ${S}/widgets/src/resources/*.png ${D}${datadir}/anaconda/pixmaps
+    install -m 644 ${WORKDIR}/81-edit-sudoers.ks ${D}${datadir}/anaconda/post-scripts
+    install -m 644 ${S}/widgets/src/resources/*.svg ${D}${datadir}/anaconda/pixmaps
+    install -m 644 ${S}/widgets/src/resources/*.png ${D}${datadir}/anaconda/pixmaps
 }
 
 addtask do_setupdistro after do_patch before do_configure
 do_setupdistro() {
-	cp ${WORKDIR}/wrlinux.py ${S}/pyanaconda/installclasses/
+    cp ${WORKDIR}/wrlinux.py ${S}/pyanaconda/installclasses/
 }
 
+python __anonymous () {
+    if not bb.utils.contains("PACKAGE_CLASSES", "package_rpm", True, False, d):
+        raise bb.parse.SkipPackage('Anaconda requires RPM packages to be the default in PACKAGE_CLASSES.')
+}
