@@ -6,9 +6,9 @@
 #               screen@.service which display text mode anaconda installer
 #               on tty1 by default.
 #
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS_prepend_installer := "${THISDIR}/files:"
 
-do_install_append() {
+do_install_append_installer() {
 	ln -nsf ${systemd_unitdir}/system/anaconda-init-screen@.service \
 		${D}${sysconfdir}/systemd/system/getty.target.wants/getty@tty1.service
 }
