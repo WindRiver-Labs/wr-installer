@@ -1,6 +1,8 @@
 DESCRIPTION = "The initramfs contains anaconda installer, which supports \
 PXE (net boot installation)"
 
+CUSTOMIZE_LOGOS ??= "place-holder-logos"
+
 IMAGE_INSTALL = "\
     initramfs-live-boot \
     initramfs-live-install \
@@ -11,7 +13,7 @@ IMAGE_INSTALL = "\
     sysvinit-inittab \
     base-passwd \
     kernel-modules \
-    virtual/logos \
+    ${CUSTOMIZE_LOGOS} \
     anaconda \
     anaconda-init \
     ${@['', 'packagegroup-installer-x11-anaconda'][bool(d.getVar('XSERVER', True))]} \

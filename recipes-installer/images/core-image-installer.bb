@@ -11,6 +11,8 @@ do_image_complete[depends] += "${PN}-initramfs:do_image_complete"
 DEPENDS += "isomd5sum-native \
 "
 
+CUSTOMIZE_LOGOS ??= "place-holder-logos"
+
 # We override what gets set in core-image.bbclass
 IMAGE_INSTALL = "\
     packagegroup-core-boot \
@@ -19,7 +21,7 @@ IMAGE_INSTALL = "\
     anaconda \
     anaconda-init \
     kernel-modules \
-    virtual/logos \
+    ${CUSTOMIZE_LOGOS} \
     dhcp-client \
     ldd \
     "
