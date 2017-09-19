@@ -1,7 +1,7 @@
-From 5d1ad5c9d93c5f3ea3227dd59de92400a8e23469 Mon Sep 17 00:00:00 2001
+From 7576c994c1af5d6f4302e6393e407beded480514 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 18 May 2017 13:41:01 +0800
-Subject: [PATCH 07/65] tweak iso mount dir and kernel name
+Subject: [PATCH] tweak iso mount dir and kernel name
 
 - Tweak iso mount dir based on WRLinux
 
@@ -31,7 +31,7 @@ index f2b62d0..b514bf5 100644
  ISO_DIR = MOUNT_DIR + "/isodir"
  IMAGE_DIR = MOUNT_DIR + "/image"
 diff --git a/pyanaconda/payload/__init__.py b/pyanaconda/payload/__init__.py
-index 7e78145..22af097 100644
+index 7e78145..87b88d8 100644
 --- a/pyanaconda/payload/__init__.py
 +++ b/pyanaconda/payload/__init__.py
 @@ -42,7 +42,7 @@ if __name__ == "__main__":
@@ -67,8 +67,8 @@ index 7e78145..22af097 100644
              files.extend((f.split("/")[-1][8:] for f in unicode_fnames
 -                if fnmatch(f, "/boot/vmlinuz-*") or
 -                   fnmatch(f, "/boot/efi/EFI/%s/vmlinuz-*" % self.instclass.efi_dir)))
-+                if fnmatch(f, "/boot/*") or
-+                   fnmatch(f, "/boot/efi/EFI/%s/*" % self.instclass.efi_dir)))
++                if(fnmatch(f, "/boot/*") or fnmatch(f, "/boot/efi/EFI/%s/*" % self.instclass.efi_dir))
++                   and len(f.split("/")[-1]) > 7))
  
 +        log.info("kernelVersionList %s" % files)
          return sorted(files, key=functools.cmp_to_key(versionCmp))
