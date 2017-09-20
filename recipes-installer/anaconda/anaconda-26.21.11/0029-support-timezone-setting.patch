@@ -1,7 +1,7 @@
-From 6b2687d0b3fb79d61a46c71e35d2f025b3285014 Mon Sep 17 00:00:00 2001
+From e172d303503c66502156fcb95236d1eef637de3e Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Fri, 26 May 2017 14:55:11 +0800
-Subject: [PATCH 29/65] support timezone setting
+Subject: [PATCH] support timezone setting
 
 - If selected timezone does not exist in target,
   try to make a copy from host
@@ -13,9 +13,30 @@ Upstream-Status: Inappropriate [oe specific]
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
- pyanaconda/timezone.py | 28 ++++++----------------------
- 1 file changed, 6 insertions(+), 22 deletions(-)
+ pyanaconda/kickstart.py |  9 ++++++++-
+ pyanaconda/timezone.py  | 28 ++++++----------------------
+ 2 files changed, 14 insertions(+), 23 deletions(-)
 
+diff --git a/pyanaconda/kickstart.py b/pyanaconda/kickstart.py
+index 2210845..eb150c4 100644
+--- a/pyanaconda/kickstart.py
++++ b/pyanaconda/kickstart.py
+@@ -1660,7 +1660,14 @@ class Timezone(commands.timezone.F25_Timezone):
+         pass
+ 
+     def execute(self, *args):
+-        pass
++        # write out timezone configuration
++        if not timezone.is_valid_timezone(self.timezone):
++            # this should never happen, but for pity's sake
++            log.warning("Timezone %s set in kickstart is not valid, falling "
++                        "back to default (America/New_York).", self.timezone)
++            self.timezone = "America/New_York"
++
++        timezone.write_timezone_config(self, iutil.getSysroot())
+ 
+ class User(commands.user.F19_User):
+     def execute(self, storage, ksdata, instClass, users):
 diff --git a/pyanaconda/timezone.py b/pyanaconda/timezone.py
 index c9990d2..21b1ec1 100644
 --- a/pyanaconda/timezone.py
