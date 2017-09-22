@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe"
 
 SRC_URI = "file://sidebar-logo.png \
            file://topbar-bg.png \
-           file://banner_windriver.png \
+           ${@base_conditional('WRLINUX_BRANCH', 'LTS', 'file://banner_windriver_LTS.png', 'file://banner_windriver.png', d)} \
            file://COPYING"
 
 S = "${WORKDIR}"
