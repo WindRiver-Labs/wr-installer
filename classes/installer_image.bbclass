@@ -106,6 +106,10 @@ wrl_installer_copy_pkgs() {
     if [ -f "$installer_conf" ]; then
         eval "grep -e \"^PACKAGE_INSTALL=.*\" $common_grep $installer_conf \
             | sed -e 's/=/=\"/' -e 's/$/\"/' > ${BB_LOGFILE}.distro_vals"
+
+        eval "cat $target_build/installersupport_$target_image | \
+            grep -e 'DEPLOY_DIR_RPM=.*' >> ${BB_LOGFILE}.distro_vals"
+
         eval `cat ${BB_LOGFILE}.distro_vals`
         if [ $? -ne 0 ]; then
             bbfatal "Something is wrong in $installer_conf, please correct it"
@@ -199,7 +203,7 @@ _EOF
 
 	    # Generate .buildstamp
 	    if [ -n "${WRL_INSTALLER_CONF}" ]; then
-            installer_conf="`echo ${WRL_INSTALLER_CONF} | awk '{print $'"$counter"'}'`"
+	        installer_conf="`echo ${WRL_INSTALLER_CONF} | awk '{print $'"$counter"'}'`"
 	        wrl_installer_copy_buildstamp $prj_name $installer_conf
 	    else
 	        cat >${IMAGE_ROOTFS}/.buildstamp.$prj_name <<_EOF
