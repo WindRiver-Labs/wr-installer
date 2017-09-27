@@ -1,0 +1,31 @@
+From 277bfa0cf941ea58b9765805d88729080c2d3a70 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Wed, 27 Sep 2017 10:46:55 +0800
+Subject: [PATCH] test existence of noverifyssl
+
+While CDROM, the noverifyssl does not exist,
+the setting triger a failure.
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ anaconda.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/anaconda.py b/anaconda.py
+index 3d2be2d..feb9b3b 100755
+--- a/anaconda.py
++++ b/anaconda.py
+@@ -531,7 +531,7 @@ if __name__ == "__main__":
+             iutil.setenv("ftp_proxy", proxy.url)
+             iutil.setenv("HTTPS_PROXY", proxy.url)
+ 
+-    if flags.noverifyssl:
++    if flags.noverifyssl and hasattr(ksdata.method, "noverifyssl"):
+         ksdata.method.noverifyssl = flags.noverifyssl
+     if opts.multiLib:
+         # sets dnf's multilib_policy to "all" (as opposed to "best")
+-- 
+2.7.4
+
