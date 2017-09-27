@@ -5,7 +5,6 @@ PNWHITELIST_gnome-layer += "\
     gnome-themes \
     gtk-engines \
     keybinder \
-    libgnomecanvas \
     libgnomekbd \
     libgnome-keyring \
     libtimezonemap \
