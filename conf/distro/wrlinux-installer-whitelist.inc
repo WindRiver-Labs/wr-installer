@@ -66,28 +66,17 @@ PNWHITELIST_openembedded-layer += "\
     libreport \
     libtar \
     fltk \
-    fontforge \
-    giflib \
     glade \
     gnome-doc-utils-stub \
     gnulib \
     isomd5sum \
     libndp \
-    libvncserver \
     mozjs \
     networkmanager \
     polkit \
     satyr \
     tigervnc \
-    ttf-abyssinica \
-    ttf-dejavu \
-    ttf-lklug \
-    ttf-lohit \
-    ttf-sazanami \
-    ttf-wqy-zenhei \
-    ttf-tlwg \
     uthash \
     volume-key \
     xmlrpc-c \
-    x11vnc \
 "
