@@ -139,7 +139,6 @@ Building the target installer
        $ <build-topdir>/tmp-glibc/sysroots-components/x86_64/qemu-native/usr/bin/qemu-img create -f qcow hd0.vdisk 5000M
 
        Start qemu with installer image:
-       $ runqemu qemux86-64 wrlinux-image-installer iso slirp qemuparams="hd0.vdisk"
        $ runqemu qemux86-64 wrlinux-image-installer iso slirp qemuparams="-drive file=hd0.vdisk,if=virtio,format=qcow"
 
        Add "-vnc :4" to qemuparams to start a VNC capable session.
@@ -149,9 +148,13 @@ Building the target installer
        but does not work with host kernel Linux 3.17.
 
        Start qemu with installed target:
-       $ runqemu qemux86-64 wrlinux-image-installer iso slirp qemuparams="hd0.vdisk -boot menu=on"
+       $ runqemu qemux86-64 wrlinux-image-installer iso slirp qemuparams="-drive file=hd0.vdisk,if=virtio,format=qcow -boot menu=on"
 
-       Add "-boot menu=on" to qemuparams and manually choose to boot from hard disk.
+       Run vncviewer to connect VNC capable session.
+       $ vncviewer <host-ip-address>:4
+
+       Add "-boot menu=on" to qemuparams and run vncviewer to connect,
+       press ESC key, manually choose "2. Virtio disk" "to boot from hard disk.
 
    4.3 Use virtualbox for testing
        4.3.1 Prepare virtualbox
