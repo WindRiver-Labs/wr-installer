@@ -16,12 +16,11 @@ REQUIRED_DISTRO_FEATURES = "systemd ldconfig"
 DEPENDS += "grub grub-efi"
 
 copy_grub_lib() {
-    mkdir -p ${IMAGE_ROOTFS}/${libdir}/grub
-    for f in ${libdir}/grub/i386-pc ${libdir}/grub/${TARGET_ARCH}-efi ; do
-        [ -d ${IMAGE_ROOTFS}/$f ] && continue
-        echo "Copy $f"
-        cp -rf ${STAGING_DIR_HOST}$f ${IMAGE_ROOTFS}/${f%/*}
-    done
+    if [ -d ${STAGING_DIR_HOST}${libdir}/grub ]; then
+        echo "Copy grub & grub-efi lib"
+        mkdir -p ${IMAGE_ROOTFS}${libdir}/grub
+        cp -rf ${STAGING_DIR_HOST}${libdir}/grub/* ${IMAGE_ROOTFS}${libdir}/grub
+    fi
 }
 
 python emit_image_env () {
