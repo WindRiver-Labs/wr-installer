@@ -1,8 +1,7 @@
-From a051be873355ed8c198faaba84e1981aa4558cfb Mon Sep 17 00:00:00 2001
+From 97f0ca901d8d8c623c3e5397a5150a09685e8036 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Thu, 1 Jun 2017 14:15:27 +0800
-Subject: [PATCH 44/65] support downloading file from http/ftp server to target
- image
+Subject: [PATCH] support downloading file from http/ftp server to target image
 
 Add key in kickstart to support downloading file from http/ftp server to target image,
 'download --dest=[file://dir/filename|/dir/filename] --src=[http url| ftp url]'
@@ -28,9 +27,9 @@ Rebase from WRL9 to WRL10
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 ---
- pyanaconda/install.py   |  2 +
- pyanaconda/kickstart.py | 97 +++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 99 insertions(+)
+ pyanaconda/install.py   |  2 ++
+ pyanaconda/kickstart.py | 94 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 96 insertions(+)
 
 diff --git a/pyanaconda/install.py b/pyanaconda/install.py
 index 555d7b0..0bb0722 100644
@@ -46,7 +45,7 @@ index 555d7b0..0bb0722 100644
  
      # schedule network configuration (if required)
 diff --git a/pyanaconda/kickstart.py b/pyanaconda/kickstart.py
-index d858ed1..881738c 100644
+index 3b877f7..af26c21 100644
 --- a/pyanaconda/kickstart.py
 +++ b/pyanaconda/kickstart.py
 @@ -78,6 +78,8 @@ from pykickstart.constants import CLEARPART_TYPE_NONE, CLEARPART_TYPE_ALL, \
@@ -58,7 +57,7 @@ index d858ed1..881738c 100644
  from pykickstart.parser import Script as KSScript
  from pykickstart.sections import Section
  from pykickstart.sections import NullSection, PackageSection, PostScriptSection, PreScriptSection, PreInstallScriptSection, \
-@@ -1930,6 +1932,99 @@ class Upgrade(commands.upgrade.F20_Upgrade):
+@@ -1937,6 +1939,96 @@ class Upgrade(commands.upgrade.F20_Upgrade):
          iutil.ipmi_report(IPMI_ABORTED)
          sys.exit(1)
  
@@ -142,23 +141,20 @@ index d858ed1..881738c 100644
 +                os.makedirs(dest_dir)
 +
 +            try:
-+                src_f = urlgrabber.urlopen(dd.src)
-+            except urlgrabber.grabber.URLGrabError as e:
++                request = iutil.requests_session().get(dd.src)
++            except requests.exceptions.RequestException as e:
 +                msg = _("The following error was encountered while downloading %s:\n\n%s" % (dd.src, e))
 +                stderrLog.critical(msg)
 +                sys.exit(1)
 +
-+            with open(dest, "w+") as dest_f:
-+                dest_f.write(src_f.read())
-+                dest_f.close()
-+
-+            src_f.close()
++            with open(dest, "wb") as dest_f:
++                dest_f.write(request.content)
 +
 +
  ###
  ### %anaconda Section
  ###
-@@ -2030,6 +2125,7 @@ commandMap = {
+@@ -2037,6 +2129,7 @@ commandMap = {
      "volgroup": VolGroup,
      "xconfig": XConfig,
      "zfcp": ZFCP,
@@ -166,7 +162,7 @@ index d858ed1..881738c 100644
  }
  
  dataMap = {
-@@ -2040,6 +2136,7 @@ dataMap = {
+@@ -2047,6 +2140,7 @@ dataMap = {
      "RepoData": RepoData,
      "SnapshotData": SnapshotData,
      "VolGroupData": VolGroupData,
