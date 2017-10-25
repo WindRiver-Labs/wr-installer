@@ -108,7 +108,6 @@ SRC_URI = "git://github.com/rhinstaller/anaconda;protocol=https;branch=f26-relea
            file://0058-do-not-support-closest-mirror.patch \
            file://0059-tweak-MAX_TREEINFO_DOWNLOAD_RETRIES.patch \
            file://0060-tweak-time-setting.patch \
-           file://0061-set-CLEARPART_TYPE_ALL-by-default.patch \
            file://0062-Add-dracut-args-for-home-to-bootloader.patch \
            file://0063-do-not-customize-window-theme.patch \
            file://0064-tweak-product-short-name.patch \
