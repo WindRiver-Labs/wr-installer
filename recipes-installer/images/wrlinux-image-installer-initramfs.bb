@@ -30,7 +30,7 @@ IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 inherit wrlinux-image wr-installer-rootfs
 
 IMAGE_ROOTFS_SIZE = "8192"
-INITRAMFS_MAXSIZE ?= "1048576"
+INITRAMFS_MAXSIZE ?= "1100000"
 
 ROOTFS_POSTPROCESS_COMMAND += "installer_initramfs_image_pp ; "
 
